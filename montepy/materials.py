@@ -48,6 +48,31 @@ class Materials(NumberedDataObjectCollection):
         self, objects: list[Material] = None, problem: montepy.MCNP_Problem = None
     ):
         super().__init__(Material, objects, problem)
+        self._tsl_queue = {}
+
+    @args_checked
+    def append(self, obj: montepy.Material | montepy.ThermalScatteringLaw, **kwargs):
+        if isinstance(obj, montepy.Material):
+            if obj.number in self._tsl_queue:
+                tsl = self._tsl_queue.pop(obj.number)
+                tsl._link_to_parent(obj)
+                obj._thermal_scattering = tsl
+            super().append(obj, **kwargs)
+        elif isinstance(obj, montepy.ThermalScatteringLaw):
+            try:
+                mat = self[obj._old_number.value]
+                obj._link_to_parent(mat)
+                mat._thermal_scattering = obj
+            except KeyError:
+                self._tsl_queue[obj._old_number.value] = obj
+
+    def finalize_init(self, jit_parse: bool = False):
+        # Raise error for unflushed connection
+        for num, tsl in self._tsl_queue.items():
+            raise MalformedInputError(
+                tsl._input,
+                f'Thermal scattering Law "MT" input has no parent material with number: {num}',
+            )
 
     @args_checked
     def get_containing_any(
@@ -75,7 +100,7 @@ class Materials(NumberedDataObjectCollection):
 
         .. testoutput::
 
-            MATERIAL: 1, ['hydrogen', 'oxygen']
+            Material: 1
 
         .. versionadded:: 1.0.0
 
@@ -134,7 +159,7 @@ class Materials(NumberedDataObjectCollection):
 
         .. testoutput::
 
-            MATERIAL: 1, ['hydrogen', 'oxygen']
+            Material: 1
 
         .. versionadded:: 1.0.0
 

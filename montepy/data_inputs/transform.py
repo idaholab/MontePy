@@ -5,6 +5,7 @@ import numpy as np
 import re
 
 import montepy
+from montepy.input_parser import syntax_node
 from montepy.utilities import *
 from montepy import mcnp_object
 from montepy.data_inputs import data_input
@@ -27,7 +28,18 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         The Input object representing the input
     number : int
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
+
+    _POINTER_ATTRS = set()
+
+    @staticmethod
+    def _parent_collections():
+        return (
+            ("surfaces", "transform", False),
+            ("cells", ("fill", "transform"), False),
+        )
 
     @args_checked
     def __init__(
@@ -35,60 +47,73 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         input: InitInput = None,
         pass_through: bool = False,
         number: ty.PositiveInt = None,
+        *,
+        jit_parse: bool = True,
     ):
         self._pass_through = pass_through
         self._old_number = self._generate_default_node(int, -1)
+        data_input.DataInputAbstract.__init__(self, input, jit_parse=jit_parse)
+        self._load_init_num(number)
+
+    def _init_blank(self):
         self._displacement_vector = np.array([])
         self._rotation_matrix = np.array([])
         self._is_in_degrees = False
         self._is_main_to_aux = True
-        super().__init__(input)
-        self._load_init_num(number)
-        if input:
-            words = self._tree["data"]
-            i = 0
-            if len(words) < 3:
-                raise MalformedInputError(input, f"Not enough entries were provided")
-            modifier = self._classifier.modifier
-            if modifier and "*" in modifier.value:
-                self._is_in_degrees = True
-            else:
-                self._is_in_degrees = False
-            self._number = self._input_number
-            self._old_number = copy.deepcopy(self._number)
 
-            # parse displacement
-            values = []
-            for j, word in enumerate(words):
-                values.append(word.value)
-                i += 1
-                if j >= 2:
-                    break
-            self._displacement_vector = np.array(values)
+    def _generate_default_tree(self):
+        super()._generate_default_tree()
+        list_node = syntax_node.ListNode("transform list")
+        for _ in range(3):
+            list_node.append(self._generate_default_node(float, "0"))
+        self._tree.nodes["data"] = list_node
 
-            # parse rotation
-            values = []
-            for j, word in enumerate(words.nodes[i:]):
-                values.append(word.value)
-                i += 1
-                if j >= 8:
-                    break
-            self._rotation_matrix = np.array(values)
+    def _parse_tree(self):
+        super()._parse_tree()
+        self._number = self._input_number
+        self._old_number = copy.deepcopy(self._number)
+        words = self._tree["data"]
+        i = 0
+        if len(words) < 3:
+            raise MalformedInputError(input, f"Not enough entries were provided")
+        modifier = self._modifier
+        if modifier and "*" in modifier.value:
+            self._is_in_degrees = True
+        else:
+            self._is_in_degrees = False
 
-            self._is_main_to_aux = True
-            if len(values) == 9:
-                try:
-                    word = words[i]
-                    word.is_negatable_identifier = True
-                    if word.value != 1:
-                        raise MalformedInputError(
-                            input, f"{word} can't be parsed as 1 or -1"
-                        )
-                    # negative means not main_to_aux
-                    self._is_main_to_aux = not word.is_negative
-                # if no more words remain don't worry
-                except IndexError:
-                    pass
+        # parse displacement
+        values = []
+        for j, word in enumerate(words):
+            values.append(word.value)
+            i += 1
+            if j >= 2:
+                break
+        self._displacement_vector = np.array(values)
+
+        # parse rotation
+        values = []
+        for j, word in enumerate(words.nodes[i:]):
+            values.append(word.value)
+            i += 1
+            if j >= 8:
+                break
+        self._rotation_matrix = np.array(values)
+
+        self._is_main_to_aux = True
+        if len(values) == 9:
+            try:
+                word = words[i]
+                word.is_negatable_identifier = True
+                if word.value != 1:
+                    raise MalformedInputError(
+                        input, f"{word} can't be parsed as 1 or -1"
+                    )
+                # negative means not main_to_aux
+                self._is_main_to_aux = not word.is_negative
+            # if no more words remain don't worry
+            except IndexError:
+                pass
 
     @staticmethod
     def _class_prefix():
@@ -103,6 +128,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         return 0
 
     @property
+    @needs_full_ast
     def hidden_transform(self) -> bool:
         """Whether or not this transform is "hidden" i.e., has no number.
 
@@ -115,6 +141,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         return self._pass_through
 
     @make_prop_pointer("_is_in_degrees", bool)
+    @needs_full_ast
     def is_in_degrees(self) -> bool:
         """The rotation matrix is in degrees and not in cosines
 
@@ -125,6 +152,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         pass
 
     @make_prop_val_node("_old_number")
+    @needs_full_ast
     def old_number(self) -> int:
         """The transform number used in the original file
 
@@ -135,6 +163,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         pass
 
     @property
+    @needs_full_ast
     def displacement_vector(self) -> np.ndarray[float]:
         """The transform displacement vector
 
@@ -145,13 +174,15 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         return self._displacement_vector
 
     @displacement_vector.setter
+    @needs_full_cst
     @args_checked
-    def displacement_vector(self, vector: np.ndarray[float]):
+    def displacement_vector(self, vector: np.ndarray[ty.Real]):
         if len(vector) != 3:
             raise ValueError("displacement_vector must have three components")
         self._displacement_vector = vector
 
     @property
+    @needs_full_ast
     def rotation_matrix(self) -> np.ndarray[float]:
         """The rotation matrix
 
@@ -162,13 +193,15 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         return self._rotation_matrix
 
     @rotation_matrix.setter
+    @needs_full_cst
     @args_checked
-    def rotation_matrix(self, matrix: np.ndarray[float]):
+    def rotation_matrix(self, matrix: np.ndarray[ty.Real]):
         if len(matrix) < 5 or len(matrix) > 9:
             raise ValueError("rotation_matrix must have between 5 and 9 components.")
         self._rotation_matrix = matrix
 
     @make_prop_pointer("_is_main_to_aux", bool)
+    @needs_full_ast
     def is_main_to_aux(self) -> bool:
         """Whether or not the displacement vector points from the main origin to auxilary
         origin, or vice versa.
@@ -179,23 +212,14 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         """
         pass
 
-    def __str__(self):
-        return f"TRANSFORM: {self.number}"
-
-    def __repr__(self):
-        ret = f"TRANSFORM: {self.number}\n"
-        ret += f"DISPLACE: {self.displacement_vector}\n"
-        ret += f"ROTATE: {self.rotation_matrix}\n"
-        ret += f"MAIN_TO_AUX: {self.is_main_to_aux}\n"
-        return ret
-
     def _update_values(self):
         # update in degrees
         if self._classifier.modifier is None:
             self._classifier.modifier = self._generate_default_node(
                 str, "", padding=None
             )
-        if self.is_in_degrees:
+        # avoid parsing mid-update
+        if self._is_in_degrees:
             self._classifier.modifier.value = "*"
         else:
             self._classifier.modifier.value = ""
@@ -238,11 +262,15 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         self.data.update_with_new_values(new_values)
 
     def validate(self):
+        if self.number <= 0:
+            raise IllegalState(f"Transform: {self.number} does not have a valid number")
+
         if self.displacement_vector is None or len(self.displacement_vector) != 3:
             raise IllegalState(
                 f"Transform: {self.number} does not have a valid displacement Vector"
             )
 
+    @needs_full_ast
     @args_checked
     def equivalent(self, other: Transform, tolerance: ty.PositiveReal):
         """Determines if this is effectively equivalent to another transformation

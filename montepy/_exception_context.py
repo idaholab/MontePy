@@ -1,11 +1,12 @@
-import functools
 from abc import ABC, ABCMeta, abstractmethod
+import functools
+import inspect
 
 from montepy.exceptions import *
 
 
 class _ExceptionContextAdder(ABCMeta):
-    """A metaclass for wrapping all class properties and methods in :func:`~montepy.errors.add_line_number_to_exception`."""
+    """A metaclass for wrapping all class properties and methods in :func:`~montepy.exceptions.add_line_number_to_exception`."""
 
     @staticmethod
     def _wrap_attr_call(func):
@@ -28,7 +29,7 @@ class _ExceptionContextAdder(ABCMeta):
                     finally:
                         del self._handling_exception
                 else:
-                    raise e
+                    raise e.with_traceback(e.__traceback__.tb_next.tb_next)
 
         if isinstance(func, staticmethod):
             return staticmethod(wrapped)
@@ -42,9 +43,10 @@ class _ExceptionContextAdder(ABCMeta):
         """
         new_attrs = {}
         for key, value in attributes.items():
-            if key.startswith("_"):
+            if key.startswith("_") and key != "__init__":
                 new_attrs[key] = value
-            if callable(value):
+                continue
+            if inspect.isfunction(value) or isinstance(value, staticmethod):
                 new_attrs[key] = _ExceptionContextAdder._wrap_attr_call(value)
             elif isinstance(value, property):
                 new_props = {}

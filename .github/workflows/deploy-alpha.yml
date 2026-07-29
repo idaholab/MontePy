@@ -2,7 +2,7 @@ name: Alpha-Deploy
 
 on: 
   push:
-    branches: [alpha-test]
+    branches: [alpha-test, beta-test]
 
 
 jobs:

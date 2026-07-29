@@ -1,6 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from abc import ABC, abstractmethod
 import math
+import re
 
 from montepy.exceptions import *
 from montepy.utilities import *
@@ -10,7 +11,6 @@ from montepy.input_parser.read_parser import ReadParser
 from montepy.input_parser.tokens import CellLexer, SurfaceLexer, DataLexer
 from montepy.utilities import *
 import montepy.types as ty
-import re
 
 
 class Jump:
@@ -191,7 +191,7 @@ class Input(ParsingNode):
     def format_for_mcnp_input(self, mcnp_version):
         pass
 
-    def tokenize(self):
+    def tokenize(self, lexer_class=None):
         """Tokenizes this input as a stream of Tokens.
 
         This is a generator of Tokens.
@@ -201,12 +201,19 @@ class Input(ParsingNode):
         * In a surface block :class:`~montepy.input_parser.tokens.SurfaceLexer` is used.
         * In a data block :class:`~montepy.input_parser.tokens.DataLexer` is used.
 
+        Parameters
+        ----------
+        lexer_class : type, optional
+            If provided, overrides the default lexer selection.
+
         Returns
         -------
         collections.abc.Generator
             a generator of tokens.
         """
-        if self.block_type == BlockType.CELL:
+        if lexer_class is not None:
+            lexer = lexer_class()
+        elif self.block_type == BlockType.CELL:
             lexer = CellLexer()
         elif self.block_type == BlockType.SURFACE:
             lexer = SurfaceLexer()
@@ -230,6 +237,9 @@ class Input(ParsingNode):
             token.value = token.value.rstrip("\n")
             if token.value:
                 yield token
+        # if closed upstream
+        except GeneratorExit:
+            generator.close()
         self._lexer = None
 
     @make_prop_pointer("_lexer")
@@ -243,6 +253,28 @@ class Input(ParsingNode):
         MCNP_Lexer
         """
         pass
+
+    def search(self, search: str | re.Pattern) -> bool:
+        """
+        Searches this input for the given string, or compiled regular expression.
+
+        Parameters
+        ----------
+        search : str | re.Pattern
+            The pattern to search for.
+
+        Returns
+        -------
+        bool
+            Whether this
+        """
+        searcher = lambda line: search in line
+        if isinstance(search, re.Pattern):
+            searcher = lambda line: (search.search(line)) is not None
+        for line in self.input_lines:
+            if searcher(line):
+                return True
+        return False
 
 
 class ReadInput(Input):

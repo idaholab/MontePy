@@ -7,14 +7,21 @@ MontePy Changelog
 *****************
 
 1.6 releases
-============
+=============
 
-#next release#
+
+#Next Version#
 --------------
 
 **Features Added**
 
-* Add _checkvalue.py_ to codebase (:issue:`687`). 
+* Added support for just-in-time parsing (:issue:`529`).
+* Add _checkvalue.py_ to codebase (:issue:`687`).
+
+**Performance Improvement**
+
+* Add just-in-time parsing which can significantly improve performance for working with large models under some circumstances (:issue:`529`).
+
 
 1.5 Releases
 ============
@@ -54,7 +61,6 @@ MontePy Changelog
 **Bugs Fixed**
 
 * Fixed a bug where surface type mnemonics (e.g. ``SO``, ``PZ``) were always written in uppercase, discarding the original case supplied by the user (e.g. ``sO``, ``Pz``) (:issue:`522`).
-
 * Fixed a bug where ``append_renumber`` raised a ``TypeError`` when called with an object whose ``number`` is ``None`` (e.g. an object created with no arguments) (:issue:`880`).
 * Fixed a bug where the importance of cells made from scratch are usually not printed to the output file (:pull:`921`).
 
@@ -97,10 +103,6 @@ MontePy Changelog
 1.2.0
 -----
 
-**Performance Improvement**
-
-* Optimized :math:`\mathcal{O}(N^2)` scaling in :func:`~montepy.numbered_object_collection.NumberedObjectCollection.request_number` by improving ``NumberedObjectCollection.check_number`` to :math:`\mathcal{O}(N)` (:issue:`786`). 
-
 **Features Added**
 
 * Added checking for additional input after the ``data`` block, and raising a warning if it exists (:issue:`525`).
@@ -112,7 +114,7 @@ MontePy Changelog
 
 **Performance Improvement**
 
-* Optimized :math:`\mathcal{O}(N^2)` scaling in :func:`montepy.NumberedObjectCollection.request_number` by improving ``NumberedObjectCollection.check_number`` to :math:`\mathcal{O}(N)` (:issue:`786`). 
+* Optimized :math:`\mathcal{O}(N^2)` scaling in :func:`montepy.numbered_object_collection.NumberedObjectCollection.request_number` by improving ``NumberedObjectCollection.check_number`` to :math:`\mathcal{O}(N)` (:issue:`786`).
 
 **Bugs Fixed**
 
@@ -130,11 +132,6 @@ MontePy Changelog
       :new_tab_button_text: Launch jupyter in your browswer
 
 * Improved documentation for :class:`~montepy.numbered_object_collection.NumberedObjectCollection` on Slicing behavior. (:issue:`798`)
-* Reorganized Python API documentation. Some hyperlinks may be broken now (:pull:`828`).
-
-**Documentation**
-
-* Improved documentation for NumberedObjectCollections on Slicing behavior. (:issue:`798`)
 * Reorganized Python API documentation. Some hyperlinks may be broken now (:pull:`828`).
 
 **Deprecations**
@@ -181,7 +178,6 @@ MontePy Changelog
 **Features Added**
 
 * Added demonstration jupyter notebooks for working with Pin Cell and PWR assemblies in MontePy.
-* Add _checkvalue.py_ to codebase (:issue:`687`). 
 
 **Bugs Fixed**
 
@@ -209,13 +205,6 @@ MontePy Changelog
 
 1.0 releases
 ============
-
-#Next Version#
---------------
-
-**Code Improvements**
-
-* Add _checkvalue.py_ to codebase (:issue:`687`). 
 
 
 1.0.0

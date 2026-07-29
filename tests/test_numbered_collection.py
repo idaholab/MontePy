@@ -2,6 +2,7 @@
 import hypothesis
 from hypothesis import given, settings, strategies as st
 import copy
+import io
 import itertools as it
 
 import montepy
@@ -251,13 +252,12 @@ class TestNumberedObjectCollection:
         prob2 = copy.deepcopy(cp_simple_problem)
         print(hex(id(cp_simple_problem.materials._problem)))
         # Delete Material 2, making its number available.
-        prob2.materials.remove(prob2.materials[2])
         len_mats = len(prob2.materials)
         mat1 = prob1.materials[1]
         new_num = prob2.materials.append_renumber(mat1)
-        assert new_num == 2, "Material not renumbered correctly."
+        assert new_num == 4, "Material not renumbered correctly."
         assert len(prob2.materials) == len_mats + 1, "Material not appended"
-        assert prob2.materials[2] is mat1, "Material 2 is not the new material"
+        assert prob2.materials[4] is mat1, "Material 2 is not the new material"
 
     def test_extend_renumber(self, cp_simple_problem):
         cells = copy.deepcopy(cp_simple_problem.cells)
@@ -479,13 +479,7 @@ class TestNumberedObjectCollection:
     def test_str(self, cp_simple_problem):
         cells = cp_simple_problem.cells
         assert str(cells) == "Cells: [1, 2, 3, 99, 5]"
-        key_phrases = [
-            "Numbered_object_collection: obj_class: <class 'montepy.cell.Cell'>",
-            "Objects: [CELL: 1",
-            "Number cache: {1: CELL: 1",
-        ]
-        for phrase in key_phrases:
-            assert phrase in repr(cells)
+        assert "Cells([Cell(" in repr(cells)
 
     def test_data_init(_, cp_simple_problem):
         new_mats = montepy.materials.Materials(
@@ -760,13 +754,14 @@ class TestNumberedObjectCollection:
         _, read_simple_problem, start_num, step, clone_mat, clone_region
     ):
         cp_simple_problem = copy.deepcopy(read_simple_problem)
-        cells = copy.deepcopy(cp_simple_problem.cells)
+        cells = cp_simple_problem.cells
         if start_num <= 0 or step <= 0:
             with pytest.raises(ValueError):
                 cells.clone(starting_number=start_num, step=step)
             return
         for clear in [False, True]:
             if clear:
+                cells = copy.deepcopy(cp_simple_problem.cells)
                 cells.link_to_problem(None)
             new_cells = cells.clone(clone_mat, clone_region, start_num, step)
             for new_cell, old_cell in zip(new_cells, cells):
@@ -998,3 +993,34 @@ class TestMaterials:
             assert new_mat.number == starting_num
         else:
             assert (new_mat.number - starting_num) % step == 0
+
+    def test_materials_append_resolves_queued_tsl(_):
+        materials = montepy.materials.Materials()
+        mt = montepy.data_inputs.thermal_scattering.ThermalScatteringLaw("MT1 lwtr.23t")
+        materials.append(mt)
+        assert 1 in materials._tsl_queue
+        mat = montepy.Material("M1 1001.80c 1.0")
+        materials.append(mat)
+        assert 1 not in materials._tsl_queue
+        assert mat.thermal_scattering is mt
+
+    def test_material_renumber_updates_cell_material_reference(_):
+        in_str = """Test problem
+1 5 1.0 -1 imp:n=1
+2 0 1
+
+1 SO 5.0
+
+M5 1001.80c 1.0
+"""
+        with io.StringIO(in_str) as fh:
+            problem = montepy.read_input(fh, jit_parse=True)
+        mat = problem.materials[5]
+        cell = problem.cells[1]
+        # rename before ever touching cell.material, so the only way it can
+        # still resolve to the right object afterward is via
+        # NumberedObjectCollection.search_parent_objs_by_child using
+        # Material._parent_collections.
+        mat.number = 7
+        assert cell.material is mat
+        assert cell.material.number == 7

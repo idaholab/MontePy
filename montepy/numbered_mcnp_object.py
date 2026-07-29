@@ -11,17 +11,6 @@ import montepy.types as ty
 from montepy.utilities import *
 
 
-def _number_validator(self, number):
-    if number < 0:
-        raise ValueError("number must be >= 0")
-
-    # Only validate against collection if linked to a collection
-    if self._collection is not None:
-        collection = self._collection
-        collection.check_number(number)
-        collection._update_number(self.number, number, self)
-
-
 class Numbered_MCNP_Object(MCNP_Object):
     """An abstract class to represent an mcnp object that has a number.
 
@@ -29,25 +18,31 @@ class Numbered_MCNP_Object(MCNP_Object):
 
         Added number parameter
 
+    .. versionchanged:: 1.6.0b1
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input | str
         The Input syntax object this will wrap and parse.
-    parser : MCNP_Parser
-        The parser object to parse the input with.
-    number : int
+    number : ty.NonNegativeInt
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     def __init__(
         self,
         input: InitInput,
-        parser: montepy.input_parser.parser_base.MCNP_Parser,
-        number: int = None,
+        number: ty.NonNegativeInt = None,
+        *,
+        jit_parse: bool = True,
+        **kwargs,
     ):
         if not input:
             self._number = self._generate_default_node(int, -1)
-        super().__init__(input, parser)
+        super().__init__(input, jit_parse=jit_parse, **kwargs)
         self._collection_ref = None
         self._load_init_num(number)
 
@@ -57,9 +52,16 @@ class Numbered_MCNP_Object(MCNP_Object):
             self.number = number
 
     _CHILD_OBJ_MAP = {}
-    """"""
+    """
+    Maps the children objects/collections (e.g., surfaces) to where to put them in the parent problem.
+    """
 
-    @make_prop_val_node("_number", ty.Integral, validator=_number_validator)
+    _KEYS_TO_PRESERVE = {"_collection_ref"}
+    """
+    The keys (attributes) of the class to preserve during a full parse.
+    """
+
+    @property
     def number(self):
         """The current number of the object that will be written out to a new input.
 
@@ -67,6 +69,35 @@ class Numbered_MCNP_Object(MCNP_Object):
         -------
         int
         """
+        return self._number.value
+
+    @number.setter
+    @needs_full_cst
+    @args_checked
+    def number(self, value: ty.NonNegativeInt):
+        self._number_validator(value)
+        self._number.value = value
+
+    def _number_validator(self, number):
+        if self._collection is not None:
+            collection = self._collection
+            collection.check_number(number)
+            self._find_impacted_parents()
+            collection._update_number(self.number, number, self)
+
+    def _find_impacted_parents(self):
+        """
+        Find parent objects (e.g., cells for surfaces) to fully parse when this number changes to prevent breaking.
+        """
+        if not self._problem:
+            return
+        for collection_name, parent_prop, is_container in self._parent_collections():
+            collection = getattr(self._problem, collection_name)
+            collection.search_parent_objs_by_child(self, parent_prop, is_container)
+
+    @staticmethod
+    @abstractmethod
+    def _parent_collections():
         pass
 
     @property
@@ -104,9 +135,12 @@ class Numbered_MCNP_Object(MCNP_Object):
                     # check if iterable
                     iter(child_collect)
                     assert not isinstance(child_collect, MCNP_Object)
+                    # give priority to problem level collection
+                    for obj in child_collect:
+                        obj._unlink_from_collection()
                     # ensure isn't a material or something
                     prob_collect.update(child_collect)
-                except (TypeError, AssertionError):
+                except (TypeError, AssertionError) as e:
                     prob_collect.append(child_collect)
 
     @property
@@ -124,6 +158,11 @@ class Numbered_MCNP_Object(MCNP_Object):
         collection : NumberedObjectCollection
             The collection to link this object to.
         """
+        existing = self._collection
+        if existing is not None and existing is not collection:
+            raise IllegalState(
+                f"{self} is already linked to collection {existing} and cannot be linked to {collection}"
+            )
         self._collection_ref = weakref.ref(collection)
 
     def _unlink_from_collection(self):
@@ -141,6 +180,7 @@ class Numbered_MCNP_Object(MCNP_Object):
         super().__setstate__(crunchy_data)
 
     @args_checked
+    @needs_full_cst
     def clone(
         self, starting_number: ty.PositiveInt = None, step: ty.PositiveInt = None
     ):
@@ -205,3 +245,9 @@ class Numbered_MCNP_Object(MCNP_Object):
             ret.number = number
             if number != self.number:
                 return ret
+
+    def __str__(self):
+        return f"{type(self).__name__}: {self.number}"
+
+    def _repr_args(self):
+        return [f"number={self.number}"]

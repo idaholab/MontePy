@@ -23,10 +23,11 @@ def test_mode_init():
     # test bad input
     in_str = "kcode"
     with pytest.raises(montepy.exceptions.MalformedInputError):
-        Mode(in_str)
+        Mode(in_str, jit_parse=False)
     in_str = "mode 1"
     with pytest.raises(TypeError):
-        Mode(in_str)
+        mode = Mode(in_str)
+        mode.particles
     mode = Mode()
     assert len(mode) == 1
     assert Particle.NEUTRON in mode

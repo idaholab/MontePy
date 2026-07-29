@@ -40,12 +40,16 @@ class Cells(NumberedObjectCollection):
         self,
         cells: ty.Iterable[montepy.Cell] = None,
         problem: montepy.MCNP_Problem = None,
+        jit_parse: bool = True,
     ):
         self.__blank_modifiers = set()
+        self.__loaded_inputs = set()
         super().__init__(montepy.Cell, cells, problem)
-        self.__setup_blank_cell_modifiers()
+        self.__setup_blank_cell_modifiers(problem, jit_parse=jit_parse)
 
-    def __setup_blank_cell_modifiers(self, problem=None, check_input=False):
+    def __setup_blank_cell_modifiers(
+        self, problem=None, check_input=False, jit_parse: bool = True
+    ):
         inputs_to_always_update = {"_universe", "_fill"}
         inputs_to_property = montepy.Cell._INPUTS_TO_PROPERTY
         for card_class, (attr, _) in inputs_to_property.items():
@@ -58,7 +62,7 @@ class Cells(NumberedObjectCollection):
                     card = getattr(self, attr)
                 if problem is not None:
                     card.link_to_problem(problem)
-                    if (
+                    if not jit_parse and (
                         attr not in self.__blank_modifiers
                         or attr in inputs_to_always_update
                     ):
@@ -77,7 +81,7 @@ class Cells(NumberedObjectCollection):
         importance: ty.PositiveReal,
         vacuum_cells: ty.Iterable[montepy.Cell | ty.PositiveInt] = tuple(),
     ):
-        """Sets all cells except the vacuum cells to the same importance using :func:`montepy.data_cards.importance.Importance.all`.
+        """Sets all cells except the vacuum cells to the same importance using :func:`montepy.data_inputs.importance.Importance.all`.
 
         The "vacuum" cells are those on the outside of a vacuum boundary condition, i.e., the "graveyard".
         That is to say, their importance will be set to 0.0. You can specify cell numbers or cell objects.
@@ -89,12 +93,12 @@ class Cells(NumberedObjectCollection):
         vacuum_cells : list
             the list of cells or cell numbers with 0 importance
         """
-        cells_buff = set()
+        cells_buff = []
         for cell in vacuum_cells:
             if isinstance(cell, ty.Integral):
-                cells_buff.add(self[cell])
+                cells_buff.append(self[cell])
             else:
-                cells_buff.add(cell)
+                cells_buff.append(cell)
         vacuum_cells = cells_buff
         for cell in self:
             if cell not in vacuum_cells:
@@ -119,7 +123,9 @@ class Cells(NumberedObjectCollection):
         self._volume.is_mcnp_calculated = value
 
     @args_checked
-    def link_to_problem(self, problem: montepy.MCNP_Problem = None):
+    def link_to_problem(
+        self, problem: montepy.MCNP_Problem = None, *, deepcopy: bool = False
+    ):
         """Links the input to the parent problem for this input.
 
         This is done so that inputs can find links to other objects.
@@ -128,33 +134,17 @@ class Cells(NumberedObjectCollection):
         ----------
         problem : MCNP_Problem
             The problem to link this input to.
+        deepcopy : bool
+            If this is occuring during a problem level deepcopy
         """
-        super().link_to_problem(problem)
+        super().link_to_problem(problem, deepcopy=deepcopy)
         inputs_to_property = montepy.Cell._INPUTS_TO_PROPERTY
         for attr, _ in inputs_to_property.values():
-            getattr(self, attr).link_to_problem(problem)
+            getattr(self, attr).link_to_problem(problem, deepcopy=deepcopy)
 
-    def update_pointers(
-        self, cells, materials, surfaces, data_inputs, problem, check_input=False
-    ):
-        """Attaches this object to the appropriate objects for surfaces and materials.
-
-        This will also update each cell with data from the data block,
-        for instance with cell volume from the data block.
-
-        Parameters
-        ----------
-        cells : Cells
-            a Cells collection of the cells in the problem.
-        materials : Materials
-            a materials collection of the materials in the problem
-        surfaces : Surfaces
-            a surfaces collection of the surfaces in the problem
-        problem : MCNP_Problem
-            The MCNP_Problem these cells are associated with
-        check_input : bool
-            If true, will try to find all errors with input and collect
-            them as warnings to log.
+    def grab_input(self, input: MCNP_Object, problem, check_input: bool = False):
+        """
+        Grab a data block CellModifier input and link it to this problem.
         """
 
         def handle_error(e):
@@ -165,45 +155,59 @@ class Cells(NumberedObjectCollection):
 
         inputs_to_property = montepy.Cell._INPUTS_TO_PROPERTY
         inputs_to_always_update = {"_universe", "_fill"}
-        inputs_loaded = set()
-        # start fresh for loading cell modifiers
-        for attr in self.__blank_modifiers:
-            delattr(self, attr)
-        self.__blank_modifiers = set()
-        # make a copy of the list
-        for input in list(data_inputs):
-            if type(input) in inputs_to_property:
-                input_class = type(input)
-                attr, cant_repeat = inputs_to_property[input_class]
-                if cant_repeat and input_class in inputs_loaded:
-                    try:
-                        raise MalformedInputError(
-                            input,
-                            f"The input: {type(input)} is only allowed once in a problem",
-                        )
-                    except MalformedInputError as e:
-                        handle_error(e)
-                if not hasattr(self, attr):
-                    setattr(self, attr, input)
-                    problem.print_in_data_block[input._class_prefix()] = True
-                else:
-                    try:
-                        getattr(self, attr).merge(input)
-                        data_inputs.remove(input)
-                    except MalformedInputError as e:
-                        handle_error(e)
-                if cant_repeat:
-                    inputs_loaded.add(type(input))
-        for cell in self:
-            try:
-                cell.update_pointers(cells, materials, surfaces)
-            except (
-                BrokenObjectLinkError,
-                MalformedInputError,
-            ) as e:
-                handle_error(e)
-                continue
-        self.__setup_blank_cell_modifiers(problem, check_input)
+        if type(input) in inputs_to_property:
+            input_class = type(input)
+            attr, cant_repeat = inputs_to_property[input_class]
+            # start fresh for loading cell modifiers
+            if getattr(self, attr)._input is None:
+                delattr(self, attr)
+            if cant_repeat and input_class in self.__loaded_inputs:
+                try:
+                    raise MalformedInputError(
+                        input,
+                        f"The input: {type(input)} is only allowed once in a problem",
+                    )
+                except MalformedInputError as e:
+                    handle_error(e)
+            if not hasattr(self, attr):
+                setattr(self, attr, input)
+                problem.print_in_data_block[input._class_prefix()] = True
+            else:
+                try:
+                    getattr(self, attr).merge(input)
+                    self._problem.data_inputs.remove(input)
+                except MalformedInputError as e:
+                    handle_error(e)
+            self.__loaded_inputs.add(type(input))
+
+    def finalize_init(self, jit_parse: bool = False):
+        """
+        Finish up grabbing CellModifier inputs and finalize all linked objects.
+        """
+        for input_class, (attr, _) in montepy.Cell._INPUTS_TO_PROPERTY.items():
+            if input_class not in self.__loaded_inputs:
+                self._problem.print_in_data_block[input_class._class_prefix()] = False
+            else:
+                modifier = getattr(self, attr, None)
+                if (
+                    modifier is not None
+                    and not modifier.in_cell_block
+                    and modifier._input is not None
+                ):
+                    if jit_parse:
+                        modifier._check_redundant_definitions()
+                    else:
+                        modifier.push_to_cells()
+        # Rebuild _print_data in stable order: inputs found in the data block first,
+        # then cell-block inputs, both groups in _INPUTS_TO_PROPERTY order.
+        ctrl = self._problem.print_in_data_block
+        prefixes = [cls._class_prefix() for cls in montepy.Cell._INPUTS_TO_PROPERTY]
+        in_data_block = [k for k in prefixes if ctrl._print_data.get(k, False)]
+        in_cell_block = [k for k in prefixes if not ctrl._print_data.get(k, True)]
+        ordered = {k: True for k in in_data_block}
+        ordered.update({k: False for k in in_cell_block})
+        ctrl._print_data.clear()
+        ctrl._print_data.update(ordered)
 
     def _run_children_format_for_mcnp(self, data_inputs, mcnp_version):
         ret = []

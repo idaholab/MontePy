@@ -1,5 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
+import warnings
 
 import montepy
 from montepy.utilities import *
@@ -24,27 +25,48 @@ class ThermalScatteringLaw(DataInputAbstract):
     * :manual63:`5.6.2`
     * :manual62:`110`
 
+    .. versionchanged:: 1.6.0b1
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input | str
         the Input object representing this data input
     material : Material
         the parent Material object that owns this
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
-    _parser = ThermalParser()
+    _parser = ThermalParser
 
-    def __init__(self, input: InitInput = "", material=None):
+    def __init__(
+        self,
+        input: InitInput = "",
+        material: montepy.Material = None,
+        *,
+        jit_parse: bool = True,
+    ):
+        super().__init__(input, jit_parse=jit_parse)
+        if material is not None:
+            self._parent_material = material
+
+    _KEYS_TO_PRESERVE = {"_parent_material"}
+
+    def _init_blank(self):
         self._old_number = self._generate_default_node(int, -1)
         self._parent_material = None
         self._scattering_laws = []
-        super().__init__(input)
-        if input:
-            self._old_number = self._input_number
-            self._scattering_laws = self._tree["data"].nodes
-        else:
-            if material:
-                self._parent_material = material
+
+    def _parse_tree(self):
+        super()._parse_tree()
+        self._old_number = self._input_number
+        self._scattering_laws = self._tree["data"].nodes
+
+    def _jit_light_init(self, input: Input):
+        super()._jit_light_init(input)
+        self._old_number = self._input_number
 
     @staticmethod
     def _class_prefix():
@@ -79,6 +101,7 @@ class ThermalScatteringLaw(DataInputAbstract):
         return self._parent_material
 
     @property
+    @needs_full_ast
     def thermal_scattering_laws(self) -> list[str]:
         """The thermal scattering laws to use for this material as strings.
 
@@ -93,11 +116,13 @@ class ThermalScatteringLaw(DataInputAbstract):
 
     @thermal_scattering_laws.setter
     @args_checked
+    @needs_full_cst
     def thermal_scattering_laws(self, laws: ty.Iterable[str]):
         self._scattering_laws.clear()
         for law in laws:
             self._scattering_laws.append(self._generate_default_node(str, law))
 
+    @needs_full_cst
     def add_scattering_law(self, law):
         """Adds the requested scattering law to this material
 
@@ -110,14 +135,19 @@ class ThermalScatteringLaw(DataInputAbstract):
 
     def validate(self):
         if len(self._scattering_laws) == 0:
-            if self.parent_material:
+            if self.parent_material is not None:
                 message = f"No thermal scattering laws given for MT{self.parent_material.number}."
             else:
                 message = f"No thermal scattering laws given for thermal scattering {hex(id(self))}"
             raise IllegalState(message)
 
+    def format_for_mcnp_input(self, mcnp_version):
+        if hasattr(self, "_not_parsed"):
+            self.full_parse()
+        return super().format_for_mcnp_input(mcnp_version)
+
     def _update_values(self):
-        if self.parent_material:
+        if self.parent_material is not None:
             self._tree["classifier"].number.value = self.parent_material.number
         else:
             raise MalformedInputError(
@@ -125,53 +155,11 @@ class ThermalScatteringLaw(DataInputAbstract):
                 f"MT{self.old_number} input is detached from a parent material",
             )
 
-    def update_pointers(self, data_inputs):
-        """Updates pointer to the thermal scattering data
-
-        Parameters
-        ----------
-        data_inputs : list
-            a list of the data inputs in the problem
-
-        Returns
-        -------
-        bool
-            True iff this input should be removed from
-            ``problem.data_inputs``
-        """
-        # use caching first
-        if self._problem:
-            try:
-                mat = self._problem.materials[self.old_number]
-            except KeyError:
-                raise MalformedInputError(
-                    self._input, "MT input is detached from a parent material"
-                )
-        # brute force it
-        found = False
-        for data_input in data_inputs:
-            if isinstance(data_input, montepy.data_inputs.material.Material):
-                if data_input.number == self.old_number:
-                    mat = data_input
-                    found = True
-                    break
-        # actually update things
-        if not found:
-            raise MalformedInputError(
-                self._input, "MT input is detached from a parent material"
-            )
-
+    @args_checked
+    def _link_to_parent(self, mat: montepy.Material):
         if mat.thermal_scattering:
-            raise MalformedInputError(
-                self,
+            warnings.warn(
                 f"Multiple MT inputs were specified for this material: {self.old_number}.",
+                MalformedInputWarning,
             )
-        mat.thermal_scattering = self
         self._parent_material = mat
-        return True
-
-    def __str__(self):
-        return f"THERMAL SCATTER: {self.thermal_scattering_laws}"
-
-    def __repr__(self):
-        return f"THERMAL SCATTER: material: {self.parent_material}, old_num: {self.old_number}, scatter: {self.thermal_scattering_laws}"

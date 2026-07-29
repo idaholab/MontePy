@@ -7,9 +7,11 @@ import re
 import montepy
 from montepy.utilities import *
 from montepy.exceptions import *
+from montepy.input_parser import syntax_node
 from montepy.input_parser.data_parser import (
     ClassifierParser,
     DataParser,
+    JitDataParser,
     ParamOnlyDataParser,
 )
 from montepy.input_parser.mcnp_input import Input
@@ -22,10 +24,10 @@ import montepy.types as ty
 class _ClassifierInput(Input):
     """A specialized subclass that returns only 1 useful token."""
 
-    def tokenize(self):
+    def tokenize(self, lexer_class=None):
         """Returns one token after all starting comments and spaces."""
         last_in_comment = True
-        for token in super().tokenize():
+        for token in super().tokenize(lexer_class=lexer_class):
             if token is None:
                 break
             if last_in_comment:
@@ -40,6 +42,10 @@ class _ClassifierInput(Input):
 class DataInputAbstract(MCNP_Object):
     """Parent class to describe all MCNP data inputs.
 
+    .. versionchanged:: 1.6.0b1
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input | str
@@ -47,35 +53,78 @@ class DataInputAbstract(MCNP_Object):
     fast_parse : bool
         Whether or not to only parse the first word for the type of
         data.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
-    _parser = DataParser()
+    _parser = DataParser
 
-    _classifier_parser = ClassifierParser()
+    _classifier_parser = ClassifierParser
+
+    _JitParser = JitDataParser
 
     def __init__(
-        self,
-        input: InitInput = None,
-        fast_parse: bool = False,
+        self, input: InitInput = None, fast_parse=False, *, jit_parse: bool = True
     ):
-        self._particles = None
         if not fast_parse:
-            super().__init__(input, self._parser)
-            if input:
-                self.__split_name(input)
+            super().__init__(input, jit_parse=jit_parse)
         else:
-            if input:
-                if isinstance(input, str):
-                    input = _ClassifierInput(
-                        input.split("\n"),
-                        montepy.input_parser.block_type.BlockType.DATA,
-                    )
-                else:
-                    input = copy.copy(input)
-                    input.__class__ = _ClassifierInput
-            super().__init__(input, self._classifier_parser)
-            if input:
-                self.__split_name(input)
+            self._parse_classifier(input, jit_parse=jit_parse)
+
+    def _parse_classifier(self, input, parsing_func=None, jit_parse=True):
+        if input:
+            if isinstance(input, str):
+                input = _ClassifierInput(
+                    input.split("\n"),
+                    montepy.input_parser.block_type.BlockType.DATA,
+                )
+            else:
+                input = copy.copy(input)
+                input.__class__ = _ClassifierInput
+        self._old_parser = self._parser
+        self._parser = self._classifier_parser
+        if parsing_func is None:
+            super().__init__(input, jit_parse=jit_parse)
+        else:
+            parsing_func(input, jit_parse=jit_parse)
+        self._parser = self._old_parser
+        del self._old_parser
+
+    def _generate_default_tree(self):
+        ret = {}
+        ret["start_pad"] = syntax_node.PaddingNode()
+        ret["classifier"] = syntax_node.ClassifierNode()
+        ret["classifier"].prefix = syntax_node.ValueNode(
+            self._class_prefix().upper(),
+            str,
+            padding=None,
+            never_pad=self._has_number(),
+        )
+        if self._has_number():
+            ret["classifier"].number = self._generate_default_node(int, -1)
+        else:
+            ret["classifier"].prefix.padding = syntax_node.PaddingNode(" ")
+        ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
+        ret["data"] = syntax_node.ListNode("empty data")
+        ret["parameters"] = syntax_node.ParametersNode()
+        self._tree = syntax_node.SyntaxNode("blank data tree", ret)
+
+    def _init_blank(self):
+        self._particles = None
+
+    def _parse_tree(self):
+        self.__split_name(self._input)
+
+    def _jit_light_init(self, input: Input):
+        super()._jit_light_init(input)
+        classifier = self._classifier
+        self._prefix = classifier.prefix.value
+        self._input_number = classifier.number
+        self._number = self._input_number
+        if classifier.particles:
+            self._particles = classifier.particles.particles
+        self._modifier = classifier.modifier
+        self.__enforce_name(input)
 
     @staticmethod
     @abstractmethod
@@ -174,6 +223,7 @@ class DataInputAbstract(MCNP_Object):
         return self._modifier
 
     @property
+    @needs_full_ast
     def data(self) -> syntax_node.ListNode:
         """The syntax tree actually holding the data.
 
@@ -203,28 +253,6 @@ class DataInputAbstract(MCNP_Object):
     def _update_values(self):
         pass
 
-    def update_pointers(self, data_inputs):
-        """Connects data inputs to each other
-
-        Parameters
-        ----------
-        data_inputs : list
-            a list of the data inputs in the problem
-
-        Returns
-        -------
-        bool, None
-            True iff this input should be removed from
-            ``problem.data_inputs``
-        """
-        pass
-
-    def __str__(self):
-        return f"DATA INPUT: {self._tree['classifier']}"
-
-    def __repr__(self):
-        return str(self)
-
     def __split_name(self, input):
         """Parses the name of the data input as a prefix, number, and a particle classifier.
 
@@ -244,7 +272,11 @@ class DataInputAbstract(MCNP_Object):
             if the name is invalid for this DataInput
         """
         self._classifier = self._tree["classifier"]
-        self.__enforce_name(input)
+        try:
+            self.__enforce_name(input)
+        except MalformedInputError as e:
+            if input:
+                raise e
         self._input_number = self._classifier.number
         self._prefix = self._classifier._prefix.value
         if self._classifier.particles:
@@ -265,15 +297,19 @@ class DataInputAbstract(MCNP_Object):
             if the name is invalid for this DataInput
         """
         classifier = self._classifier
-        if self._class_prefix:
-            if classifier.prefix.value.lower() != self._class_prefix():
+        if self._class_prefix():
+            if (
+                classifier.prefix.value is None
+                or classifier.prefix.value.lower() != self._class_prefix()
+            ):
                 raise MalformedInputError(
                     input,
-                    f"{self._tree['classifier'].format()} has the wrong prefix for {type(self)}",
+                    f"{classifier.format()} has the wrong prefix for {type(self)}",
                 )
             if self._has_number():
                 try:
                     num = classifier.number.value
+                    assert num is not None
                     assert num >= 0
                 except (AttributeError, AssertionError) as e:
                     raise MalformedInputError(
@@ -309,6 +345,10 @@ class DataInputAbstract(MCNP_Object):
 class DataInput(DataInputAbstract):
     """Catch-all for all other MCNP data inputs.
 
+    .. versionchanged:: 1.6.0b1
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input | str
@@ -318,27 +358,40 @@ class DataInput(DataInputAbstract):
         data.
     prefix : str
         The input prefix found during parsing (internal use only)
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
+
+    _KEYS_TO_PRESERVE = {"_prefix"}
 
     @args_checked
     def __init__(
-        self, input: InitInput = None, fast_parse: bool = False, prefix: str = None
+        self,
+        input: InitInput = None,
+        *,
+        fast_parse: bool = False,
+        prefix: str = None,
+        jit_parse: bool = True,
     ):
+        # When re-initializing from full_parse(), _prefix is already set from the
+        # JIT pass; reuse it so _load_correct_parser selects the right parser.
+        if prefix is None and hasattr(self, "_prefix"):
+            prefix = self._prefix
         if prefix:
             self._load_correct_parser(prefix)
-        super().__init__(input, fast_parse)
+        super().__init__(input, fast_parse, jit_parse=jit_parse)
 
-    @property
-    def _class_prefix(self):
-        return None
+    @staticmethod
+    def _class_prefix():
+        return ""
 
-    @property
-    def _has_number(self):  # pragma: no cover
-        return None
+    @staticmethod
+    def _has_number():  # pragma: no cover
+        return False
 
-    @property
-    def _has_classifier(self):  # pragma: no cover
-        return None
+    @staticmethod
+    def _has_classifier():  # pragma: no cover
+        return 1
 
     def _load_correct_parser(self, prefix):
         """Decides if a specialized parser needs to be loaded for barebone
@@ -355,7 +408,10 @@ class DataInput(DataInputAbstract):
             "sdef": PARAM_PARSER,
         }
         if prefix.lower() in PARSER_PREFIX_MAP:
-            self._parser = PARSER_PREFIX_MAP[prefix.lower()]()
+            self._parser = PARSER_PREFIX_MAP[prefix.lower()]
+
+    def __str__(self):
+        return super().__str__() + f": {self.classifier.prefix.value}"
 
 
 class ForbiddenDataInput(DataInputAbstract):
@@ -366,6 +422,10 @@ class ForbiddenDataInput(DataInputAbstract):
     * ``DE``
     * ``SDEF``
 
+    .. versionchanged:: 1.6.0b1
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input | str
@@ -375,18 +435,28 @@ class ForbiddenDataInput(DataInputAbstract):
         data.
     prefix : str
         The input prefix found during parsing (internal use only)
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     @args_checked
     def __init__(
-        self, input: InitInput = None, fast_parse: bool = False, prefix: str = None
+        self,
+        input: InitInput = None,
+        fast_parse: bool = False,
+        prefix: str = None,
+        *,
+        jit_parse: bool = True,
     ):
-        super().__init__(input, True)
+        super().__init__(input, True, jit_parse=jit_parse)
         if isinstance(input, str):
             input = montepy.input_parser.mcnp_input.Input(
                 input.split("\n"), self._BLOCK_TYPE
             )
         self._input = input
+
+    def _parse_tree(self):
+        pass
 
     @property
     def _class_prefix(self):

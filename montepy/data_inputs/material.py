@@ -173,7 +173,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     .. testoutput::
 
-        MATERIAL: 1, ['hydrogen', 'oxygen']
+        Material: 1
 
     Materials are iterable
     ^^^^^^^^^^^^^^^^^^^^^^
@@ -245,7 +245,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     .. testoutput::
 
-        MATERIAL: 1, ['hydrogen', 'oxygen', 'boron']
+        Material: 1
 
     Default Libraries
     ^^^^^^^^^^^^^^^^^
@@ -284,48 +284,61 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             * Added ability to search by Nuclide
             * Added Support for default libraries (e.g., ``nlib=80c``).
 
+    .. versionchanged:: 1.6.0b1
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input | str
         The Input syntax object this will wrap and parse.
     number : int
         The number to set for this object.
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
-    _parser = MaterialParser()
+    _parser = MaterialParser
     _NEW_LINE_STR = "\n" + " " * DEFAULT_INDENT
+    _POINTER_ATTRS = set()
+
+    @staticmethod
+    def _parent_collections():
+        return (("cells", "material", False),)
 
     @args_checked
     def __init__(
         self,
-        input: InitInput = None,
+        input: InitInput = "",
         number: ty.PositiveInt = None,
+        *,
+        jit_parse: bool = True,
+        **kwargs,
     ):
+        Numbered_MCNP_Object.__init__(self, input, number, jit_parse=jit_parse)
+
+    def _init_blank(self):
         self._components = []
         self._thermal_scattering = None
         self._is_atom_fraction = True
-        self._number = self._generate_default_node(int, -1, None)
-        self._number.never_pad = True
         self._elements = set()
         self._nuclei = set()
         self._default_libs = _DefaultLibraries(self)
-        super().__init__(input)
-        self._load_init_num(number)
-        if input:
-            num = self._input_number
-            self._old_number = copy.deepcopy(num)
-            self._number = num
-            set_atom_frac = False
-            isotope_fractions = self._tree["data"]
-            is_first = True
-            for group in isotope_fractions:
-                if len(group) == 2:
-                    self._grab_isotope(*group, is_first=is_first)
-                    is_first = False
-                else:
-                    self._grab_default(*group)
-        else:
-            self._create_default_tree()
+
+    def _parse_tree(self):
+        super()._parse_tree()
+        num = self._input_number
+        self._old_number = copy.deepcopy(num)
+        self._number = num
+        set_atom_frac = False
+        isotope_fractions = self._tree["data"]
+        is_first = True
+        for group in isotope_fractions:
+            if len(group) == 2:
+                self._grab_isotope(*group, is_first=is_first)
+                is_first = False
+            else:
+                self._grab_default(*group)
 
     @args_checked
     def _grab_isotope(
@@ -360,9 +373,10 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         except ValueError:
             pass
 
-    def _create_default_tree(self) -> None:
+    def _generate_default_tree(self, number=-1):
         classifier = syntax_node.ClassifierNode()
-        classifier.number = self._number
+        number = self._generate_default_node(int, number)
+        classifier.number = number
         classifier.number.never_pad = True
         classifier.prefix = syntax_node.ValueNode("M", str, never_pad=True)
         classifier.padding = syntax_node.PaddingNode(" ")
@@ -402,6 +416,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         pass
 
     @make_prop_pointer("_is_atom_fraction", bool)
+    @needs_full_ast
     def is_atom_fraction(self) -> bool:
         """If true this constituent is in atom fraction, not weight fraction.
 
@@ -416,6 +431,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         pass
 
     @property
+    @needs_full_ast
     def material_components(self):  # pragma: no cover
         """The internal dictionary containing all the components of this material.
 
@@ -435,6 +451,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         )
 
     @make_prop_pointer("_default_libs")
+    @needs_full_ast
     def default_libraries(self) -> dict[LibraryType, Library]:
         """The default libraries that are used when a nuclide doesn't have a relevant library specified.
 
@@ -465,6 +482,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         pass
 
     @args_checked
+    @needs_full_ast
     def get_nuclide_library(
         self, nuclide: Nuclide | str, library_type: LibraryType | str
     ) -> Library | None:
@@ -519,6 +537,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return None
 
     @args_checked
+    @needs_full_ast
     def __getitem__(self, idx: ty.Integral | slice) -> Any:
         """"""
         if isinstance(idx, ty.Integral):
@@ -531,6 +550,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def __unwrap_comp(comp):
         return (comp[0], comp[1].value)
 
+    @needs_full_ast
     def __iter__(self):
         def gen_wrapper():
             for comp in self._components:
@@ -539,6 +559,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return gen_wrapper()
 
     @args_checked
+    @needs_full_ast
     def __setitem__(
         self, idx: ty.Integral | slice, newvalue: tuple[Nuclide, ty.NonNegativeReal]
     ) -> None:
@@ -550,10 +571,12 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         self._tree["data"].nodes[node_idx] = (newvalue[0]._tree, old_vals[1])
         self._components[idx] = (newvalue[0], old_vals[1])
 
+    @needs_full_ast
     def __len__(self):
         return len(self._components)
 
     @args_checked
+    @needs_full_ast
     def __delitem__(self, idx: ty.Integral | slice) -> None:
         if isinstance(idx, ty.Integral):
             self.__delitem(idx)
@@ -595,6 +618,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         del self._components[idx]
 
     @args_checked
+    @needs_full_ast
     def __contains__(self, nuclide: NuclideLike) -> bool:
         if isinstance(nuclide, (str, ty.Integral)):
             nuclide = Nuclide(nuclide)
@@ -619,6 +643,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             return element in self._elements
 
     @args_checked
+    @needs_full_ast
     def append(self, nuclide_frac_pair: tuple[Nuclide, ty.NonNegativeReal]):
         """Appends the tuple to this material.
 
@@ -667,6 +692,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         add_new_line_padding()
 
     @args_checked
+    @needs_full_ast
     def change_libraries(self, new_library: str | Library):
         """Change the library for all nuclides in the material.
 
@@ -683,6 +709,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             nuclide.library = new_library
 
     @args_checked
+    @needs_full_ast
     def add_nuclide(self, nuclide: NuclideLike, fraction: ty.NonNegativeReal):
         """Add a new component to this material of the given nuclide, and fraction.
 
@@ -700,6 +727,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         self.append((nuclide, fraction))
 
     @args_checked
+    @needs_full_ast
     def contains_all(
         self,
         *nuclides: NuclideLike,
@@ -748,7 +776,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         Parameters
         ----------
-        *nuclides : Nuclide | Nucleus | Element | str | int
+        *nuclides : NuclideLike
             a plurality of nuclides to check for.
         threshold : float
             the minimum concentration of a nuclide to be considered. The
@@ -777,6 +805,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         )
 
     @args_checked
+    @needs_full_ast
     def contains_any(
         self,
         *nuclides: NuclideLike,
@@ -812,7 +841,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         Parameters
         ----------
-        *nuclides : Nuclide | Nucleus | Element | str | int
+        *nuclides : NuclideLike
             a plurality of nuclides to check for.
         threshold : float
             the minimum concentration of a nuclide to be considered. The
@@ -898,6 +927,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             )
         )
 
+    @needs_full_ast
     def clear(self):
         """Clears all nuclide components from this material.
 
@@ -906,6 +936,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         for _ in range(len(self)):
             del self[0]
 
+    @needs_full_ast
     def normalize(self):
         """Normalizes the components fractions so that they sum to 1.0.
 
@@ -916,6 +947,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             val_node.value /= total_frac
 
     @property
+    @needs_full_ast
     def values(self) -> Generator[ty.PositiveReal, None, None]:
         """Get just the fractions, or values from this material.
 
@@ -981,6 +1013,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return _MatCompWrapper(self, 1, setter)
 
     @property
+    @needs_full_ast
     def nuclides(self) -> Generator[Nuclide]:
         """Get just the fractions, or values from this material.
 
@@ -1081,6 +1114,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         return lambda val: val == filter_obj
 
     @args_checked
+    @needs_full_ast
     def find(
         self,
         name: NuclideLike = None,
@@ -1238,6 +1272,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
                 yield idx, component
 
     @args_checked
+    @needs_full_ast
     def find_vals(
         self,
         name: str = None,
@@ -1307,6 +1342,8 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             yield fraction
 
     def __bool__(self):
+        if hasattr(self, "_not_parsed"):
+            return True
         return bool(self._components)
 
     @make_prop_pointer("_thermal_scattering", thermal_scattering.ThermalScatteringLaw)
@@ -1317,7 +1354,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         -------
         ThermalScatteringLaw
         """
-        return self._thermal_scattering
+        pass
 
     @property
     def cells(self) -> Generator[montepy.cell.Cell, None, None]:
@@ -1336,8 +1373,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     @args_checked
     def format_for_mcnp_input(self, mcnp_version: ty.VersionType) -> list[str]:
         lines = super().format_for_mcnp_input(mcnp_version)
-        if self.thermal_scattering is not None:
-            lines += self.thermal_scattering.format_for_mcnp_input(mcnp_version)
         return lines
 
     def _update_values(self):
@@ -1366,18 +1401,6 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         )
         self._thermal_scattering.add_scattering_law(law)
 
-    def update_pointers(
-        self, data_inputs: list[montepy.data_inputs.data_input.DataInputAbstract]
-    ):
-        """Updates pointer to the thermal scattering data
-
-        Parameters
-        ----------
-        data_inputs : list[DataInput]
-            a list of the data inputs in the problem
-        """
-        pass
-
     @staticmethod
     def _class_prefix():
         return "m"
@@ -1390,7 +1413,11 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
     def _has_classifier():
         return 0
 
-    def __repr__(self):
+    @needs_full_ast
+    def comp_str(self) -> str:
+        """
+        Creates a string representation of the material and its components.
+        """
         ret = f"MATERIAL: {self.number} fractions: "
         if self.is_atom_fraction:
             ret += "atom\n"
@@ -1404,7 +1431,11 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
 
         return ret
 
-    def __str__(self):
+    @needs_full_ast
+    def pretty_str(self) -> str:
+        """
+        Returns a string of the material, and a summary of the elements in it.
+        """
         elements = self.get_material_elements()
         print_el = []
         if len(elements) > MAX_PRINT_ELEMENTS:
@@ -1419,6 +1450,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
         ]
         return f"MATERIAL: {self.number}, {print_elements}"
 
+    @needs_full_ast
     def get_material_elements(self) -> list[Element]:
         """Get the elements that are contained in this material.
 

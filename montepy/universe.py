@@ -20,22 +20,50 @@ class Universe(Numbered_MCNP_Object):
     """Class to represent an MCNP universe, but not handle the input
     directly.
 
+    .. versionchanged:: 1.6.0b1
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     number : int
         The number for the universe, must be ≥ 0
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
+    _POINTER_ATTRS = set()
+
+    @staticmethod
+    def _parent_collections():
+        return (("cells", "universe", False),)
+
     @args_checked
-    def __init__(self, number: ty.NonNegativeInt):
-        self._number = self._generate_default_node(int, -1)
+    def __init__(self, number: ty.NonNegativeInt, *, jit_parse: bool = False):
+        super().__init__(Input(["U"], BlockType.DATA), number)
         self._number = self._generate_default_node(int, number)
 
+    def full_parse(self):
+        pass
+
+    # dummy abstract methods
+    @staticmethod
+    def _parser():
         class Parser:
-            def parse(self, token_gen, input):
+            @staticmethod
+            def parse(token_gen, input):
                 return syntax_node.SyntaxNode("fake universe", {})
 
-        super().__init__(Input(["U"], BlockType.DATA), Parser(), number)
+        return Parser
+
+    def _init_blank(self):
+        self._number = self._generate_default_node(int, -1)
+
+    def _parse_tree(self):
+        pass
+
+    def _generate_default_tree(self, **kwargs):
+        pass
 
     @property
     def cells(self) -> Generator[montepy.Cell, None, None]:
@@ -94,6 +122,40 @@ class Universe(Numbered_MCNP_Object):
         for cell in cells:
             cell.universe = self
 
+    @args_checked
+    def soft_claim(self, cells: montepy.Cell | ty.Iterable[montepy.Cell]):
+        if isinstance(cells, montepy.Cell):
+            cells = Cells([cells])
+
+        for cell in cells:
+            # only claim if user hasn't given it a more interesting universe
+            # avoids recursion from creating JIT universes
+            if cell._universe._universe is None or cell._universe._universe.number == 0:
+                cell.universe = self
+
+    def grab_cells_from_jit_parse(self):
+        if not self._problem:
+            return
+        cells_to_claim = []
+        for cell in self._problem.cells:
+            if not hasattr(cell, "_not_parsed"):
+                if cell._universe.old_number == self.number:
+                    cells_to_claim.append(cell)
+            else:
+                uni_inp = cell._universe
+                if (
+                    hasattr(uni_inp, "_parked_value")
+                    and uni_inp._parked_value.value == self.number
+                ):
+                    cells_to_claim.append(cell)
+                elif cell.search(str(self.number)):
+                    cell.full_parse()
+                    # Use cell._universe after full_parse (not uni_inp, which is the
+                    # old blank JIT proxy with no key/value info and old_number=0).
+                    if cell._universe.old_number == self.number:
+                        cells_to_claim.append(cell)
+        self.soft_claim(cells_to_claim)
+
     @property
     def old_number(self):
         """Original universe number from the input file."""
@@ -101,16 +163,6 @@ class Universe(Numbered_MCNP_Object):
 
     def _update_values(self):
         pass
-
-    def __str__(self):
-        return f"Universe({self.number})"
-
-    def __repr__(self):
-        return (
-            f"Universe: Number: {self.number} "
-            f"Problem: {'set' if self._problem else 'not set'}, "
-            f"Cells: {[cell.number for cell in self.cells] if self._problem else ''}"
-        )
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):

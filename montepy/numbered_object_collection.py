@@ -36,7 +36,7 @@ class NumberedObjectCollection(ABC):
         >>> problem = montepy.read_input("tests/inputs/test.imcnp")
         >>> cell = problem.cells[2]
         >>> print(cell)
-        CELL: 2, mat: 2, DENS: 8.0 atom/b-cm
+        Cell: 2
 
     You can also add, and delete items like you would in a dictionary normally.
     Though :func:`append` and :func:`add` are the preferred way of adding items.
@@ -169,11 +169,14 @@ class NumberedObjectCollection(ABC):
                         )
                     )
                 self.__num_cache[obj.number] = obj
-                obj._link_to_collection(self)
+                if obj._collection is None:
+                    obj._link_to_collection(self)
             self._objects = objects
 
     @args_checked
-    def link_to_problem(self, problem: montepy.MCNP_Problem = None):
+    def link_to_problem(
+        self, problem: montepy.MCNP_Problem = None, *, deepcopy: bool = False
+    ):
         """Links the card to the parent problem for this card.
 
         This is done so that cards can find links to other objects.
@@ -182,18 +185,32 @@ class NumberedObjectCollection(ABC):
         ----------
         problem : MCNP_Problem
             The problem to link this card to.
+        deepcopy : bool
+            If this is occuring during a problem level deepcopy
         """
         if problem is None:
             self._problem_ref = None
         else:
             self._problem_ref = weakref.ref(problem)
         for obj in self:
-            obj.link_to_problem(problem)
+            obj.link_to_problem(problem, deepcopy=deepcopy)
             # the _collection_ref that points to the main cells collection.
             if problem is not None:
                 existing_coll = obj._collection
                 if existing_coll is None or existing_coll._problem is not problem:
+                    # If already linked to a problem-less collection (e.g. standalone
+                    # cell's surfaces), unlink first so we can re-link to self.
+                    if (
+                        existing_coll is not None
+                        and existing_coll is not self
+                        and existing_coll._problem is None
+                    ):
+                        obj._unlink_from_collection()
                     obj._link_to_collection(self)
+
+    def finalize_init(self, jit_parse: bool = False):
+        """Finish setting up this collection after the parent problem has completed parsing."""
+        pass
 
     @property
     def _problem(self):
@@ -211,6 +228,9 @@ class NumberedObjectCollection(ABC):
     def __setstate__(self, crunchy_data):
         crunchy_data["_problem_ref"] = None
         self.__dict__.update(crunchy_data)
+        # Re-establish _collection_ref weakrefs stripped during pickling/deepcopy.
+        for obj in self._objects:
+            obj._collection_ref = weakref.ref(self)
 
     @property
     def numbers(self):
@@ -248,6 +268,29 @@ class NumberedObjectCollection(ABC):
             raise NumberConflictError(
                 f"Number {number} is already in use for the collection: {type(self).__name__} by {self[number]}"
             )
+
+    def search_parent_objs_by_child(self, child, parent_prop, prop_container=False):
+        """Searches the parent collection (e.g., cells for surfaces) that may has this child object, and parse it."""
+        search_str = str(child.number)
+        for obj in self:
+            # possible candidate without full parsing
+            # treat no input as a negative find since it will already be parsed
+            if obj.search(search_str):
+                # trigger full parse
+                if isinstance(parent_prop, tuple):
+                    parent_obj = obj
+                    for prop in parent_prop:
+                        # go through multiple levels of getattr
+                        parent_obj = getattr(parent_obj, prop)
+                else:
+                    parent_obj = getattr(obj, parent_prop)
+                if prop_container:
+                    if child in parent_obj:
+                        # already parsed and linked by this point, nothing further to do.
+                        pass
+                else:
+                    if child is parent_obj:
+                        pass
 
     def _update_number(self, old_num, new_num, obj):
         """Updates the number associated with a specific object in the internal cache.
@@ -430,22 +473,18 @@ class NumberedObjectCollection(ABC):
         return self._iter
 
     def __str__(self):
-        base_class_name = self.__class__.__name__
+        base_class_name = type(self).__name__
         numbers = list(self.numbers)
         return f"{base_class_name}: {numbers}"
 
     def __repr__(self):
-        return (
-            f"Numbered_object_collection: obj_class: {self._obj_class}, problem: {self._problem}\n"
-            f"Objects: {self._objects}\n"
-            f"Number cache: {self.__num_cache}"
-        )
+        return f"{type(self).__name__}({repr(self._objects)})"
 
     def _append_hook(self, obj, initial_load=False):
         """A hook that is called every time append is called."""
         if initial_load:
             return
-        if self._problem:
+        if self._problem and not hasattr(obj, "_not_parsed"):
             obj._add_children_objs(self._problem)
 
     def _delete_hook(self, obj, **kwargs):
@@ -483,7 +522,14 @@ class NumberedObjectCollection(ABC):
                 )
         self.__num_cache[obj.number] = obj
         self._objects.append(obj)
-        obj._link_to_collection(self)
+        if obj._collection is not self:
+            current_owner = obj._collection
+            # Only claim ownership when there is no existing problem-level owner.
+            # Sub-collections (complements, surfaces) must not displace the main
+            # problem-level collection as the authoritative owner for number tracking.
+            if current_owner is None or current_owner._problem is None:
+                obj._unlink_from_collection()
+                obj._link_to_collection(self)
         self._append_hook(obj, **kwargs)
         if self._problem:
             obj.link_to_problem(self._problem)
@@ -608,7 +654,8 @@ class NumberedObjectCollection(ABC):
             self.append(obj)
         except (NumberConflictError, ValueError) as e:
             number = self.request_number(number, step)
-            obj.number = number
+            # avoid object searching
+            obj._number.value = number
             self.append(obj)
 
         return number

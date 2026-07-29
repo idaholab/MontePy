@@ -278,7 +278,7 @@ class HalfSpace:
                 "new_divider and old_divider are the same object; nothing to replace."
             )
         for leaf in self:
-            if isinstance(leaf._divider, Integral):
+            if isinstance(leaf._divider, ty.Integral):
                 raise IllegalState(
                     "Geometry tree has not been linked to objects yet. "
                     "Run Cell.update_pointers() before calling replace()."
@@ -725,10 +725,10 @@ class UnitHalfSpace(HalfSpace):
     def update_pointers(self, cells, surfaces, cell):
         self._cell = cell
         container = surfaces
-        par_container = self._cell.surfaces
+        par_container = self._cell._surfaces
         if self._is_cell:
             container = cells
-            par_container = self._cell.complements
+            par_container = self._cell._complements
         if isinstance(self.divider, ty.Integral):
             try:
                 self._divider = container[self._divider]

@@ -1,4 +1,5 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+import io
 import pytest
 
 import montepy
@@ -32,7 +33,7 @@ def test_data_card_empty_constructor():
 def test_data_card_str():
     in_str = "vol 1 1 0"
     data = DataInput(in_str)
-    assert str(data) == "DATA INPUT: vol "
+    assert str(data) == "DataInput: vol"
 
 
 def test_data_card_format_mcnp():
@@ -80,8 +81,38 @@ in_strs = {
     ],
 )
 def test_data_parser(identifier, ident_case, w, expected_type):
-    obj = parse_data(w)
-    assert isinstance(obj, expected_type)
+    for jit_parse in {True, False}:
+        obj = parse_data(w, jit_parse=jit_parse)
+        assert isinstance(obj, expected_type)
+
+
+def test_data_parser_peek_failure_fallback(monkeypatch):
+    """A JIT peek failure on otherwise-valid syntax must not misclassify
+    the data input -- it must fall back to the same dispatch a successful
+    peek would have produced, not silently default to the generic
+    DataInput base class."""
+
+    def broken_peek(cls, input):
+        raise RuntimeError("simulated JIT peek failure")
+
+    monkeypatch.setattr(DataInput, "_peek_light_parse", classmethod(broken_peek))
+    obj = parse_data("m235 1001.80c 1.0")
+    assert isinstance(
+        obj, material.Material
+    ), f"Expected Material despite peek failure, got {type(obj).__name__}"
+
+
+def test_data_parser_malformed_prefix(monkeypatch):
+    """A truly malformed data input (not just a JIT hiccup) should still
+    raise a sane, contextual error via the fallback construction, not a
+    raw/uncontextual exception."""
+
+    def broken_peek(cls, input):
+        raise RuntimeError("simulated JIT peek failure")
+
+    monkeypatch.setattr(DataInput, "_peek_light_parse", classmethod(broken_peek))
+    with pytest.raises(Exception):
+        parse_data("$ this is not a valid data input at all !@#$")
 
 
 def test_data_card_mutate_print():
@@ -92,7 +123,8 @@ def test_data_card_mutate_print():
 
 
 def test_print_in_data_block():
-    cell_controller = CellDataPrintController()
+    problem = montepy.MCNP_Problem()
+    cell_controller = CellDataPrintController(problem)
     cell_controller["imp"] = True
     cell_controller["Imp"] = True
     assert cell_controller["IMP"]
@@ -112,10 +144,12 @@ def test_volume_init_cell():
     vol = 1.0
     list_node = syntax_node.ListNode("data")
     list_node.append(syntax_node.ValueNode(str(vol), float))
+    classifier = syntax_node.ClassifierNode()
+    classifier.prefix = syntax_node.ValueNode("VoL", str)
     node = syntax_node.SyntaxNode(
         "volume",
         {
-            "classifier": syntax_node.ValueNode("VoL", str),
+            "classifier": classifier,
             "seperator": syntax_node.ValueNode("=", str),
             "data": list_node,
         },
@@ -134,24 +168,24 @@ def test_volume_init_cell():
         node = syntax_node.SyntaxNode(
             "volume",
             {
-                "classifier": syntax_node.ValueNode("VoL", str),
+                "classifier": classifier,
                 "seperator": syntax_node.ValueNode("=", str),
                 "data": list_node,
             },
         )
-        card = volume.Volume(key="VoL", value=node, in_cell_block=True)
+        card = volume.Volume(key="VoL", value=node, in_cell_block=True, jit_parse=False)
     with pytest.raises(ValueError):
         list_node = syntax_node.ListNode("data")
         list_node.append(syntax_node.ValueNode("-1", float))
         node = syntax_node.SyntaxNode(
             "volume",
             {
-                "classifier": syntax_node.ValueNode("VoL", str),
+                "classifier": classifier,
                 "seperator": syntax_node.ValueNode("=", str),
                 "data": list_node,
             },
         )
-        card = volume.Volume(key="VoL", value=node, in_cell_block=True)
+        card = volume.Volume(key="VoL", value=node, in_cell_block=True, jit_parse=False)
 
 
 def test_volume_init_data():
@@ -184,7 +218,7 @@ def test_volume_init_data():
 def test_volume_init_data():
     in_str = "VOL 1 1 2J 0"
     input_card = Input([in_str], BlockType.DATA)
-    vol_card = parse_data(input_card)
+    vol_card = parse_data(input_card, jit_parse=False)
     answers = [1.0, 1.0, None, None, 0.0]
     for i, vol in enumerate(vol_card._volume):
         if isinstance(vol, syntax_node.ValueNode):
@@ -199,19 +233,25 @@ def test_volume_init_data():
     in_str = "VOL NO s 1 2J 0"
     input_card = Input([in_str], BlockType.DATA)
     with pytest.raises(MalformedInputError):
-        vol_card = parse_data(input_card)
+        vol_card = parse_data(input_card, jit_parse=False)
     # negative volume
     in_str = "VOL NO -1 1 2J 0"
     input_card = Input([in_str], BlockType.DATA)
     with pytest.raises(MalformedInputError):
-        vol_card = parse_data(input_card)
+        vol_card = parse_data(input_card, jit_parse=False)
+    # key-value parameters aren't allowed on a VOL data card
+    in_str = "VOL 1.0 key=val"
+    input_card = Input([in_str], BlockType.DATA)
+    with pytest.raises(MalformedInputError):
+        vol_card = parse_data(input_card, jit_parse=False)
 
 
 def test_volumes_for_only_some_cells():
-    cells = [
-        montepy.Cell(Input([f"{i + 1} 0 -1 u=3"], BlockType.CELL)) for i in range(10)
-    ]
-    prob = MCNP_Problem(None)
+    cells = montepy.Cells(
+        [montepy.Cell(f"{i + 1} 0 -1 u=3", jit_parse=False) for i in range(10)]
+    )
+    prob = MCNP_Problem()
+    prob.surfaces.append(montepy.Surface("1 PZ 1"))
     prob.cells = cells
     vol_card = Input(["VOL 1 1 2 3 5"], BlockType.DATA)
     vol_data = volume.Volume(vol_card, in_cell_block=False)
@@ -226,10 +266,12 @@ def test_volume_setter():
     vol = 1.0
     list_node = syntax_node.ListNode("data")
     list_node.append(syntax_node.ValueNode(str(vol), float))
+    classifier = syntax_node.ClassifierNode()
+    classifier.prefix = syntax_node.ValueNode("VoL", str)
     node = syntax_node.SyntaxNode(
         "volume",
         {
-            "classifier": syntax_node.ValueNode("VoL", str),
+            "classifier": classifier,
             "seperator": syntax_node.ValueNode("=", str),
             "data": list_node,
         },
@@ -247,10 +289,12 @@ def test_volume_deleter():
     vol = 1.0
     list_node = syntax_node.ListNode("data")
     list_node.append(syntax_node.ValueNode(str(vol), float))
+    classifier = syntax_node.ClassifierNode()
+    classifier.prefix = syntax_node.ValueNode("VoL", str)
     node = syntax_node.SyntaxNode(
         "volume",
         {
-            "classifier": syntax_node.ValueNode("VoL", str),
+            "classifier": classifier,
             "seperator": syntax_node.ValueNode("=", str),
             "data": list_node,
         },
@@ -264,10 +308,12 @@ def test_volume_merge():
     vol = 1.0
     list_node = syntax_node.ListNode("data")
     list_node.append(syntax_node.ValueNode(str(vol), float))
+    classifier = syntax_node.ClassifierNode()
+    classifier.prefix = syntax_node.ValueNode("VoL", str)
     node = syntax_node.SyntaxNode(
         "volume",
         {
-            "classifier": syntax_node.ValueNode("VoL", str),
+            "classifier": classifier,
             "seperator": syntax_node.ValueNode("=", str),
             "data": list_node,
         },
@@ -278,20 +324,81 @@ def test_volume_merge():
         card.merge(card2)
 
 
+def test_volume_full_parse_parked_value_conflict():
+    # a genuinely fully-parsed cell-block Volume, artificially re-lazified
+    # to exercise the "parked value gets reapplied on full_parse" path.
+    cell = montepy.Cell("1 0 -1 vol=5.0", jit_parse=False)
+    vol_mod = cell._volume
+    vol_mod._not_parsed = True
+    vol_mod._parked_value = syntax_node.ValueNode("7.0", float)
+    with pytest.raises(ValueError):
+        vol_mod.full_parse()
+
+
+def test_cell_modifier_full_parse_preserves_jit_leading_comment():
+    input_card = Input(["VOL 1.0 1.0"], BlockType.DATA)
+    vol_card = volume.Volume(input_card, jit_parse=True)
+    # no comment in the raw text; inject one directly into the JIT tree's
+    # start_pad to isolate the preservation logic in full_parse() from
+    # the normal grammar's own (separate) comment handling.
+    vol_card._tree["start_pad"]._nodes = [
+        syntax_node.CommentNode("c injected leading comment"),
+        "\n",
+    ]
+    vol_card.full_parse()
+    assert "injected leading comment" in str(vol_card.leading_comments)
+
+
+def test_cell_modifier_original_lines_includes_jit_leading_comment():
+    input_card = Input(["VOL 1.0 1.0"], BlockType.DATA)
+    vol_card = volume.Volume(input_card, jit_parse=True)
+    vol_card._tree["start_pad"]._nodes = [
+        syntax_node.CommentNode("c injected leading comment"),
+        "\n",
+    ]
+    # not linked to a problem, so format_for_mcnp_input takes the JIT
+    # fast-path and returns _original_lines() without a full parse.
+    lines = vol_card.format_for_mcnp_input((6, 2, 0))
+    assert lines == ["c injected leading comment", "VOL 1.0 1.0"]
+
+
+def test_check_redundant_definitions_false_positive_keyword_match():
+    # cell1's raw text mentions "vol" only in a $ comment, not as a real
+    # cell-block VOL= parameter. _check_redundant_definitions forces a
+    # full parse on the keyword-text match, then must recognize
+    # set_in_cell_block is actually False and skip it (continue), letting
+    # the data-block VOL card apply normally.
+    in_str = """Test problem
+1 0 -1 imp:n=1 $ mentions vol here
+2 0 1 imp:n=1
+
+1 SO 5.0
+2 SO 6.0
+
+VOL 1.0 2.0
+"""
+    with io.StringIO(in_str) as fh:
+        problem = montepy.read_input(fh, jit_parse=True)
+    assert problem.cells[1].volume == 1.0
+    assert problem.cells[2].volume == 2.0
+
+
 def test_volume_repr():
     vol = 1.0
     list_node = syntax_node.ListNode("data")
     list_node.append(syntax_node.ValueNode(str(vol), float))
+    classifier = syntax_node.ClassifierNode()
+    classifier.prefix = syntax_node.ValueNode("VoL", str)
     node = syntax_node.SyntaxNode(
         "volume",
         {
-            "classifier": syntax_node.ValueNode("VoL", str),
+            "classifier": classifier,
             "seperator": syntax_node.ValueNode("=", str),
             "data": list_node,
         },
     )
     card = volume.Volume(key="VoL", value=node, in_cell_block=True)
-    assert "VOLUME" in repr(card)
+    assert "Volume" in repr(card)
 
 
 def test_data_clone():

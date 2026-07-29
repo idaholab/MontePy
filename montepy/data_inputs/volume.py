@@ -1,7 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 
 from montepy.utilities import *
-from montepy.data_inputs.cell_modifier import CellModifierInput
+from montepy.data_inputs.cell_modifier import CellModifierInput, cell_mod_prop
 from montepy.exceptions import *
 from montepy.constants import DEFAULT_VERSION
 from montepy.input_parser.mcnp_input import Jump
@@ -19,6 +19,10 @@ def _ensure_positive(self, value):
 class Volume(CellModifierInput):
     """Class for the data input that modifies cell volumes; ``VOL``.
 
+    .. versionchanged:: 1.6.0b1
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input
@@ -29,53 +33,49 @@ class Volume(CellModifierInput):
         the key from the key-value pair in a cell
     value : SyntaxNode
         the value syntax tree from the key-value pair in a cell
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
-    @args_checked
-    def __init__(
-        self,
-        input: InitInput = None,
-        in_cell_block: bool = False,
-        key: str = None,
-        value: syntax_node.SyntaxNode = None,
-    ):
+    def _init_blank(self):
         self._volume = self._generate_default_node(float, None)
         self._calc_by_mcnp = True
-        super().__init__(input, in_cell_block, key, value)
-        if self.in_cell_block:
-            if key:
-                value = self._tree["data"][0]
-                if value.type != float or value.value < 0:
-                    raise ValueError(
-                        f"Cell volume must be a number ≥ 0.0. {value} was given"
-                    )
-                self._volume = value
-                self._calc_by_mcnp = False
-        elif input:
-            self._volume = []
-            tree = self._tree
-            if "parameters" in tree:
-                raise MalformedInputError(
-                    input, f"Volume card can't accept any key-value parameters"
+
+    def _parse_cell_tree(self):
+        if self._in_key:
+            value = self._tree["data"][0]
+            if value.type != float or value.value < 0:
+                raise ValueError(
+                    f"Cell volume must be a number ≥ 0.0. {value} was given"
                 )
-            if (
-                "keyword" in tree
-                and tree["keyword"].value
-                and tree["keyword"].value.lower() == "no"
-            ):
-                self._calc_by_mcnp = False
-            for node in tree["data"]:
-                if node.value is not None:
-                    try:
-                        assert node.type == float
-                        assert node.value >= 0
-                        self._volume.append(node)
-                    except AssertionError:
-                        raise MalformedInputError(
-                            input, f"Cell volumes by a number ≥ 0.0: {node} given"
-                        )
-                else:
+            self._volume = value
+            self._calc_by_mcnp = False
+
+    def _parse_data_tree(self):
+        self._volume = []
+        tree = self._tree
+        if "parameters" in tree:
+            raise MalformedInputError(
+                self._input, f"Volume card can't accept any key-value parameters"
+            )
+        if (
+            "keyword" in tree
+            and tree["keyword"].value
+            and tree["keyword"].value.lower() == "no"
+        ):
+            self._calc_by_mcnp = False
+        for node in tree["data"]:
+            if node.value is not None:
+                try:
+                    assert node.type == float
+                    assert node.value >= 0
                     self._volume.append(node)
+                except AssertionError:
+                    raise MalformedInputError(
+                        input, f"Cell volumes by a number ≥ 0.0: {node} given"
+                    )
+            else:
+                self._volume.append(node)
 
     def _generate_default_cell_tree(self):
         list_node = syntax_node.ListNode("number sequence")
@@ -105,6 +105,7 @@ class Volume(CellModifierInput):
     def _has_classifier():
         return 0
 
+    @cell_mod_prop("_volume")
     @make_prop_val_node(
         "_volume",
         (float, int, type(None)),
@@ -130,6 +131,7 @@ class Volume(CellModifierInput):
             return self._volume
 
     @property
+    @needs_full_ast
     def is_mcnp_calculated(self) -> bool:
         """Indicates whether or not the cell volume will attempt to be calculated by MCNP.
 
@@ -150,6 +152,7 @@ class Volume(CellModifierInput):
         return self._calc_by_mcnp
 
     @is_mcnp_calculated.setter
+    @needs_full_cst
     def is_mcnp_calculated(self, value):
         if not self.in_cell_block:
             self._calc_by_mcnp = value
@@ -168,38 +171,35 @@ class Volume(CellModifierInput):
         bool
             true if the volume is manually set.
         """
-        return self.volume is not None
+        return (self.volume is not None) or (
+            hasattr(self, "_parked_value") and self._parked_value.value is not None
+        )
 
     def merge(self, other):
         raise MalformedInputError(
             other._input, "Cannot have two volume inputs for the problem"
         )
 
+    @needs_full_ast
     def push_to_cells(self):
         if not self.in_cell_block and self._problem and self._volume:
             self._check_redundant_definitions()
             cells = self._problem.cells
-            for i, cell in enumerate(cells):
-                if i >= len(self._volume):
-                    return
-                vol = self._volume[i]
+            for cell, vol in zip(cells, self._volume):
                 if not isinstance(vol, Jump):
-                    cell._volume._volume = vol
+                    cell._volume._accept_from_data(vol)
+
+    def _accept_and_update(self, value):
+        existing = self._volume.value if self._volume is not None else None
+        if existing is not None and value.value is not None:
+            raise RedundantParameterSpecification("vol", value.value)
+        # Always store the node to preserve object identity for update_with_new_values
+        # so that J shortcuts in the data block are correctly matched and not stripped.
+        if existing is None:
+            self._volume = value
 
     def _clear_data(self):
         del self._volume
-
-    def __str__(self):
-        ret = "\n".join(self.format_for_mcnp_input(DEFAULT_VERSION))
-        return ret
-
-    def __repr__(self):
-        ret = (
-            f"VOLUME: in_cell: {self._in_cell_block}, calc_by_mcnp: {self.is_mcnp_calculated},"
-            f" set_in_block: {self.set_in_cell_block}, "
-            f"Volume : {self._volume if hasattr(self, '_volume') else ''}"
-        )
-        return ret
 
     def _update_values(self):
         if self.in_cell_block:

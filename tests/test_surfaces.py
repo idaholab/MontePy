@@ -88,19 +88,31 @@ def test_surface_init():
     assert Surface(Input([in_str], BlockType.SURFACE)).is_white_boundary
     # test negative surface
     with pytest.raises(MalformedInputError):
-        Surface("-1 PZ 0.0")
+        Surface("-1 PZ 0.0", jit_parse=False)
     with pytest.raises(MalformedInputError):
-        Surface(Input(["-1 PZ 0.0"], BlockType.SURFACE))
+        surface = Surface(Input(["-1 PZ 0.0"], BlockType.SURFACE))
+        surface.surface_constants
     # test bad surface number
     with pytest.raises(MalformedInputError):
-        Surface("foo PZ 0.0")
+        Surface("foo PZ 0.0", jit_parse=False)
     with pytest.raises(MalformedInputError):
-        Surface(Input(["foo PZ 0.0"], BlockType.SURFACE))
+        Surface(Input(["foo PZ 0.0"], BlockType.SURFACE), jit_parse=False)
     # test bad surface type
     with pytest.raises(MalformedInputError):
-        Surface("1 INL 0.0")
+        Surface("1 INL 0.0", jit_parse=False)
     with pytest.raises(MalformedInputError):
-        Surface(Input(["1 INL 0.0"], BlockType.SURFACE))
+        Surface(Input(["1 INL 0.0"], BlockType.SURFACE), jit_parse=False)
+
+
+def test_enforce_values_no_surface_type():
+    # if neither an already-set _surface_type nor a "surface_type" tree
+    # entry is available, _enforce_values must return early rather than
+    # crash trying to enum-convert a missing value.
+    surf = Surface()
+    del surf._surface_type
+    del surf._tree.nodes["surface_type"]
+    surf._enforce_values()
+    assert not hasattr(surf, "_surface_type")
 
 
 def test_surface_transform_and_periodic():
@@ -114,6 +126,29 @@ def test_surface_transform_and_periodic():
     surf = Surface(in_str)
     assert surf.old_periodic_surface == 5
 
+    # test transform bad
+    in_str = "1 5foo PZ 0"
+    card = Input([in_str], BlockType.SURFACE)
+    with pytest.raises(MalformedInputError):
+        Surface(card)
+    with pytest.raises(MalformedInputError):
+        Surface("+1 PZ foo", jit_parse=False)
+    surf = Surface(number=5)
+    assert surf.number == 5
+    # test surface_type setter
+    surf = Surface(surface_type="cx")
+    assert surf.surface_type == SurfaceType.CX
+    surf = Surface(surface_type=SurfaceType.CX)
+    assert surf.surface_type == SurfaceType.CX
+    with pytest.raises(TypeError):
+        Surface(surface_type=5)
+    with pytest.raises(ValueError):
+        AxisPlane(surface_type="Cx")
+    with pytest.raises(ValueError):
+        CylinderOnAxis(surface_type="px")
+    with pytest.raises(ValueError):
+        CylinderParAxis(surface_type="px")
+
 
 def test_surface_transform_bad():
     in_str = "1 5foo PZ 0"
@@ -123,9 +158,9 @@ def test_surface_transform_bad():
         Surface(Input([in_str], BlockType.SURFACE))
     in_str = "+1 PZ foo"
     with pytest.raises(MalformedInputError):
-        Surface(in_str)
+        Surface(in_str, jit_parse=False)
     with pytest.raises(MalformedInputError):
-        Surface(Input([in_str], BlockType.SURFACE))
+        Surface(Input([in_str], BlockType.SURFACE), jit_parse=False)
     surf = Surface(number=5)
     assert surf.number == 5
     # test surface_type setter
@@ -207,6 +242,15 @@ def test_validator():
     surf = GeneralPlane(number=2)
     surf._surface_type = SurfaceType.P
     with pytest.raises(IllegalState):
+        surf.validate()
+    # general plane
+    surf = GeneralPlane(number=2, jit_parse=False)
+    with pytest.raises(montepy.exceptions.IllegalState):
+        surf.validate()
+    with pytest.raises(montepy.exceptions.IllegalState):
+        surf.format_for_mcnp_input((6, 2, 0))
+    surf._surface_type = SurfaceType.P
+    with pytest.raises(montepy.exceptions.IllegalState):
         surf.validate()
     # general sphere
     surf = GeneralSphere(number=3)
@@ -335,26 +379,11 @@ def test_surface_format_for_mcnp():
 
 def test_surface_str():
     surf_white = Surface("+1 PZ 0.0")
-    assert str(surf_white) == "SURFACE: 1, PZ"
-    assert (
-        repr(surf_white)
-        == "SURFACE: 1, PZ, periodic surface: None, transform: None, constants: [0.0], Boundary: White"
-    )
+    assert str(surf_white) == "Surface: 1"
+    assert repr(surf_white) == "Surface('+1 PZ 0.0', number=1, jit_parse=True)"
 
     surf_ref = Surface("*1 PZ 0.0")
-    assert str(surf_ref) == "SURFACE: 1, PZ"
-    assert (
-        repr(surf_ref)
-        == "SURFACE: 1, PZ, periodic surface: None, transform: None, constants: [0.0], Boundary: Reflective"
-    )
-
-    surf_ref.is_reflecting = False
-    surf_ref.is_white_boundary = False
-    assert str(surf_ref) == "SURFACE: 1, PZ"
-    assert (
-        repr(surf_ref)
-        == "SURFACE: 1, PZ, periodic surface: None, transform: None, constants: [0.0], Boundary: None"
-    )
+    assert repr(surf_ref) == "Surface('*1 PZ 0.0', number=1, jit_parse=True)"
 
 
 def test_surface_builder():
@@ -383,9 +412,9 @@ def test_axis_plane_init():
     bad_inputs = ["1 P 0.0", "1 PZ 0.0 10.0"]
     for bad_input in bad_inputs:
         with pytest.raises(ValueError):
-            AxisPlane(bad_input)
+            AxisPlane(bad_input, jit_parse=False)
         with pytest.raises(ValueError):
-            AxisPlane(Input([bad_input], BlockType.SURFACE))
+            AxisPlane(Input([bad_input], BlockType.SURFACE), jit_parse=False)
     surf = AxisPlane(number=5)
     assert surf.number == 5
 
@@ -394,9 +423,9 @@ def test_cylinder_on_axis_init():
     bad_inputs = ["1 P 0.0", "1 CZ 0.0 10.0"]
     for bad_input in bad_inputs:
         with pytest.raises(ValueError):
-            CylinderOnAxis(bad_input)
+            CylinderOnAxis(bad_input, jit_parse=False)
         with pytest.raises(ValueError):
-            CylinderOnAxis(bad_input)
+            CylinderOnAxis(bad_input, jit_parse=False)
     surf = CylinderOnAxis(number=5)
     assert surf.number == 5
 
@@ -405,9 +434,9 @@ def test_cylinder_par_axis_init():
     bad_inputs = ["1 P 0.0", "1 C/Z 0.0"]
     for bad_input in bad_inputs:
         with pytest.raises(ValueError):
-            CylinderParAxis(bad_input)
+            CylinderParAxis(bad_input, jit_parse=False)
         with pytest.raises(ValueError):
-            CylinderParAxis(Input([bad_input], BlockType.SURFACE))
+            CylinderParAxis(Input([bad_input], BlockType.SURFACE), jit_parse=False)
     surf = CylinderParAxis(number=5)
     assert surf.number == 5
 
@@ -416,9 +445,9 @@ def test_gen_plane_init():
     bad_inputs = ["1 PZ 0.0", "1 P 0.0"]
     for bad_input in bad_inputs:
         with pytest.raises(ValueError):
-            GeneralPlane(bad_input)
+            GeneralPlane(bad_input, jit_parse=False)
         with pytest.raises(ValueError):
-            GeneralPlane(Input([bad_input], BlockType.SURFACE))
+            GeneralPlane(Input([bad_input], BlockType.SURFACE), jit_parse=False)
     surf = GeneralPlane(number=5)
     assert surf.number == 5
 
@@ -426,9 +455,9 @@ def test_gen_plane_init():
 def test_gen_sphere_init():
     bad_input = "1 S 0.0"
     with pytest.raises(ValueError):
-        GeneralSphere(bad_input)
+        GeneralSphere(bad_input, jit_parse=False)
     with pytest.raises(ValueError):
-        GeneralSphere(Input([bad_input], BlockType.SURFACE))
+        GeneralSphere(Input([bad_input], BlockType.SURFACE), jit_parse=False)
     surf = GeneralSphere(number=5)
     assert surf.number == 5
 
@@ -436,9 +465,9 @@ def test_gen_sphere_init():
 def test_axis_sphere_init():
     bad_input = "1 SZ 0.0"
     with pytest.raises(ValueError):
-        SphereOnAxis(bad_input)
+        SphereOnAxis(bad_input, jit_parse=False)
     with pytest.raises(ValueError):
-        SphereOnAxis(Input([bad_input], BlockType.SURFACE))
+        SphereOnAxis(Input([bad_input], BlockType.SURFACE), jit_parse=False)
     surf = SphereOnAxis(number=5)
     assert surf.number == 5
 
@@ -446,9 +475,9 @@ def test_axis_sphere_init():
 def test_origin_sphere_init():
     bad_input = "1 SO 0.0 0.1 1.0"
     with pytest.raises(ValueError):
-        SphereAtOrigin(bad_input)
+        SphereAtOrigin(bad_input, jit_parse=False)
     with pytest.raises(ValueError):
-        SphereAtOrigin(Input([bad_input], BlockType.SURFACE))
+        SphereAtOrigin(Input([bad_input], BlockType.SURFACE), jit_parse=False)
     surf = SphereAtOrigin(number=5)
     assert surf.number == 5
 
@@ -486,10 +515,10 @@ def test_general_plane_constants():
     warn_inputs = ["17 p 0. 0. 0. 0. 0. 1. 0. 1. 1. 0. 1. 0."]
     for error_input in error_inputs:
         with pytest.raises(ValueError):
-            GeneralPlane(error_input)
+            GeneralPlane(error_input, jit_parse=False)
     for warn_input in warn_inputs:
         with pytest.raises(SurfaceConstantsWarning):
-            GeneralPlane(warn_input)
+            GeneralPlane(warn_input, jit_parse=False)
 
 
 def test_cylinder_axis_radius_setter():
@@ -621,17 +650,19 @@ def test_scratch_surface_generation(cls, surf_type, params: dict):
 
 
 def test_unset_transform():
+    prob = montepy.MCNP_Problem()
     surf = surface_builder("1 10 PZ 0.0")
-    transform = montepy.data_inputs.data_parser.parse_data("TR10 0 0 5")
-    surf.update_pointers([], [transform])
+    prob.surfaces.append(surf)
+    prob.parse("TR10 0 0 5")
     del surf.transform
     verify_export(surf)
 
 
 def test_unset_periodic():
+    prob = montepy.MCNP_Problem()
     surf = surface_builder("1 -10 PZ 0.0")
-    surf2 = surface_builder("10 PZ 10.0")
-    surf.update_pointers(montepy.Surfaces([surf2]), [])
+    prob.surfaces.append(surf)
+    prob.parse("10 PZ 10.0")
     del surf.periodic_surface
     verify_export(surf)
 
@@ -788,6 +819,41 @@ def test_surface_dispatch(surf_str, expected_cls):
     assert isinstance(surf, expected_cls), (
         f"Expected {expected_cls.__name__}, got {type(surf).__name__}"
     )
+
+
+def test_surface_dispatch_peek_failure_fallback(monkeypatch):
+    """A JIT peek failure on otherwise-valid syntax must not misclassify
+    the surface -- it must fall back to the same dispatch a successful
+    peek would have produced, not silently default to the generic Surface
+    base class."""
+
+    def broken_peek(cls, input):
+        raise RuntimeError("simulated JIT peek failure")
+
+    monkeypatch.setattr(
+        montepy.surfaces.surface.Surface, "_peek_light_parse", classmethod(broken_peek)
+    )
+    surf = surface_builder("1 PZ 0.0")
+    assert isinstance(surf, AxisPlane), (
+        f"Expected AxisPlane despite peek failure, got {type(surf).__name__}"
+    )
+
+
+def test_surface_dispatch_peek_failure_undispatched_type_full_parse(monkeypatch):
+    """A JIT peek failure on a surface type with no specific/generic dispatch
+    class (e.g. axisymmetric-by-points "X") must fall back to a plain
+    Surface, and when jit_parse=False is requested it must be fully parsed
+    rather than left as a JIT stub."""
+
+    def broken_peek(cls, input):
+        raise RuntimeError("simulated JIT peek failure")
+
+    monkeypatch.setattr(
+        montepy.surfaces.surface.Surface, "_peek_light_parse", classmethod(broken_peek)
+    )
+    surf = surface_builder("1 X 1 2 3 4", jit_parse=False)
+    assert type(surf) is montepy.surfaces.surface.Surface
+    assert surf.fully_parsed
 
 
 # Scalar property tests: (surf_str, prop, expected_val, new_val, rejects_negative)
@@ -1248,7 +1314,7 @@ def test_cone_sign_invalid_raises(surf_str):
 def test_cone_enforce_constants_wrong_count(surf_str):
     """Cones with the wrong number of surface constants raise ValueError."""
     with pytest.raises(ValueError):
-        surface_builder(surf_str)
+        surface_builder(surf_str, jit_parse=False)
 
 
 @pytest.mark.parametrize(
@@ -1307,51 +1373,68 @@ def test_find_duplicate_surfaces():
     def make_tr(spec):
         return montepy.data_inputs.data_parser.parse_data(spec)
 
+    def link(surfaces, transforms=()):
+        """Create a minimal problem, populate it, and link all surfaces to it."""
+        prob = montepy.MCNP_Problem()
+        for tr in transforms:
+            prob.transforms.append(tr)
+        for surf in surfaces:
+            prob.surfaces.append(surf)
+            surf.link_to_problem(prob)
+        return prob
+
     # self is periodic — early return
     self_periodic = surface_builder("1 -2 PZ 0.0")
     ref = surface_builder("2 PZ 0.0")
-    self_periodic.update_pointers(montepy.Surfaces([ref]), [])
-    assert self_periodic.find_duplicate_surfaces([ref], 1e-6) == []
+    prob1 = link([self_periodic, ref])
+    assert self_periodic.find_duplicate_surfaces(montepy.Surfaces([ref]), 1e-6) == []
 
     # surface == self — skipped
     s = surface_builder("1 PZ 5.0")
-    assert s.find_duplicate_surfaces([s], 1e-6) == []
+    assert s.find_duplicate_surfaces(montepy.Surfaces([s]), 1e-6) == []
 
-    # different surface type — skipped
+    # different surface type — skipped (no problem linkage needed, no pointers)
     pz = surface_builder("1 PZ 5.0")
     px = surface_builder("2 PX 5.0")
-    assert pz.find_duplicate_surfaces([px], 1e-6) == []
+    assert pz.find_duplicate_surfaces(montepy.Surfaces([px]), 1e-6) == []
 
     # candidate has periodic surface — skipped
+    pz2 = surface_builder("1 PZ 5.0")
+    ref2 = surface_builder("2 PZ 0.0")
     candidate_periodic = surface_builder("3 -2 PZ 5.0")
-    candidate_periodic.update_pointers(montepy.Surfaces([ref]), [])
-    assert pz.find_duplicate_surfaces([candidate_periodic], 1e-6) == []
+    prob2 = link([pz2, ref2, candidate_periodic])
+    assert (
+        pz2.find_duplicate_surfaces(montepy.Surfaces([candidate_periodic]), 1e-6) == []
+    )
 
     # one has transform, other does not — skipped (both directions)
+    tr10 = make_tr("TR10 0 0 0")
     plain = surface_builder("1 PZ 5.0")
     with_tr = surface_builder("2 10 PZ 5.0")
-    with_tr.update_pointers([], [make_tr("TR10 0 0 0")])
-    assert plain.find_duplicate_surfaces([with_tr], 1e-6) == []
-    assert with_tr.find_duplicate_surfaces([plain], 1e-6) == []
+    prob3 = link([plain, with_tr], [tr10])
+    assert plain.find_duplicate_surfaces(montepy.Surfaces([with_tr]), 1e-6) == []
+    assert with_tr.find_duplicate_surfaces(montepy.Surfaces([plain]), 1e-6) == []
 
     # both have transforms but they differ — skipped
+    tr10b = make_tr("TR10 0 0 0")
+    tr11 = make_tr("TR11 0 0 99")
     s1 = surface_builder("1 10 PZ 5.0")
     s2 = surface_builder("2 11 PZ 5.0")
-    s1.update_pointers([], [make_tr("TR10 0 0 0")])
-    s2.update_pointers([], [make_tr("TR11 0 0 99")])
-    assert s1.find_duplicate_surfaces([s2], 1e-6) == []
+    prob4 = link([s1, s2], [tr10b, tr11])
+    assert s1.find_duplicate_surfaces(montepy.Surfaces([s2]), 1e-6) == []
 
     # both have equivalent transforms and matching constants — duplicate found
+    tr12 = make_tr("TR12 0 0 0")
+    tr13 = make_tr("TR13 0 0 0")
     s3 = surface_builder("3 12 PZ 5.0")
     s4 = surface_builder("4 13 PZ 5.0")
-    s3.update_pointers([], [make_tr("TR12 0 0 0")])
-    s4.update_pointers([], [make_tr("TR13 0 0 0")])
-    assert s3.find_duplicate_surfaces([s4], 1e-6) == [s4]
+    prob5 = link([s3, s4], [tr12, tr13])
+    assert s3.find_duplicate_surfaces(montepy.Surfaces([s4]), 1e-6) == [s4]
 
     # no transform, matching constants — duplicate found
     sa = surface_builder("1 PZ 5.0")
     sb = surface_builder("2 PZ 5.0")
-    assert sa.find_duplicate_surfaces([sb], 1e-6) == [sb]
+    assert sa.find_duplicate_surfaces(montepy.Surfaces([sb]), 1e-6) == [sb]
 
 
 @pytest.mark.parametrize(

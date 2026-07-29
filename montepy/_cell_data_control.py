@@ -1,14 +1,20 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import montepy
 from montepy.utilities import *
+import weakref
 
 
 class CellDataPrintController:
     """Class for controlling if cell modifier data is printed in cell or data blocks."""
 
-    def __init__(self):
+    _CLASSIFIER_TO_ATTRIBUTE = {
+        k._class_prefix(): v[0] for k, v in montepy.Cell._INPUTS_TO_PROPERTY.items()
+    }
+
+    def __init__(self, problem):
         self._print_data = {}
         self._all_or_nothing = {}
+        self._problem = weakref.ref(problem)
 
     @args_checked
     def __getitem__(self, key: str):
@@ -20,9 +26,33 @@ class CellDataPrintController:
     @args_checked
     def __setitem__(self, key: str, value: bool):
         if key.upper() in montepy.Cell._ALLOWED_KEYWORDS:
+            # check if previously set, and has changed
+            if (
+                key.lower() in self._print_data
+                and self._print_data[key.lower()] != value
+            ):
+                data_modifier = getattr(
+                    self._problem().cells, self._CLASSIFIER_TO_ATTRIBUTE[key.lower()]
+                )
+                data_modifier.full_parse()
+                for cell in self._problem().cells:
+                    cell.full_parse()
+                # Only push data block → cells when switching from data block (True)
+                # to cell block (False). Going the other direction would clobber
+                # cell-block values with empty data-block defaults.
+                if self._print_data[key.lower()] and not value:
+                    data_modifier.push_to_cells()
             self._print_data[key.lower()] = value
         else:
             raise KeyError(f"{key} is not a supported cell modifier in MCNP")
+
+    def link_to_problem(self, problem):
+        self._problem = weakref.ref(problem)
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        state.pop("_problem", None)
+        return state
 
     def _set_all_or_none(self, key, all_in=True):
         """ """

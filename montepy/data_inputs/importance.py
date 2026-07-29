@@ -6,7 +6,6 @@ import math
 import warnings
 
 import montepy
-from montepy.utilities import *
 from montepy.data_inputs.cell_modifier import CellModifierInput, InitInput
 from montepy.exceptions import *
 from montepy.constants import DEFAULT_VERSION, rel_tol, abs_tol
@@ -28,6 +27,7 @@ import numbers
 #
 # * _tree      : the syntax tree from parsing. Only used on initial parsing
 # * _real_tree : holds unique trees for every particle type. This is used in data block formatting.
+# * _inputs    : holds the original Importance inputs from all distinct instances
 # * _particle_importances : a dictionary of ParameterNodes that maps a particle to it's ParameterNode
 # * _part_combos : a list of ParticleNode that show which particles were combined on the original input
 #
@@ -41,6 +41,10 @@ import numbers
 class Importance(CellModifierInput):
     """A data input that sets the importance for a cell(s).
 
+    .. versionchanged:: 1.6.0b1
+
+        Added ``jit_parse`` parameter
+
     Parameters
     ----------
     input : Input | str
@@ -51,6 +55,8 @@ class Importance(CellModifierInput):
         the key from the key-value pair in a cell
     value : SyntaxNode
         the value syntax tree from the key-value pair in a cell
+    jit_parse : bool
+        Parse the object just-in-time, when the information is actually needed, if True.
     """
 
     _DEFAULT_IMP = 1.0
@@ -59,55 +65,49 @@ class Importance(CellModifierInput):
     """
     Marks that if one cell has a value all cells must have values, no matter the default.
     """
+    _KEYS_TO_PRESERVE = {"_parked_value", "_inputs", "_part_combos"}
 
-    @args_checked
-    def __init__(
-        self,
-        input: InitInput = None,
-        in_cell_block: bool = False,
-        key: str = None,
-        value: syntax_node.SyntaxNode = None,
-    ):
+    def _init_blank(self):
         self._particle_importances = {}
         self._real_tree = {}
+        self._inputs = []
         self._part_combos = []
         self.__explicitly_set = False
-        super().__init__(input, in_cell_block, key, value)
-        if self.in_cell_block:
-            if key:
-                val = value["data"]
-                if isinstance(val, syntax_node.ListNode):
-                    val = value["data"][0]
-                if val.type != float or val.value < 0:
-                    raise ValueError(
-                        f"Cell importance must be a number ≥ 0. {val.value} was given"
-                    )
-                self._explicitly_set = True
-                self._part_combos.append(self.particle_classifiers)
-                for particle in self.particle_classifiers:
-                    self._particle_importances[particle] = value
-        elif input:
-            values = []
-            for node in self._tree["data"]:
-                try:
-                    value = node.value
-                    assert value >= 0
-                    values.append(node)
-                except (AttributeError, AssertionError) as e:
-                    raise MalformedInputError(
-                        input, f"Importances must be ≥ 0 value: {node} given"
-                    )
+
+    def _parse_cell_tree(self):
+        if self._in_key:
+            val = self._in_value["data"]
+            if isinstance(val, syntax_node.ListNode):
+                val = self._in_value["data"][0]
+            if val.type != float or val.value < 0:
+                raise ValueError(
+                    f"Cell importance must be a number ≥ 0. {val.value} was given"
+                )
             self._explicitly_set = True
             self._part_combos.append(self.particle_classifiers)
             for particle in self.particle_classifiers:
-                self._particle_importances[particle] = copy.deepcopy(self._tree)
-                self._real_tree[particle] = copy.deepcopy(self._tree)
+                self._particle_importances[particle] = self._in_value
+
+    def _parse_data_tree(self):
+        values = []
+        for node in self._tree["data"]:
+            try:
+                value = node.value
+                assert value >= 0
+                values.append(node)
+            except (AttributeError, AssertionError) as e:
+                raise MalformedInputError(
+                    input, f"Importances must be ≥ 0 value: {node} given"
+                )
+        self._explicitly_set = True
+        self._part_combos.append(self.particle_classifiers)
+        for particle in self.particle_classifiers:
+            self._particle_importances[particle] = copy.deepcopy(self._tree)
+            self._real_tree[particle] = copy.deepcopy(self._tree)
 
     def _generate_default_cell_tree(self, particle=None):
         classifier = syntax_node.ClassifierNode()
-        classifier.prefix = self._generate_default_node(
-            str, self._class_prefix().upper(), None
-        )
+        classifier.prefix = self._generate_default_node(str, self._class_prefix(), None)
         if particle is None:
             particles = syntax_node.ParticleNode("imp particle", "n")
             particle = Particle.NEUTRON
@@ -126,6 +126,9 @@ class Importance(CellModifierInput):
         )
         self._tree = tree
         self._particle_importances[particle] = tree
+
+    def _generate_default_data_tree(self, particle=None):
+        self._tree = _generate_default_data_tree(Particle.NEUTRON)
 
     @property
     def _tree_value(self, particle):
@@ -170,13 +173,18 @@ class Importance(CellModifierInput):
             yield (part, self._particle_importances[part]["data"][0].value)
 
     @property
+    @needs_full_ast
     def has_information(self):
         has_info = []
         for part in self:
             has_info.append(
                 self._explicitly_set
                 or not math.isclose(
-                    self[part], self._DEFAULT_IMP, rel_tol=rel_tol, abs_tol=abs_tol
+                    # avoid __getitem__ to avoid warnings of not in problem due to default values
+                    self._particle_importances[part]["data"][0].value,
+                    self._DEFAULT_IMP,
+                    rel_tol=rel_tol,
+                    abs_tol=abs_tol,
                 )
             )
         if any(has_info):
@@ -186,6 +194,16 @@ class Importance(CellModifierInput):
 
     @args_checked
     def merge(self, other: Importance):
+        # ensure all parsed or none are parsed
+        if not self.fully_parsed:
+            if other.fully_parsed:
+                self.full_parse()
+            else:
+                self._inputs.append(other)
+                return
+        # if full parsed
+        elif not other.fully_parsed:
+            other.full_parse()
         if self.in_cell_block != other.in_cell_block:
             raise ValueError("Can not mix cell-level and data-level Importance objects")
         if other.set_in_cell_block:
@@ -204,12 +222,33 @@ class Importance(CellModifierInput):
                     "Cannot have two importance inputs for the same particle type",
                 )
 
+    def full_parse(self):
+        if hasattr(self, "_not_parsed") and self._not_parsed:
+            super().full_parse()
+        # handle all other inputs
+        has_extra = bool(self._inputs)
+        for input in self._inputs:
+            input.full_parse()
+            self.merge(input)
+        self._inputs.clear()
+        if has_extra and not self.in_cell_block and self._problem:
+            self.push_to_cells()
+
+    def _original_lines(self):
+        ret = super()._original_lines()
+        for input in self._inputs:
+            ret += input._input.input_lines
+        return ret
+
+    @needs_full_ast
     def __iter__(self):
         return iter(self._particle_importances.keys())
 
+    @needs_full_ast
     def __contains__(self, value):
         return value in self._particle_importances
 
+    @needs_full_ast
     @args_checked
     def __getitem__(self, particle: Particle):
         self._check_particle_in_problem(particle)
@@ -219,6 +258,7 @@ class Importance(CellModifierInput):
         except KeyError:
             return self._DEFAULT_IMP
 
+    @needs_full_cst
     @args_checked
     def __setitem__(self, particle: Particle, value: ty.NonNegativeReal):
         self._check_particle_in_problem(particle)
@@ -227,51 +267,42 @@ class Importance(CellModifierInput):
         self._explicitly_set = True
         self._particle_importances[particle]["data"][0].value = value
 
+    @needs_full_cst
     @args_checked
     def __delitem__(self, particle: Particle):
         del self._particle_importances[particle]
 
-    def __str__(self):
-        """
-        Create a simple, self-contained list representation of the importance settings and join them together.
-        """
-        ret = []
-        for particle, tree in self._particle_importances.items():
-            # Instead of tree["classifier"].particles.value (which doesn't exist),
-            # use str(tree["classifier"].particles) or an appropriate attribute.
-            ret.append(f"{particle}={tree['data'].nodes[0].value}")
-        if ret:
-            return f"IMPORTANCE: {', '.join(ret)}"
-        else:
-            return "IMPORTANCE: Object is empty"
-
-    def __repr__(self):
-        return (
-            f"Importance: in_cell_block: {self.in_cell_block},"
-            f" set_in_cell_block {self.set_in_cell_block},"
-            f"\n{self._particle_importances}"
-        )
-
+    @needs_full_ast
     def push_to_cells(self):
         if self._problem and not self.in_cell_block:
             self._check_redundant_definitions()
-            for particle in self._particle_importances:
-                if not self._particle_importances[particle]:
-                    continue
-                for i, cell in enumerate(self._problem.cells):
-                    value = self._particle_importances[particle]["data"][i]
-                    # force generating the default tree
-                    cell.importance[particle] = value.value
-                    cell.importance._explicitly_set = True
-                    # replace default ValueNode with actual valueNode
-                    tree = cell.importance._particle_importances[particle]
-                    tree.nodes["classifier"] = copy.deepcopy(
-                        self._particle_importances[particle]["classifier"]
-                    )
-                    tree["classifier"].padding = None
-                    data = tree["data"]
-                    data.nodes.pop()
-                    data.nodes.append(value)
+            part_keys = self._particle_importances.keys()
+            cell_importances = []
+            # Doing in place transpose
+            for imp_group in zip(
+                *[v["data"] for v in self._particle_importances.values()]
+            ):
+                cell_importances.append({k: v for k, v in zip(part_keys, imp_group)})
+            for cell_imp, cell in zip(cell_importances, self._problem.cells):
+                for particle, val in cell_imp.items():
+                    cell._importance._accept_from_data(particle, val)
+                cell._importance._part_combos = list(self._part_combos)
+
+    def _accept_from_data(self, key, value):
+        if hasattr(self, "_not_parsed"):
+            if not hasattr(self, "_parked_value"):
+                self._parked_value = {}
+            self._parked_value[key] = value
+        else:
+            self._accept_and_update({key: value})
+
+    def _accept_and_update(self, value):
+        for part, val in value.items():
+            self[part] = val.value
+            data_tree = self._particle_importances[part]["data"]
+            data_tree.nodes.pop()
+            data_tree.nodes.append(val)
+        self._explicitly_set = True
 
     def _format_tree(self):
         def ensure_has_end_space(ret, strip_new_lines=False):
@@ -290,23 +321,34 @@ class Importance(CellModifierInput):
                     self._problem and particle not in self._problem.mode
                 ):
                     continue
-                other_particles = self._particle_importances[particle][
+                particle_node = self._particle_importances[particle][
                     "classifier"
                 ].particles
-                to_remove = set()
-                for other_part in other_particles:
-                    if other_part != particle:
-                        if math.isclose(
-                            self[particle],
-                            self[other_part],
-                            rel_tol=rel_tol,
-                            abs_tol=abs_tol,
-                        ):
-                            particles_printed.add(other_part)
-                        else:
-                            to_remove.add(other_part)
-                for removee in to_remove:
-                    other_particles.remove(removee)
+                # Use _part_combos to find particles that should stay grouped
+                # (set by push_to_cells from a combined data-block entry, or by
+                # _parse_cell_tree for a combined cell-block entry).
+                # Falls back to same-node particles when no combos are recorded.
+                candidates_from_combos = set()
+                for combo in self._part_combos:
+                    if particle in combo:
+                        candidates_from_combos = combo - particles_printed - {particle}
+                        break
+                candidates = candidates_from_combos or (
+                    set(particle_node.particles) - {particle}
+                )
+                new_node_particles = {particle}
+                for other_part in candidates:
+                    if other_part not in self._particle_importances:
+                        continue
+                    if math.isclose(
+                        self[particle],
+                        self[other_part],
+                        rel_tol=rel_tol,
+                        abs_tol=abs_tol,
+                    ):
+                        new_node_particles.add(other_part)
+                        particles_printed.add(other_part)
+                particle_node.particles = new_node_particles
                 ret = ensure_has_end_space(ret)
                 ret += self._particle_importances[particle].format()
                 particles_printed.add(particle)
@@ -346,6 +388,7 @@ class Importance(CellModifierInput):
         return None
 
     @all.setter
+    @needs_full_cst
     @args_checked
     def all(self, value: ty.NonNegativeReal):
         value = float(value)
@@ -371,11 +414,24 @@ class Importance(CellModifierInput):
 
     def _collect_new_values(self):
         new_vals = collections.defaultdict(list)
-        particle_pairings = collections.defaultdict(set)
+        # Seed pairings from _real_tree classifiers so that particle groups
+        # originally written together (e.g. imp:n,p) are preserved even when
+        # cell-level importances were generated with single-particle classifiers
+        # (which happens after push_to_cells creates default cell trees).
+        # Both particles in a combined entry (e.g. N and P for imp:n,p) each
+        # have a deepcopy of the same original tree, so the pairing is symmetric.
+        particle_pairings = {
+            p: t["classifier"].particles.particles for p, t in self._real_tree.items()
+        }
         for particle in self._problem.mode.particles:
+            if particle not in particle_pairings:
+                particle_pairings[particle] = {particle}
             for cell in self._problem.cells:
+                imp = cell._importance
+                if hasattr(imp, "_not_parsed"):
+                    imp.full_parse()
                 try:
-                    tree = cell.importance._particle_importances[particle]
+                    tree = imp._particle_importances[particle]
                 except KeyError:
                     raise NotImplementedError(
                         f"Importance data not available for cell {cell.number} for particle: "
@@ -383,12 +439,6 @@ class Importance(CellModifierInput):
                         "is not yet implemented in MontePy."
                     )
                 new_vals[particle].append(tree["data"][0])
-                if len(particle_pairings[particle]) == 0:
-                    particle_pairings[particle] = tree["classifier"].particles.particles
-                else:
-                    particle_pairings[particle] &= tree[
-                        "classifier"
-                    ].particles.particles
         return self._try_combine_values(new_vals, particle_pairings)
 
     def _update_values(self, in_middle=False):
@@ -451,6 +501,7 @@ class Importance(CellModifierInput):
         pass
 
     @property
+    @needs_full_ast
     def trailing_comment(self) -> syntax_node.CommentNode:
         """The trailing comments and padding of an input.
 
@@ -466,12 +517,14 @@ class Importance(CellModifierInput):
         if last_tree:
             return last_tree.get_trailing_comment()
 
+    @needs_full_cst
     def _delete_trailing_comment(self):
         for part, tree in reversed(self._real_tree.items()):
             tree._delete_trailing_comment()
             self.__delete_common_trailing(part)
             break
 
+    @needs_full_cst
     def __delete_common_trailing(self, part):
         to_delete = {part}
         for combo_set in self._part_combos:
@@ -484,6 +537,7 @@ class Importance(CellModifierInput):
             for part in to_delete:
                 self._real_tree[part]._delete_trailing_comment()
 
+    @needs_full_cst
     def _grab_beginning_comment(self, new_padding, last_obj=None):
         last_tree = None
         last_padding = None
@@ -530,20 +584,20 @@ class Importance(CellModifierInput):
             self._problem.print_in_data_block._set_all_or_none(self._class_prefix())
         self.__explicitly_set = value
 
-    def link_to_problem(self, problem):
-        super().link_to_problem(problem)
-        if problem and self._explicitly_set:
+    def link_to_problem(self, problem, *, deepcopy: bool = False):
+        super().link_to_problem(problem, deepcopy=deepcopy)
+        if not deepcopy and problem and self._explicitly_set:
             self._problem.print_in_data_block._set_all_or_none(self._class_prefix())
 
 
 def _generate_default_data_tree(particle):
     list_node = syntax_node.ListNode("number sequence")
-    list_node.append(syntax_node.ValueNode(None, float))
+    list_node.append(syntax_node.ValueNode(str(Importance._DEFAULT_IMP), float))
     classifier = syntax_node.ClassifierNode()
-    classifier.prefix = syntax_node.ValueNode("IMP", str)
+    classifier.prefix = syntax_node.ValueNode("imp", str)
     classifier.padding = syntax_node.PaddingNode(" ")
     classifier.particles = syntax_node.ParticleNode(
-        "IMP_particles", f":{particle.value}"
+        "IMP_particles", f":{particle.value.lower()}"
     )
     classifier.particles.particles = {particle}
     return syntax_node.SyntaxNode(

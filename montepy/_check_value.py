@@ -125,7 +125,8 @@ def args_checked(func: Callable):
 
     Returns
     -------
-    A decorated function that will do type and value checking at run time based on the annotation.
+    Callable
+        A decorated function that will do type and value checking at run time based on the annotation.
 
     Raises
     ------
@@ -137,6 +138,9 @@ def args_checked(func: Callable):
 
     args_spec = inspect.signature(func)
     arg_checkers = {}
+    positional_names = []
+    var_positional_name = None
+    var_keyword_name = None
     for arg_name, arg_spec in args_spec.parameters.items():
         checkers = []
         none_ok = arg_spec.default is None
@@ -144,22 +148,52 @@ def args_checked(func: Callable):
         if type_checker:
             checkers.append(type_checker)
         arg_checkers[arg_name] = checkers
+        kind = arg_spec.kind
+        if kind in (
+            inspect._ParameterKind.POSITIONAL_ONLY,
+            inspect._ParameterKind.POSITIONAL_OR_KEYWORD,
+        ):
+            positional_names.append(arg_name)
+        elif kind == inspect._ParameterKind.VAR_POSITIONAL:
+            var_positional_name = arg_name
+        elif kind == inspect._ParameterKind.VAR_KEYWORD:
+            var_keyword_name = arg_name
+    num_positional = len(positional_names)
+    var_positional_checkers = (
+        arg_checkers[var_positional_name] if var_positional_name else []
+    )
+    var_keyword_checkers = arg_checkers[var_keyword_name] if var_keyword_name else []
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        bound = args_spec.bind(*args, **kwargs)
-        for arg_name, arg_vals in bound.arguments.items():
-            checkers = arg_checkers[arg_name]
-            arg_type = args_spec.parameters[arg_name].kind
-            if arg_type == inspect._ParameterKind.VAR_POSITIONAL:
-                args_iter = arg_vals
-            elif arg_type == inspect._ParameterKind.VAR_KEYWORD:
-                args_iter = arg_vals.values()
+        # Map call arguments straight to their checkers by position/name,
+        # using the signature shape precomputed above, instead of
+        # re-deriving that mapping on every call via inspect.Signature.bind().
+        # A malformed call (wrong arity, unknown kwarg, etc.) simply skips
+        # checking here and is left to raise its own TypeError from the
+        # real call below, same as bind() would have raised, just without
+        # duplicating that validation up front.
+        for i, val in enumerate(args):
+            if i < num_positional:
+                checkers = arg_checkers[positional_names[i]]
+            elif var_positional_name is not None:
+                checkers = var_positional_checkers
             else:
-                args_iter = (arg_vals,)
-            for val in args_iter:
-                [checker(val) for checker in checkers]
-        return func(*args, **kwargs)
+                continue
+            for checker in checkers:
+                checker(val)
+        for name, val in kwargs.items():
+            checkers = arg_checkers.get(name)
+            if checkers is None:
+                if var_keyword_name is None:
+                    continue
+                checkers = var_keyword_checkers
+            for checker in checkers:
+                checker(val)
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            raise e.with_traceback(e.__traceback__.tb_next)
 
     return wrapper
 
@@ -173,7 +207,33 @@ def check_type_and_value(
     *,
     none_ok: bool = False,
 ):
+    """Check one argument's type and any ``Annotated`` value constraints.
+
+    Called by ``args_checked`` for each bound argument. Strips ``Annotated``
+    metadata (value-constraint callables from ``montepy.types``, e.g.
+    ``positive``) from ``expected_type``, delegates the bare type check to
+    :func:`check_type`, then invokes each constraint callable in turn.
+
+    Parameters
+    ----------
+    func_name : str
+        Name of the decorated function, used in error messages.
+    name : str
+        Argument name, used in error messages.
+    value : object
+        The argument value to validate.
+    expected_type : type
+        The annotation from the function signature. May be a plain type, a
+        parameterised generic (e.g. ``list[int]``), or an ``Annotated`` type whose
+        extra args are constraint callables.
+    expected_iter_type : type or None, optional
+        Expected element type when ``value`` is iterable.
+    none_ok : bool, optional
+        Whether ``None`` passes validation without further checks.
+    """
     annotations = []
+    if isinstance(expected_type, typing.TypeAliasType):
+        expected_type = expected_type.__value__
     if isinstance(expected_type, typing._AnnotatedAlias):
         args = typing.get_args(expected_type)
         annotations = args[1:]
@@ -185,6 +245,24 @@ def check_type_and_value(
         return
     for annotation in annotations:
         annotation(func_name, name, value)
+
+
+def _union_shape_matches(value: typing.Any, arg: typing.Any) -> bool:
+    """Cheaply check if ``value`` could plausibly satisfy a Union member.
+
+    For a plain type this is just ``isinstance(value, arg)``. For a
+    parameterised generic (e.g. ``list[int]``) this checks ``value`` against
+    the generic's origin (e.g. ``list``), without walking any elements.
+    ``Annotated`` members are unwrapped to their underlying type first,
+    since ``typing.get_origin`` returns ``typing.Annotated`` itself, not the
+    wrapped type.
+    """
+    if isinstance(arg, typing._AnnotatedAlias):
+        arg = typing.get_args(arg)[0]
+    origin = typing.get_origin(arg)
+    if origin is None:
+        origin = arg
+    return isinstance(origin, type) and isinstance(value, origin)
 
 
 def check_type(
@@ -247,14 +325,32 @@ def check_type(
     # detect complicated recursion of types
     if isinstance(expected_type, _UNION_TYPES):
         # handle cases isisntance can't (not all types are classes)
-        if not all((isinstance(t, type) for t in typing.get_args(expected_type))):
+        args = typing.get_args(expected_type)
+        if any(not isinstance(t, type) for t in args):
+            # Cheaply narrow down to the union members whose *container* type
+            # actually matches before doing the expensive (and possibly
+            # recursive, per-element) full validation. This avoids using a
+            # raised-and-caught TypeError as the mechanism for rejecting
+            # mismatched branches, e.g. `list[Particle] | set[Particle]`
+            # given a set no longer has to fully walk+reject the list branch.
+            candidates = [arg for arg in args if _union_shape_matches(value, arg)]
+            if not candidates:
+                raise_error()
+            if len(candidates) == 1:
+                check_type_and_value(
+                    func_name, name, value, candidates[0], none_ok=none_ok
+                )
+                return
+            # rare: multiple branches share the same container type (e.g.
+            # list[int] | list[str]); only now do we need to actually try
+            # each candidate to disambiguate.
             errors = []
-            for arg in expected_type.__args__:
+            for arg in candidates:
                 try:
                     check_type_and_value(func_name, name, value, arg, none_ok=none_ok)
                 except TypeError as e:
                     errors.append(e)
-            if len(errors) == len(expected_type.__args__):
+            if len(errors) == len(candidates):
                 raise_error()
             return
 
@@ -322,6 +418,25 @@ def check_type_iterable(
     *,
     none_ok: bool = False,
 ):
+    """Check a ``GenericAlias`` annotation (e.g. ``list[int]``, ``dict[str, int]``).
+
+    Called internally by :func:`check_type` when it detects the annotation is a
+    ``GenericAlias``. Extracts the origin type and element-type arguments, then
+    recurses into :func:`check_type_and_value` for each element.
+
+    Parameters
+    ----------
+    func_name : str
+        Name of the decorated function, used in error messages.
+    name : str
+        Argument name, used in error messages.
+    value : object
+        The argument value to validate.
+    expected_type : type
+        A parameterised generic such as ``list[int]`` or ``dict[str, float]``.
+    none_ok : bool, optional
+        Whether ``None`` passes validation without further checks.
+    """
     base_cls = typing.get_origin(expected_type)
     args = typing.get_args(expected_type)
     check_type_and_value(func_name, name, value, base_cls, none_ok=none_ok)
@@ -364,7 +479,7 @@ def check_length(func_name, name, value, length_min, length_max=None):
         The name of the function this was called from
     name : str
         Description of value being checked
-    value : collections.Sized
+    value : collections.abc.Sized
         Object to check length of
     length_min : int
         Minimum length of object
@@ -404,7 +519,7 @@ def check_increasing(func_name: str, name: str, value, equality: bool = False):
         The name of the function this was called from
     name : str
         Description of value being checked
-    value : iterable
+    value : Iterable
         Object to check if increasing
     equality : bool, optional
         Whether equality is allowed. Defaults to False.

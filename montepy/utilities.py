@@ -1,7 +1,9 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 
 from montepy.constants import BLANK_SPACE_CONTINUE
+from collections.abc import Callable
 from montepy._check_value import args_checked
+from montepy.exceptions import *
 import montepy.types as ty
 
 import functools
@@ -96,10 +98,11 @@ def make_prop_val_node(
 
     def decorator(func):
         @property
+        @needs_full_ast
         @functools.wraps(func)
         def getter(self):
             result = func(self)
-            if result:
+            if result is not None:
                 return result
             else:
                 val = getattr(self, hidden_param)
@@ -109,6 +112,7 @@ def make_prop_val_node(
 
         if types is not None:
 
+            @needs_full_cst
             def setter(self, value):
                 nonlocal types
                 if isinstance(types, tuple) and len(types) == 0:
@@ -132,8 +136,11 @@ def make_prop_val_node(
 
         if deletable:
 
+            @needs_full_cst
             def deleter(self):
-                setattr(self, hidden_param, None)
+                node = getattr(self, hidden_param, None)
+                if node is not None:
+                    node.value = None
 
             getter = getter.deleter(deleter)
         return getter
@@ -168,6 +175,8 @@ def make_prop_pointer(
         @property
         @functools.wraps(func)
         def getter(self):
+            if not hasattr(self, hidden_param) and hasattr(self, "_not_parsed"):
+                self.full_parse()
             result = func(self)
             if result:
                 return result
@@ -176,6 +185,8 @@ def make_prop_pointer(
         if types is not None:
 
             def setter(self, value):
+                if hasattr(self, "_not_parsed"):
+                    self.full_parse()
                 nonlocal types
                 if isinstance(types, tuple) and len(types) == 0:
                     types = type(self)
@@ -195,5 +206,156 @@ def make_prop_pointer(
 
             getter = getter.deleter(deleter)
         return getter
+
+    return decorator
+
+
+def needs_full_ast(func):
+    """
+    Marks a function as needed having the abstract syntax tree.
+
+    Calling a marked function will lead to a full (abstract) parse.
+    """
+
+    @functools.wraps(func)
+    def decorator(self, *args, **kwargs):
+        if hasattr(self, "_not_parsed"):
+            self.full_parse()
+        return func(self, *args, **kwargs)
+
+    return decorator
+
+
+needs_full_cst = needs_full_ast
+"""
+Marks a function as needed having the concrete syntax tree.
+
+Calling a marked function will lead to a full parse.
+"""
+
+
+def prop_pointer_from_problem(
+    hidden_param: str,
+    id_param: str,
+    prob_collection_param: str,
+    types: tuple[type] = None,
+    base_type: type = None,
+    validator: Callable = None,
+    deletable: bool = False,
+):
+    """
+    Marks a function, and turns it into a property that is an object pointer (:func:`make_prop_pointer`), which can be pulled from the problem
+    automatically.
+
+    When this property is not populated, and a problem is linked, the object is fetched from the problem.
+
+    parameters
+    ----------
+    hidden_param: str
+       the _private attribute where the object is stored.
+    id_param: str
+       the parameter of the ID number for the object to pull.
+    prob_collection_param: str
+       the parameter of the problem of the collection, from which to grab this object from.
+    types: type[type]
+       the allowed types for making this property settable.
+    base_type: type
+       the type to coerce all other types to.
+    validator: Callable
+       A function to call on setting for additional validation
+    deletable:
+        Whether deletion should be allowed.
+    raises
+    ------
+    BrokenObjectLinkError
+        When the object can not be found.
+    """
+
+    def decorator(func):
+        @make_prop_pointer(hidden_param, types, base_type, validator, deletable)
+        @functools.wraps(func)
+        def pull_from_problem(self):
+            if hasattr(self, hidden_param) and getattr(self, hidden_param) is not None:
+                return func(self)
+            id_num = getattr(self, id_param)
+            prob = getattr(self, "_problem")
+            obj = None
+            if id_num == 0 and hidden_param != "_universe":
+                return None
+            try:
+                if prob is not None and id_num is not None:
+                    obj = getattr(prob, prob_collection_param)[id_num]
+            except KeyError as e:
+                raise BrokenObjectLinkError(
+                    type(self).__name__,
+                    getattr(self, "number", None),
+                    prob_collection_param.rstrip("s"),  # plural to singular,
+                    id_num,
+                )
+            setattr(self, hidden_param, obj)
+            return func(self)
+
+        return pull_from_problem
+
+    return decorator
+
+
+def prop_pointer_collect_from_problem(
+    hidden_param: str,
+    ids_param: str,
+    prob_collection_param: str,
+    collect_type: type,
+    types: tuple[type] = None,
+    base_type: type = None,
+    validator: Callable = None,
+    deletable: bool = False,
+):
+    """
+    Marks a function, and turns it into a property that is an object pointer to a collection (:func:`make_prop_pointer`), which can be pulled from the problem
+    automatically.
+
+    When this property is not populated, and a problem is linked, the object is fetched from the problem.
+    This differs from :func:`prop_pointer_from_problem` because this stores multiple objects.
+
+    parameters
+    ----------
+    hidden_param: str
+       the _private attribute where the object is stored.
+    id_param: str
+       the parameter of the ID number for the object to pull.
+    prob_collection_param: str
+       the parameter of the problem of the collection, from which to grab this object from.
+    types: type[type]
+       the allowed types for making this property settable.
+    base_type: type
+       the type to coerce all other types to.
+    validator: Callable
+       A function to call on setting for additional validation
+    deletable:
+        Whether deletion should be allowed.
+    raises
+    ------
+    BrokenObjectLinkError
+        When the object can not be found.
+    """
+
+    def decorator(func):
+        @make_prop_pointer(hidden_param, types, base_type, validator, deletable)
+        @functools.wraps(func)
+        def pull_from_problem(self):
+            if hasattr(self, hidden_param) and getattr(self, hidden_param) is not None:
+                return func(self)
+            id_nums = getattr(self, ids_param)
+            prob = getattr(self, "_problem")
+            new_collection = collect_type()
+            if prob is not None and id_nums is not None:
+                objs = getattr(prob, prob_collection_param)
+                for id_num in id_nums:
+                    obj = objs[id_num]
+                    new_collection.append(obj)
+            setattr(self, hidden_param, new_collection)
+            return func(self)
+
+        return pull_from_problem
 
     return decorator
