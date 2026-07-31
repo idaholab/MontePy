@@ -36,7 +36,6 @@ PREFIX_MATCHES = {c._class_prefix(): c for c in DATA_CLASSES}
 VERBOTEN = {"de", "sdef", "fmesh"}
 
 
-@args_checked
 def parse_data(
     input: montepy.mcnp_object.InitInput,
     problem: montepy.MCNP_Problem = None,
@@ -56,9 +55,17 @@ def parse_data(
         the parsed DataInput object
     """
 
-    base_input = data_input.DataInput(input, fast_parse=True)
-    prefix = base_input.prefix
-    if base_input.prefix in VERBOTEN:
+    try:
+        bare_tree = data_input.DataInput._peek_light_parse(input)
+        prefix = bare_tree.nodes["classifier"].prefix.value.lower()
+    except Exception:
+        # The JIT light parser isn't fully robust and can fail on valid
+        # syntax. Fall back to building a real DataInput: its own
+        # JIT-with-fallback-to-full-parse handling in _parse_input will
+        # reliably determine the prefix instead of guessing.
+        base_input = data_input.DataInput(input, fast_parse=True)
+        prefix = base_input.prefix
+    if prefix in VERBOTEN:
         return data_input.ForbiddenDataInput(input)
     DataClass = PREFIX_MATCHES.get(prefix)
     if DataClass is not None:

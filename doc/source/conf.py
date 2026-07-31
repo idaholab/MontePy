@@ -15,15 +15,66 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, os.path.abspath("_extension"))
 import montepy
+
+
+def _get_project_metadata():
+    """Extract project metadata from package distribution."""
+    try:
+        dist = importlib.metadata.distribution("montepy")
+    except importlib.metadata.PackageNotFoundError:
+        return {}
+
+    metadata = {
+        "name": dist.metadata.get("Name", "MontePy"),
+        "version": dist.metadata.get("Version", "unknown"),
+        "description": dist.metadata.get("Summary", ""),
+        "license": dist.metadata.get("License", "MIT"),
+        "homepage": None,
+        "authors": [],
+        "keywords": [],
+    }
+
+    # Extract keywords
+    if "Keywords" in dist.metadata:
+        keywords_str = dist.metadata.get("Keywords", "")
+        if keywords_str:
+            metadata["keywords"] = [kw.strip() for kw in keywords_str.split(",")]
+
+    # Extract homepage from project URLs
+    if hasattr(dist, "metadata") and "Project-URL" in dist.metadata:
+        urls = dist.metadata.get_all("Project-URL") or []
+        for url_entry in urls:
+            if url_entry.startswith("Homepage"):
+                metadata["homepage"] = (
+                    url_entry.split(", ", 1)[1] if ", " in url_entry else None
+                )
+                break
+
+    # Extract authors from Author-Email field
+    if "Author-Email" in dist.metadata:
+        author_email = dist.metadata.get("Author-Email")
+        if author_email:
+            authors = []
+            for entry in author_email.split(", "):
+                entry = entry.strip()
+                if entry:
+                    authors.append(entry)
+            metadata["authors"] = authors
+
+    return metadata
+
+
+_metadata = _get_project_metadata()
 
 # -- Project information -----------------------------------------------------
 
 project = "MontePy"
 copyright = "2021 – 2026, Battelle Energy Alliance LLC."
-author = "Micah D. Gale (@micahgale), Travis J. Labossiere-Hickman (@tjlaboss)"
+author = ", ".join(_metadata.get("authors", []))
 
-version = importlib.metadata.version("montepy")
+version = _metadata.get("version", "unknown")
 release = version  # Will be true at website deployment.
 # -- General configuration ---------------------------------------------------
 
@@ -43,7 +94,64 @@ extensions = [
     "sphinx_copybutton",
     "autodocsumm",
     "jupyterlite_sphinx",
+    "schema_org",
+    "sphinx_sitemap",
 ]
+
+# -- Schema.org structured data ----------------------------------------------
+# Drives JSON-LD injection via the schema_org extension.
+# Only pages listed here get a <script type="application/ld+json"> block.
+schema_org_configs = {
+    "index": {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "MontePy",
+        "description": _metadata.get("description", ""),
+        "url": _metadata.get("homepage", "https://www.montepy.org/"),
+        "applicationCategory": "Scientific/Engineering",
+        "operatingSystem": "Linux, macOS, Windows",
+        "license": "https://github.com/idaholab/MontePy/blob/main/LICENSE",
+        "author": [
+            {
+                "@type": "Person",
+                "name": author.split("<")[0].strip(),
+            }
+            for author in _metadata.get("authors", [])
+        ],
+        "softwareVersion": version,
+        "downloadUrl": "https://pypi.org/project/montepy/",
+        "keywords": ", ".join(_metadata.get("keywords", [])),
+    },
+    "faq": {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "How do I fix a UnicodeDecodeError when opening an MCNP file in MontePy?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": (
+                        "Try passing a different encoding to read_input(), such as "
+                        "'utf8' or 'cp1252'. Alternatively, use the change_to_ascii "
+                        "utility to remove all non-ASCII characters from the file."
+                    ),
+                },
+            },
+            {
+                "@type": "Question",
+                "name": "Will MontePy ever support MCNP output files?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": (
+                        "No. MontePy is scoped to reading and writing MCNP input "
+                        "files only. Output file parsing is outside the project scope."
+                    ),
+                },
+            },
+        ],
+    },
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -55,7 +163,10 @@ favicons = [
 ]
 html_logo = "monty.svg"
 
-html_baseurl = "https://www.montepy.org/en/stable/"
+html_baseurl = os.environ.get(
+    "READTHEDOCS_CANONICAL_URL", "https://www.montepy.org/en/stable/"
+)
+sitemap_url_scheme = "{link}"
 html_extra_path = ["robots.txt", "foo.imcnp", "LICENSE"]
 
 # jupyter lite
@@ -143,6 +254,9 @@ github_url = "https://github.com/idaholab/MontePy"
 html_theme = "pydata_sphinx_theme"
 html_theme_options = {
     "navbar_start": ["navbar-logo", "project", "version"],
+    "logo": {
+        "alt_text": "MontePy documentation home.",
+    },
     "icon_links": [
         {
             "name": "GitHub",
@@ -202,6 +316,7 @@ nitpick_ignore = [
     ("py:class", "sly.yacc.Parser"),
     ("py:class", "sly.yacc.ParserMeta"),
     ("py:class", "sly.yacc.YaccProduction"),
+    ("py:class", "InitInput"),
     # Subpackages referenced with :mod: in docs; autodoc indexes individual classes
     # but not the package-level modules themselves
     # typing.Union is not in the Python intersphinx inventory as a py:data target
@@ -243,6 +358,10 @@ nitpick_ignore_regex = [
     # autodoc_type_aliases remapping can produce quoted strings like
     # 'montepy.types.PositiveInt' when get_type_hints returns a ForwardRef.
     (r"py:class", r"^'[^']+'\s*$"),
+    # collections.abc.Sequence's inherited count/index carry C-style docstrings
+    # whose return annotations (e.g. "integer -- return number of occurrences
+    # of value") are not resolvable cross-references
+    (r"py:class", r"^integer -- return .*$"),
 ]
 
 
@@ -250,3 +369,41 @@ nitpick_ignore_regex = [
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+
+
+def _extract_docstring_summary(obj):
+    """Extract first sentence of docstring for SEO meta description."""
+    if not obj.__doc__:
+        return None
+    doc = obj.__doc__.strip()
+    lines = doc.split("\n")
+    first_line = lines[0].strip()
+    if not first_line:
+        first_line = next((l.strip() for l in lines if l.strip()), None)
+    if first_line and len(first_line) > 5:
+        return first_line[:150]
+    return None
+
+
+def _add_meta_descriptions(app, docname, source):
+    """Inject meta directives for API docs from Python docstrings."""
+    if not docname.startswith("api/generated/"):
+        return
+
+    obj_name = docname.replace("api/generated/", "")
+    try:
+        parts = obj_name.split(".")
+        obj = montepy
+        for part in parts:
+            obj = getattr(obj, part)
+
+        summary = _extract_docstring_summary(obj)
+        if summary:
+            meta_directive = f".. meta::\n   :description lang=en: {summary}\n\n"
+            source[0] = meta_directive + source[0]
+    except (AttributeError, ImportError):
+        pass
+
+
+def setup(app):
+    app.connect("source-read", _add_meta_descriptions)

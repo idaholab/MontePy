@@ -85,12 +85,28 @@ def parse_surface(input: InitInput, problem=None, *, jit_parse: bool = True):
         A Surface object properly parsed. If supported a sub-class of
         Surface will be given.
     """
-    buffer_surface = Surface(input, jit_parse=True)
-    cls = _SPECIFIC_DISPATCH.get(buffer_surface.surface_type) or _GENERIC_DISPATCH.get(
-        buffer_surface.surface_type
-    )
+    try:
+        bare_tree = Surface._peek_light_parse(input)
+        type_node = bare_tree.nodes["surface_type"]
+        type_node.convert_to_enum(SurfaceType, allow_none=True, switch_to_upper=True)
+        surf_type = type_node.value
+    except Exception:
+        # The JIT light parser isn't fully robust and can fail on valid
+        # syntax. Fall back to building a real Surface: its own
+        # JIT-with-fallback-to-full-parse handling in _parse_input will
+        # reliably determine the type instead of guessing.
+        buffer_surface = Surface(input, jit_parse=True)
+        surf_type = buffer_surface._surface_type.value
+        cls = _SPECIFIC_DISPATCH.get(surf_type) or _GENERIC_DISPATCH.get(surf_type)
+        if cls is None:
+            if not jit_parse:
+                buffer_surface.full_parse()
+            return buffer_surface
+        return cls(input, jit_parse=jit_parse)
+
+    cls = _SPECIFIC_DISPATCH.get(surf_type) or _GENERIC_DISPATCH.get(surf_type)
     if cls is None:
-        return buffer_surface
+        return Surface(input, jit_parse=jit_parse)
     return cls(input, jit_parse=jit_parse)
 
 

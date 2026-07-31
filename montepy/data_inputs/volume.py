@@ -19,7 +19,7 @@ def _ensure_positive(self, value):
 class Volume(CellModifierInput):
     """Class for the data input that modifies cell volumes; ``VOL``.
 
-    .. versionchanged:: 1.5.0
+    .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter
 
@@ -56,7 +56,7 @@ class Volume(CellModifierInput):
         tree = self._tree
         if "parameters" in tree:
             raise MalformedInputError(
-                input, f"Volume card can't accept any key-value parameters"
+                self._input, f"Volume card can't accept any key-value parameters"
             )
         if (
             "keyword" in tree

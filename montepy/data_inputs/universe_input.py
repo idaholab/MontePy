@@ -22,7 +22,7 @@ class UniverseInput(CellModifierInput):
     """Object to actually handle the ``U`` input in cells
     and data blocks.
 
-    .. versionchanged:: 1.5.0
+    .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter
 
@@ -86,9 +86,7 @@ class UniverseInput(CellModifierInput):
     @needs_full_ast
     def _find_and_populate_universe(self, number) -> Universe:
         if self.in_cell_block:
-            raise IllegalStateError(
-                f"This should only be called for data block instances."
-            )
+            raise IllegalState(f"This should only be called for data block instances.")
         if not self._problem:
             return
         found = number == 0
@@ -117,6 +115,12 @@ class UniverseInput(CellModifierInput):
                             break
         # universe exists
         if found:
+            # Accessing self.data above (via @needs_full_ast) may have triggered
+            # full_parse() -> push_to_cells(), which already created and registered
+            # this universe.  Return the existing object to avoid a NumberConflictError.
+            existing = self._problem.universes.get(number)
+            if existing is not None:
+                return existing
             uni = montepy.Universe(number)
             uni.link_to_problem(self._problem)
             uni.grab_cells_from_jit_parse()
@@ -196,9 +200,13 @@ class UniverseInput(CellModifierInput):
     @needs_full_ast
     def _tree_value(self):
         val = self._old_number
-        val.value = 0
-        if self.universe is not None:
-            val.value = self.universe.number
+        val.is_negatable_identifier = True
+        # Resolve the universe number before mutating val.value.
+        # val.value = 0 would corrupt _old_number, making old_number return 0,
+        # which causes @prop_pointer_from_problem to look up Universe(0) instead
+        # of the correct universe.
+        uni = self.universe
+        val.value = uni.number if uni is not None else 0
         val.is_negative = self.not_truncated
         return val
 
@@ -232,21 +240,29 @@ class UniverseInput(CellModifierInput):
             for cell, uni_number in itertools.zip_longest(
                 cells, self._old_numbers, fillvalue=None
             ):
-                if has_data and not isinstance(uni_number, (Jump, type(None))):
+                is_jump = (
+                    uni_number is None
+                    or isinstance(uni_number, Jump)
+                    or (
+                        isinstance(uni_number, syntax_node.ValueNode)
+                        and uni_number.value is None
+                    )
+                )
+                if has_data and not is_jump:
                     cell._universe._accept_from_data(uni_number)
                     if uni_number.is_negative:
                         cell._universe._not_truncated = True
                     # Use the data-block number directly for universe lookup
-                    uni_num = (
-                        abs(uni_number.value) if uni_number.value is not None else 0
-                    )
+                    uni_num = abs(uni_number.value)
                 else:
-                    # Jump or no data: use old_universe_number only if fully parsed
-                    if cell is None or hasattr(cell._universe, "_not_parsed"):
+                    # Jump or no data: skip JIT cells (identified by _not_parsed on the
+                    # cell itself, not the blank modifier which always has _not_parsed).
+                    if cell is None or hasattr(cell, "_not_parsed"):
+                        continue
+                    # Don't overwrite a universe the user has explicitly assigned
+                    if cell._universe._universe is not None:
                         continue
                     uni_num = cell.old_universe_number
-                    if uni_num is None:
-                        uni_num = 0
                 if uni_num not in universes.numbers:
                     universe = Universe(uni_num)
                     universe.link_to_problem(self._problem)
@@ -257,6 +273,7 @@ class UniverseInput(CellModifierInput):
 
     def _accept_and_update(self, value):
         self._old_number = value
+        self._not_truncated = value.is_negative
 
     def _clear_data(self):
         del self._old_numbers

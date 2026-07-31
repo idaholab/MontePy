@@ -25,7 +25,7 @@ class ThermalScatteringLaw(DataInputAbstract):
     * :manual63:`5.6.2`
     * :manual62:`110`
 
-    .. versionchanged:: 1.5.0
+    .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter
 
@@ -140,6 +140,11 @@ class ThermalScatteringLaw(DataInputAbstract):
             else:
                 message = f"No thermal scattering laws given for thermal scattering {hex(id(self))}"
             raise IllegalState(message)
+
+    def format_for_mcnp_input(self, mcnp_version):
+        if hasattr(self, "_not_parsed"):
+            self.full_parse()
+        return super().format_for_mcnp_input(mcnp_version)
 
     def _update_values(self):
         if self.parent_material is not None:

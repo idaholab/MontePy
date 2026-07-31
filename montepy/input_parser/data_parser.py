@@ -101,12 +101,10 @@ class DataParser(MCNP_Parser):
     # Manually specifying because more levels break SLY. Might be hitting some hard coded limit.
     @_(
         "NUMBER_WORD",
-        "NUM_MULTIPLY",
         "NUMBER_WORD padding ",
-        "NUM_MULTIPLY padding",
     )
     def text_phrase(self, p):
-        self._flush_phrase(p, str)
+        return self._flush_phrase(p, str)
 
     @_("text_phrase", "text_sequence text_phrase")
     def text_sequence(self, p):
@@ -273,6 +271,7 @@ class ParamOnlyDataParser(DataParser):
 
 
 class JitDataParser:
+    """A lightweight data-input parser that extracts only the classifier keyword for JIT parsing."""
 
     @staticmethod
     def parse(tokenizer):
@@ -294,7 +293,7 @@ class JitDataParser:
                 mnemonic = syntax_node.ValueNode(token.value, str)
                 classifier = syntax_node.ClassifierNode()
                 classifier.prefix = mnemonic
-                number = syntax_node.ValueNode(None, int)
+                number = None
                 particles = None
                 try:
                     token = next(tokenizer)
@@ -314,7 +313,8 @@ class JitDataParser:
                         particles = syntax_node.ParticleNode(
                             "jit particles", "".join(particles)
                         )
-                    classifier.number = number
+                    if number is not None:
+                        classifier.number = number
                     if particles:
                         classifier.particles = particles
                 except StopIteration:

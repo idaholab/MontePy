@@ -1,5 +1,6 @@
 # Copyright 2024 - 2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
+import io
 import os
 from hypothesis import given, strategies as st
 import numpy as np
@@ -85,6 +86,48 @@ class TestUniverseInput:
         # test bad negative
         input_obj = Input(["U -2"], BlockType.DATA)
         UniverseInput(input_obj, jit_parse=False)
+
+    def test_universe_data_card_multiply_shortcut(self):
+        input_obj = Input(["U J 1 2M 5M 3M J 3 7M 1M"], BlockType.DATA)
+        uni_card = UniverseInput(input_obj)
+
+        assert uni_card.old_numbers == [None, 1, 2, 10, 30, None, 3, 21, 21]
+
+    def test_find_and_populate_universe_cell_block_raises(self):
+        with pytest.raises(IllegalState):
+            self.universe._find_and_populate_universe(5)
+
+    def test_find_and_populate_universe_no_problem(self):
+        input_obj = Input(["U 5"], BlockType.DATA)
+        uni_card = UniverseInput(input_obj, jit_parse=False)
+        assert uni_card._problem is None
+        assert uni_card._find_and_populate_universe(5) is None
+
+    def test_push_to_cells_defaults_to_universe_zero(self):
+        # a data-block "U" card shorter than the cell list leaves later
+        # cells without a real entry; a fully-parsed cell with no cell-block
+        # U= of its own should default to universe 0.
+        in_str = """Test problem
+1 0 -1 imp:n=1
+2 0 1 imp:n=1
+
+1 SO 5.0
+2 SO 6.0
+
+U 5
+"""
+        with io.StringIO(in_str) as fh:
+            problem = montepy.read_input(fh, jit_parse=False)
+        cell2 = problem.cells[2]
+        assert cell2.universe.number == 0
+
+    def test_clear_data_via_cells_blank_modifier_setup(self):
+        # Cells(jit_parse=False) triggers __setup_blank_cell_modifiers to
+        # push_to_cells()+_clear_data() on the blank universe modifier it
+        # creates, freeing _old_numbers.
+        problem = montepy.MCNP_Problem()
+        cells = montepy.Cells(problem=problem, jit_parse=False)
+        assert not hasattr(cells._universe, "_old_numbers")
 
     def test_str(self):
         universe_input = copy.deepcopy(self.universe)
@@ -278,6 +321,14 @@ class TestFill:
             },
         )
         self.simple_fill = Fill(in_cell_block=True, key="fill", value=tree)
+
+    def test_universes_detached_from_problem_raises(self):
+        cell = Cell("1 0 -1 lat=1 fill= 0:1 0:1 0:0 1 0 1", jit_parse=False)
+        fill = cell.fill
+        assert fill.multiple_universes
+        assert fill._problem is None
+        with pytest.raises(IllegalState):
+            fill.universes
 
     def test_complex_transform_fill_init(self):
         input = Input(["1 0 -1 *fill=1 (1.5 0.0 0.0)"], BlockType.CELL)
@@ -488,7 +539,7 @@ class TestFill:
             fill1.merge(fill2)
 
     @given(
-        indices=st.lists(st.integers(0, 2**20), min_size=3, max_size=3),
+        indices=st.lists(st.integers(-(2**20), 2**20), min_size=3, max_size=3),
         width=st.lists(st.integers(1, 2**20), min_size=3, max_size=3),
     )
     def test_fill_index_setter(self, indices, width):
@@ -594,3 +645,56 @@ def test_cell_universe_setter_type_error():
     c = montepy.Cell()
     with pytest.raises(TypeError):
         c.universe = 5
+
+
+def test_universe_soft_claim_single_cell():
+    cell = Cell("3 0 -1", jit_parse=False)
+    uni = Universe(9)
+    uni.soft_claim(cell)
+    assert cell.universe.number == 9
+
+
+def test_universe_grab_cells_from_jit_parse_no_problem():
+    uni = Universe(9)
+    # not linked to any problem; should just return without raising.
+    uni.grab_cells_from_jit_parse()
+
+
+def test_universe_grab_cells_from_jit_parse_parked_value():
+    in_str = """Test problem
+1 0 -1 imp:n=1
+2 0 1
+
+1 SO 5.0
+"""
+    with io.StringIO(in_str) as fh:
+        problem = montepy.read_input(fh, jit_parse=True)
+    cell = problem.cells[1]
+    assert hasattr(cell, "_not_parsed")
+    # simulate a data-block universe assignment parked on the still-JIT
+    # cell's universe modifier, without ever forcing a full parse.
+    cell._universe._parked_value = syntax_node.ValueNode("5", int)
+    uni = Universe(5)
+    uni.link_to_problem(problem)
+    uni.grab_cells_from_jit_parse()
+    assert cell.universe.number == 5
+
+
+def test_universe_renumber_updates_cell_universe_reference():
+    in_str = """Test problem
+1 0 -1 u=5 imp:n=1
+2 0 1
+
+1 SO 5.0
+"""
+    with io.StringIO(in_str) as fh:
+        problem = montepy.read_input(fh, jit_parse=True)
+    uni = problem.universes[5]
+    cell = problem.cells[1]
+    # rename before ever touching cell.universe, so the only way it can
+    # still resolve to the right object afterward is via
+    # NumberedObjectCollection.search_parent_objs_by_child using
+    # Universe._parent_collections.
+    uni.number = 8
+    assert cell.universe is uni
+    assert cell.universe.number == 8

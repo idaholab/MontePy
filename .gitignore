@@ -32,3 +32,4 @@ montepy/_version.py
 htmlcov
 .hypothesis
 .mutmut-cache
+benchmark/faux_models/*

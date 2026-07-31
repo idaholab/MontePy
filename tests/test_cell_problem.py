@@ -75,6 +75,21 @@ def test_cell_str(self):
     montepy.MCNP_VERSION = old_version
 
 
+def test_cell_is_mass_dens():
+    # no density set yet
+    cell = Cell()
+    assert cell.is_mass_dens is None
+    assert cell.is_atom_dens is None
+    # mass density set
+    cell.mass_density = 1.5
+    assert cell.is_mass_dens is True
+    assert cell.is_mass_dens == (not cell.is_atom_dens)
+    # atom density set
+    cell.atom_density = 0.016
+    assert cell.is_mass_dens is False
+    assert cell.is_mass_dens == (not cell.is_atom_dens)
+
+
 def test_cell_density_deleter():
     in_str = "1 1 0.5 2"
     cell = Cell(in_str)
@@ -124,6 +139,25 @@ def test_cell_paremeters_no_eq():
     in_str = f"1 0 -1 PWT 1.0"
     cell = Cell(in_str)
     assert cell.parameters["PWT"]["data"][0].value == 1.0
+
+
+def test_cell_geometry_triggers_full_parse_when_jit():
+    cell = Cell("1 1 0.5 2")
+    assert not cell.fully_parsed
+    geometry = cell.geometry
+    assert cell.fully_parsed
+    assert isinstance(geometry, montepy.surfaces.half_space.HalfSpace)
+
+
+def test_parse_keyword_modifiers_ban_repeat():
+    # Volume (like Universe/Lattice/Fill) bans being specified twice in the
+    # cell block; a normal duplicate "vol=1 vol=2" is actually caught
+    # earlier at the parameter-tree level (RedundantParameterSpecification),
+    # so directly re-invoking _parse_keyword_modifiers is what exercises
+    # this guard.
+    cell = Cell("1 0 -1 vol=1", jit_parse=False)
+    with pytest.raises(ValueError, match="specified more than once"):
+        cell._parse_keyword_modifiers()
 
 
 @pytest.mark.parametrize(

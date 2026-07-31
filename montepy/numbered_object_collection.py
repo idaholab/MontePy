@@ -208,8 +208,8 @@ class NumberedObjectCollection(ABC):
                         obj._unlink_from_collection()
                     obj._link_to_collection(self)
 
-    def finalize_init(self):
-        """TODO"""
+    def finalize_init(self, jit_parse: bool = False):
+        """Finish setting up this collection after the parent problem has completed parsing."""
         pass
 
     @property
@@ -228,6 +228,9 @@ class NumberedObjectCollection(ABC):
     def __setstate__(self, crunchy_data):
         crunchy_data["_problem_ref"] = None
         self.__dict__.update(crunchy_data)
+        # Re-establish _collection_ref weakrefs stripped during pickling/deepcopy.
+        for obj in self._objects:
+            obj._collection_ref = weakref.ref(self)
 
     @property
     def numbers(self):
@@ -267,7 +270,7 @@ class NumberedObjectCollection(ABC):
             )
 
     def search_parent_objs_by_child(self, child, parent_prop, prop_container=False):
-        """ """
+        """Searches the parent collection (e.g., cells for surfaces) that may has this child object, and parse it."""
         search_str = str(child.number)
         for obj in self:
             # possible candidate without full parsing
@@ -288,23 +291,6 @@ class NumberedObjectCollection(ABC):
                 else:
                     if child is parent_obj:
                         pass
-
-    def _get_leading_comment(self, obj):
-        """
-        TODO
-        """
-        try:
-            assert obj in self
-        except AssertionError:
-            raise KeyError(
-                f"obj: {obj} is not in this collection: {type(self).__name__}"
-            )
-        idx = self._objects.index(obj)
-        if idx <= 0:
-            return None
-        comment = self._objects[idx - 1].trailing_comment
-        self._objects[idx - 1]._delete_trailing_comment()
-        return comment
 
     def _update_number(self, old_num, new_num, obj):
         """Updates the number associated with a specific object in the internal cache.
@@ -537,8 +523,13 @@ class NumberedObjectCollection(ABC):
         self.__num_cache[obj.number] = obj
         self._objects.append(obj)
         if obj._collection is not self:
-            obj._unlink_from_collection()
-            obj._link_to_collection(self)
+            current_owner = obj._collection
+            # Only claim ownership when there is no existing problem-level owner.
+            # Sub-collections (complements, surfaces) must not displace the main
+            # problem-level collection as the authoritative owner for number tracking.
+            if current_owner is None or current_owner._problem is None:
+                obj._unlink_from_collection()
+                obj._link_to_collection(self)
         self._append_hook(obj, **kwargs)
         if self._problem:
             obj.link_to_problem(self._problem)
@@ -1259,10 +1250,6 @@ class NumberedDataObjectCollection(NumberedObjectCollection):
             if insert_in_data:
                 self._problem.data_inputs.insert(index + 1, obj)
             self._last_index = index + 1
-
-    def _get_leading_comment(self, obj):
-        """ """
-        raise NotImplementedError(f"Should search through data_inputs directly.")
 
     def _delete_hook(self, obj):
         if self._problem:

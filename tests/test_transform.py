@@ -1,5 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
+import os
 import numpy as np
 import pytest
 import montepy
@@ -204,3 +205,28 @@ def test_transform_update_values():
     assert len(test.data) == 13
     assert test.data[-1].is_negative
     # test partial rotation matrix start
+
+
+def test_transform_renumber_updates_fill_transform_reference():
+    problem = montepy.read_input(
+        os.path.join("tests", "inputs", "test_universe.imcnp"), jit_parse=False
+    )
+    transform = problem.transforms[5]
+    cell = problem.cells[2]
+    # rename before ever touching cell.fill.transform, so the only way
+    # cell.fill.transform can still resolve to the right object afterward
+    # is via NumberedObjectCollection.search_parent_objs_by_child's tuple
+    # traversal of ("fill", "transform").
+    transform.number = 6
+    assert cell.fill.transform is transform
+    assert cell.fill.transform.number == 6
+
+
+def test_link_to_collection_already_linked_raises():
+    from montepy.transforms import Transforms
+
+    transform = Transform(number=6)
+    original_collection = Transforms([transform])
+    other_collection = Transforms()
+    with pytest.raises(IllegalState):
+        transform._link_to_collection(other_collection)

@@ -104,6 +104,17 @@ def test_surface_init():
         Surface(Input(["1 INL 0.0"], BlockType.SURFACE), jit_parse=False)
 
 
+def test_enforce_values_no_surface_type():
+    # if neither an already-set _surface_type nor a "surface_type" tree
+    # entry is available, _enforce_values must return early rather than
+    # crash trying to enum-convert a missing value.
+    surf = Surface()
+    del surf._surface_type
+    del surf._tree.nodes["surface_type"]
+    surf._enforce_values()
+    assert not hasattr(surf, "_surface_type")
+
+
 def test_surface_transform_and_periodic():
     # test transform
     in_str = "1 5 PZ 0"
@@ -543,6 +554,10 @@ def test_cylinder_location_setter():
     # test wrong type
     with pytest.raises(TypeError):
         surf.coordinates = "fo"
+    with pytest.raises(TypeError):
+        surf.coordinates = {5, 6, 7}
+    with pytest.raises(TypeError):
+        surf.coordinates = iter((5, 6, 7))
     # test length issues
     with pytest.raises(ValueError):
         surf.coordinates = [3, 4, 5]
@@ -559,6 +574,10 @@ def test_sphere_coordinate_setter():
         surf.coordinates = 6
     with pytest.raises(TypeError):
         surf.coordinates = (6, 7, "eight")
+    with pytest.raises(TypeError):
+        surf.coordinates = {6, 7}
+    with pytest.raises(TypeError):
+        surf.coordinates = iter((6, 7))
     # test length issues
     with pytest.raises(ValueError):
         surf.coordinates = [6, 7]
@@ -800,6 +819,41 @@ def test_surface_dispatch(surf_str, expected_cls):
     assert isinstance(surf, expected_cls), (
         f"Expected {expected_cls.__name__}, got {type(surf).__name__}"
     )
+
+
+def test_surface_dispatch_peek_failure_fallback(monkeypatch):
+    """A JIT peek failure on otherwise-valid syntax must not misclassify
+    the surface -- it must fall back to the same dispatch a successful
+    peek would have produced, not silently default to the generic Surface
+    base class."""
+
+    def broken_peek(cls, input):
+        raise RuntimeError("simulated JIT peek failure")
+
+    monkeypatch.setattr(
+        montepy.surfaces.surface.Surface, "_peek_light_parse", classmethod(broken_peek)
+    )
+    surf = surface_builder("1 PZ 0.0")
+    assert isinstance(surf, AxisPlane), (
+        f"Expected AxisPlane despite peek failure, got {type(surf).__name__}"
+    )
+
+
+def test_surface_dispatch_peek_failure_undispatched_type_full_parse(monkeypatch):
+    """A JIT peek failure on a surface type with no specific/generic dispatch
+    class (e.g. axisymmetric-by-points "X") must fall back to a plain
+    Surface, and when jit_parse=False is requested it must be fully parsed
+    rather than left as a JIT stub."""
+
+    def broken_peek(cls, input):
+        raise RuntimeError("simulated JIT peek failure")
+
+    monkeypatch.setattr(
+        montepy.surfaces.surface.Surface, "_peek_light_parse", classmethod(broken_peek)
+    )
+    surf = surface_builder("1 X 1 2 3 4", jit_parse=False)
+    assert type(surf) is montepy.surfaces.surface.Surface
+    assert surf.fully_parsed
 
 
 # Scalar property tests: (surf_str, prop, expected_val, new_val, rejects_negative)

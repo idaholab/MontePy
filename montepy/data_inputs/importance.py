@@ -41,7 +41,7 @@ import numbers
 class Importance(CellModifierInput):
     """A data input that sets the importance for a cell(s).
 
-    .. versionchanged:: 1.5.0
+    .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter
 
@@ -60,6 +60,7 @@ class Importance(CellModifierInput):
     """
 
     _DEFAULT_IMP = 1.0
+
     _ALL_OR_NOTHING = True
     """
     Marks that if one cell has a value all cells must have values, no matter the default.
@@ -194,14 +195,14 @@ class Importance(CellModifierInput):
     @args_checked
     def merge(self, other: Importance):
         # ensure all parsed or none are parsed
-        if not self.full_parsed:
-            if other.full_parsed:
+        if not self.fully_parsed:
+            if other.fully_parsed:
                 self.full_parse()
             else:
                 self._inputs.append(other)
                 return
         # if full parsed
-        elif not other.full_parsed:
+        elif not other.fully_parsed:
             other.full_parse()
         if self.in_cell_block != other.in_cell_block:
             raise ValueError("Can not mix cell-level and data-level Importance objects")
