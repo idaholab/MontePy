@@ -1,6 +1,7 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import copy
+from numbers import Integral
 from typing import Generator
 
 import montepy
@@ -31,7 +32,8 @@ class LatticeIndex:
 
     __slots__ = ("_dimensions",)
 
-    def __init__(self, dimensions):
+    @args_checked
+    def __init__(self, dimensions: list[Integral | tuple[Integral, Integral]]):
         self._dimensions = list(dimensions)
 
     @property
@@ -65,7 +67,8 @@ class ParticleFilter(Filter):
 
     __slots__ = ("_particles",)
 
-    def __init__(self, particles):
+    @args_checked
+    def __init__(self, particles: list[montepy.Particle] | set[montepy.Particle]):
         self._particles = list(particles)
 
     @property
@@ -93,7 +96,8 @@ class SpatialFilter(Filter):
 
     __slots__ = ("_groups",)
 
-    def __init__(self, groups):
+    @args_checked
+    def __init__(self, groups: list[TallyGroup]):
         self._groups = list(groups)
 
     @property
@@ -135,7 +139,15 @@ class FlatGroup(TallyGroup):
         "_cells_or_surfaces",
     )
 
-    def __init__(self, numbers, lattice_indices=None, *, is_grouped, universe_spec=None):
+    @args_checked
+    def __init__(
+        self,
+        numbers: list[Integral],
+        lattice_indices: list[LatticeIndex | None] | None = None,
+        *,
+        is_grouped: bool,
+        universe_spec: Integral | None = None,
+    ):
         self._old_numbers = list(numbers)
         self._lattice_indices = lattice_indices or [None] * len(self._old_numbers)
         self._is_grouped = is_grouped
@@ -182,7 +194,8 @@ class PathGroup(TallyGroup):
 
     __slots__ = ("_levels",)
 
-    def __init__(self, levels):
+    @args_checked
+    def __init__(self, levels: list[FlatGroup]):
         self._levels = list(levels)
 
     @property
@@ -190,7 +203,12 @@ class PathGroup(TallyGroup):
         """FlatGroup levels, innermost (scored) first."""
         return list(self._levels)
 
-    def inside(self, *cells_or_surfaces, lattice=None) -> PathGroup:
+    @args_checked
+    def inside(
+        self,
+        *cells_or_surfaces: montepy.Cell | montepy.Surface,
+        lattice: list[Integral] | None = None,
+    ) -> PathGroup:
         """Append an outer level and return self for chaining.
 
         Parameters
@@ -493,6 +511,17 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
                 return True
         return False
 
+    @staticmethod
+    def _dispatch_class(input, num: int) -> type[Tally] | None:
+        """The :class:`Tally` subclass for a tally number, or ``None`` if generic."""
+        try:
+            tally_type = TallyType(num % _TALLY_TYPE_MODULUS)
+        except ValueError as e:
+            raise MalformedInputError(
+                input, f"Tally type digit {num % _TALLY_TYPE_MODULUS} is not valid."
+            ) from e
+        return _TALLY_TYPE_MAP.get(tally_type)
+
     @classmethod
     def from_input(cls, input, *, jit_parse: bool = True) -> Tally:
         """Factory: create the appropriate :class:`Tally` subclass from an input.
@@ -509,18 +538,28 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         Tally
             An instance of the correct subclass for the tally type digit.
         """
-        base = Tally(input, jit_parse=True)
-        num = base._number.value
         try:
-            tally_type = TallyType(num % _TALLY_TYPE_MODULUS)
-        except ValueError:
-            raise MalformedInputError(
-                input,
-                f"Tally type digit {num % _TALLY_TYPE_MODULUS} is not valid.",
-            )
-        subclass = _TALLY_TYPE_MAP.get(tally_type)
+            bare_tree = Tally._peek_light_parse(input)
+            number_node = bare_tree.nodes["classifier"].number
+            if number_node is None:
+                raise ValueError("Tally classifier has no number.")
+            subclass = Tally._dispatch_class(input, number_node.value)
+        except Exception:
+            # The JIT light parser isn't fully robust and can fail on valid
+            # syntax. Fall back to building a real Tally: its own
+            # JIT-with-fallback-to-full-parse handling in _parse_input will
+            # reliably determine the number instead of guessing, and gives
+            # proper file/line context on error.
+            base = Tally(input, jit_parse=True)
+            subclass = Tally._dispatch_class(input, base._number.value)
+            if subclass is None:
+                if not jit_parse:
+                    base.full_parse()
+                return base
+            return subclass(input, jit_parse=jit_parse)
+
         if subclass is None:
-            return base
+            return Tally(input, jit_parse=jit_parse)
         return subclass(input, jit_parse=jit_parse)
 
     def link_to_problem(self, problem, *, deepcopy=False):
@@ -706,6 +745,7 @@ class SurfaceTally(Tally):
         return self._surfaces
 
     @args_checked
+    @needs_full_cst
     def add_surface(self, surface: montepy.Surface) -> None:
         """Add a single surface as a separate scoring bin.
 
@@ -718,12 +758,14 @@ class SurfaceTally(Tally):
         if surface not in self._surfaces:
             self._surfaces.append(surface)
 
-    def add_group(self, surfaces) -> None:
+    @args_checked
+    @needs_full_cst
+    def add_group(self, surfaces: list[montepy.Surface] | set[montepy.Surface]) -> None:
         """Add surfaces as a single union (averaged) bin.
 
         Parameters
         ----------
-        surfaces : Iterable[Surface]
+        surfaces : list[Surface], set[Surface]
             The surfaces to group.
         """
         surfaces = list(surfaces)
@@ -733,7 +775,9 @@ class SurfaceTally(Tally):
             if s not in self._surfaces:
                 self._surfaces.append(s)
 
-    def add_path_group(self, *surfaces) -> PathGroup:
+    @args_checked
+    @needs_full_cst
+    def add_path_group(self, *surfaces: montepy.Surface) -> PathGroup:
         """Add a universe-path group rooted at the given surfaces.
 
         Returns the :class:`PathGroup` for chaining via :meth:`PathGroup.inside`.
@@ -798,6 +842,7 @@ class CellTally(Tally):
         return self._cells
 
     @args_checked
+    @needs_full_cst
     def add_cell(self, cell: montepy.Cell) -> None:
         """Add a single cell as a separate scoring bin.
 
@@ -810,12 +855,14 @@ class CellTally(Tally):
         if cell not in self._cells:
             self._cells.append(cell)
 
-    def add_group(self, cells) -> None:
+    @args_checked
+    @needs_full_cst
+    def add_group(self, cells: list[montepy.Cell] | set[montepy.Cell]) -> None:
         """Add cells as a single union (averaged) bin.
 
         Parameters
         ----------
-        cells : Iterable[Cell]
+        cells : list[Cell], set[Cell]
             The cells to group.
         """
         cells = list(cells)
@@ -825,7 +872,9 @@ class CellTally(Tally):
             if c not in self._cells:
                 self._cells.append(c)
 
-    def add_path_group(self, *cells) -> PathGroup:
+    @args_checked
+    @needs_full_cst
+    def add_path_group(self, *cells: montepy.Cell) -> PathGroup:
         """Add a universe-path group rooted at the given cells.
 
         Returns the :class:`PathGroup` for chaining via :meth:`PathGroup.inside`.

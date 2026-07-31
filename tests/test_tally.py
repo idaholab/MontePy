@@ -178,3 +178,20 @@ class TestTallyObject:
         assert isinstance(spatial_filter, SpatialFilter)
         assert set(particle_filter.particles) == set(f1.particle_classifiers)
         assert spatial_filter.groups == f1.groups
+
+    def test_add_cell_before_full_parse_preserves_existing_groups(self, tally_problem):
+        # Regression test: add_cell/add_group/add_path_group must trigger a
+        # full parse *before* mutating _groups, or the mutation is silently
+        # lost the next time a @needs_full_ast getter forces a full parse.
+        f4 = tally_problem.tallies[4]  # f4:n 1 2 3
+        assert not f4.fully_parsed
+        new_cell = tally_problem.cells[1].clone()
+        f4.add_cell(new_cell)
+        assert f4.fully_parsed
+        numbers = list(f4.cells.numbers)
+        assert {1, 2, 3}.issubset(set(numbers))
+        assert new_cell.number in numbers
+
+    def test_from_input_invalid_tally_type_digit(self):
+        with pytest.raises(montepy.exceptions.MalformedInputError):
+            parse_data(Input(["f3:n 1 2 3"], BlockType.DATA))
