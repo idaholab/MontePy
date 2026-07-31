@@ -3,6 +3,15 @@ import pytest
 
 import montepy
 from montepy.data_inputs.data_parser import parse_data
+from montepy.data_inputs.tally import (
+    EnergyDepositionTally,
+    F1Tally,
+    F4Tally,
+    F6Tally,
+    ParticleFilter,
+    SpatialFilter,
+)
+from montepy.data_inputs.tally_type import Score, TallyType
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input
 from montepy.input_parser.tally_parser import TallyParser
@@ -102,3 +111,70 @@ class TestFmesh:
     @pytest.mark.parametrize("line", ["fmesh14:n vec=0 0 0", "fmesh14:n vec=0, 0, 0"])
     def test_fmesh_parse(_, line):
         parse_data(line)
+
+
+@pytest.fixture
+def tally_problem():
+    return montepy.read_input("tests/inputs/test_tally.imcnp")
+
+
+class TestTallyObject:
+    """Tests for the Tally object model: clone, clone_as, scores, filters."""
+
+    def test_clone_same_type(self, tally_problem):
+        f4 = tally_problem.tallies[4]
+        clone = f4.clone()
+        assert clone.number != f4.number
+        assert clone.number % 10 == 4
+        assert clone in tally_problem.tallies
+        assert list(clone.cells.numbers) == list(f4.cells.numbers)
+
+    def test_clone_as_class(self, tally_problem):
+        f4 = tally_problem.tallies[4]
+        new = f4.clone_as(F6Tally)
+        assert isinstance(new, EnergyDepositionTally)
+        assert new.number % 10 == 6
+        assert new in tally_problem.tallies
+        assert list(new.cells.numbers) == list(f4.cells.numbers)
+        assert new.scores == [Score.ENERGY_DEPOSITION]
+
+    def test_clone_as_enum(self, tally_problem):
+        f4 = tally_problem.tallies[4]
+        new = f4.clone_as(TallyType.ENERGY_DEPOSITION)
+        assert isinstance(new, EnergyDepositionTally)
+        assert new.number % 10 == 6
+        assert new in tally_problem.tallies
+
+    def test_clone_as_incompatible_category(self, tally_problem):
+        f1 = tally_problem.tallies[1]
+        with pytest.raises(ValueError):
+            f1.clone_as(F4Tally)
+
+    def test_clone_as_bad_type(self, tally_problem):
+        f4 = tally_problem.tallies[4]
+        with pytest.raises(TypeError):
+            f4.clone_as("f6")
+
+    @pytest.mark.parametrize(
+        "number, expected",
+        [
+            (1, [Score.CURRENT]),
+            (2, [Score.FLUX]),
+            (4, [Score.FLUX]),
+            (6, [Score.ENERGY_DEPOSITION]),
+            (7, [Score.FISSION_ENERGY_DEPOSITION]),
+            (8, [Score.PULSE_HEIGHT]),
+        ],
+    )
+    def test_scores_default(self, tally_problem, number, expected):
+        assert tally_problem.tallies[number].scores == expected
+
+    def test_filters_default(self, tally_problem):
+        f1 = tally_problem.tallies[1]  # f1:n,p 1000
+        filters = f1.filters
+        assert len(filters) == 2
+        particle_filter, spatial_filter = filters
+        assert isinstance(particle_filter, ParticleFilter)
+        assert isinstance(spatial_filter, SpatialFilter)
+        assert set(particle_filter.particles) == set(f1.particle_classifiers)
+        assert spatial_filter.groups == f1.groups

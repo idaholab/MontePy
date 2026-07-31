@@ -7,8 +7,8 @@ import montepy
 from montepy.cells import Cells
 from montepy.surface_collection import Surfaces
 from montepy.data_inputs.data_input import DataInputAbstract
-from montepy.data_inputs.tally_type import TallyType
-from montepy.exceptions import MalformedInputError
+from montepy.data_inputs.tally_type import Score, TallyType
+from montepy.exceptions import MalformedInputError, NumberConflictError
 from montepy.input_parser.tally_parser import TallyParser
 from montepy.input_parser import syntax_node
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
@@ -48,6 +48,64 @@ class TallyGroup:
 
     def __contains__(self, item) -> bool:
         raise NotImplementedError
+
+
+class Filter:
+    """Abstract analog of an OpenMC-style tally filter."""
+
+
+class ParticleFilter(Filter):
+    """Filters a tally to the particle types in its classifier (e.g. ``:n,p``).
+
+    Parameters
+    ----------
+    particles : list[montepy.Particle]
+        The particles this tally is restricted to.
+    """
+
+    __slots__ = ("_particles",)
+
+    def __init__(self, particles):
+        self._particles = list(particles)
+
+    @property
+    def particles(self):
+        """The particles this tally is restricted to."""
+        return list(self._particles)
+
+    def __eq__(self, other):
+        return isinstance(other, ParticleFilter) and self._particles == other._particles
+
+    def __repr__(self):
+        return f"ParticleFilter({self._particles})"
+
+
+class SpatialFilter(Filter):
+    """Filters a tally to its scoring bins (cells, surfaces, or paths).
+
+    A thin wrapper around a :class:`Tally`'s :attr:`~Tally.groups`.
+
+    Parameters
+    ----------
+    groups : list[TallyGroup]
+        The scoring bins.
+    """
+
+    __slots__ = ("_groups",)
+
+    def __init__(self, groups):
+        self._groups = list(groups)
+
+    @property
+    def groups(self):
+        """The scoring bins (:class:`TallyGroup` objects) this filter covers."""
+        return list(self._groups)
+
+    def __eq__(self, other):
+        return isinstance(other, SpatialFilter) and self._groups == other._groups
+
+    def __repr__(self):
+        return f"SpatialFilter({self._groups})"
 
 
 class FlatGroup(TallyGroup):
@@ -291,6 +349,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
     """
 
     _POINTER_ATTRS = set()
+    _DEFAULT_SCORES = ()
 
     @staticmethod
     def _parser():
@@ -400,6 +459,32 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         """``True`` if a total bin (T) is appended."""
         return self._include_total
 
+    @property
+    @needs_full_ast
+    def scores(self) -> list[Score]:
+        """The physical quantities this tally scores, e.g. ``[Score.FLUX]`` for F4.
+
+        This is just the quantity implied by the tally type digit, not
+        something derived from an ``FM`` tally-multiplier card, which isn't
+        modeled yet.
+        """
+        return list(self._DEFAULT_SCORES)
+
+    @property
+    @needs_full_ast
+    def filters(self) -> list[Filter]:
+        """A shallow analog of OpenMC's tally filters.
+
+        Defaults to a :class:`ParticleFilter` (from :attr:`particle_classifiers`)
+        and a :class:`SpatialFilter` (from :attr:`groups`), whichever are present.
+        """
+        filters = []
+        if self.particle_classifiers:
+            filters.append(ParticleFilter(self.particle_classifiers))
+        if self._groups:
+            filters.append(SpatialFilter(self._groups))
+        return filters
+
     def __contains__(self, item) -> bool:
         if hasattr(self, "_not_parsed"):
             return False
@@ -444,6 +529,58 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
     def _update_values(self):
         pass
 
+    @staticmethod
+    def _align_to_type(tally_type: TallyType, start: int) -> int:
+        """The smallest number ``>= start`` whose last digit matches ``tally_type``."""
+        aligned = start - (start % 10) + tally_type.value
+        if aligned < start:
+            aligned += 10
+        return aligned
+
+    def _next_number_for_type(
+        self, tally_type: TallyType, starting_number, step
+    ) -> int:
+        """Finds the next free tally number matching ``tally_type``'s digit.
+
+        Note
+        ----
+        This probes with :meth:`~montepy.numbered_object_collection.NumberedObjectCollection.check_number`
+        rather than delegating to :meth:`~montepy.numbered_object_collection.NumberedObjectCollection.request_number`,
+        because that method tracks a single collection-wide
+        ``_last_assigned_number`` ratchet that isn't digit-aware: a prior
+        request for one tally-type digit (e.g. ``clone()`` landing on 124)
+        pushes that ratchet past 124, so a later request for a *different*
+        digit (e.g. ``clone_as`` targeting type 6) would start its search
+        from >134 instead of the correctly-aligned 6, and drift to a number
+        that still doesn't end in 6.
+        """
+        collection = self._problem.tallies if self._problem else None
+        if collection is not None:
+            start = starting_number if starting_number is not None else collection.starting_number
+            step = step if step is not None else collection.step
+        else:
+            start = starting_number if starting_number is not None else 1
+            step = step if step is not None else 1
+        candidate = self._align_to_type(tally_type, start)
+        while True:
+            if collection is not None:
+                try:
+                    collection.check_number(candidate)
+                    return candidate
+                except NumberConflictError:
+                    pass
+            elif candidate != self.number:
+                return candidate
+            candidate += step * 10
+
+    @staticmethod
+    def _tally_category(cls: type[Tally]) -> type[Tally] | None:
+        """Which of {SurfaceTally, CellTally, DetectorTally} ``cls`` belongs to."""
+        for category in (SurfaceTally, CellTally, DetectorTally):
+            if issubclass(cls, category):
+                return category
+        return None
+
     @args_checked
     @needs_full_cst
     def clone(
@@ -455,7 +592,90 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
 
         See :meth:`~montepy.numbered_mcnp_object.Numbered_MCNP_Object.clone`.
         """
-        return super().clone(starting_number, step)
+        ret = copy.deepcopy(self)
+        new_number = self._next_number_for_type(self.tally_type, starting_number, step)
+        if self._problem:
+            ret.link_to_problem(self._problem)
+            ret.number = new_number
+            self._problem.tallies.append(ret)
+        else:
+            ret.number = new_number
+        return ret
+
+    @args_checked
+    @needs_full_cst
+    def clone_as(
+        self,
+        new_type: TallyType | type[Tally],
+        starting_number: ty.PositiveInt = None,
+        step: ty.PositiveInt = None,
+    ) -> Tally:
+        """Clone this tally as a different tally type, keeping the same scoring geometry.
+
+        For example, this can turn an F4 cell-flux tally into an F6
+        energy-deposition tally scoring the same cells:
+
+        .. code-block:: python
+
+            from montepy.data_inputs.tally import F6Tally
+            from montepy.data_inputs.tally_type import TallyType
+
+            heating = flux_tally.clone_as(F6Tally)
+            # or, equivalently:
+            heating = flux_tally.clone_as(TallyType.ENERGY_DEPOSITION)
+
+        Only conversions within the same tally category are allowed:
+        F1/F2 (surface-based) convert freely among each other, as do
+        F4/F6/F7/F8 (cell-based); F5 (point/ring detector) has no
+        cell/surface geometry to carry over and can't be converted to or
+        from.
+
+        Parameters
+        ----------
+        new_type : TallyType, type[Tally]
+            The target tally type, either as a :class:`TallyType` member or
+            as a :class:`Tally` subclass (e.g. ``montepy.F6Tally``).
+        starting_number : int
+            The starting number to request for the new object's number.
+        step : int
+            The step size to use to find a new valid number.
+
+        Returns
+        -------
+        Tally
+            A new tally of the requested type, with the same scoring groups.
+        """
+        if isinstance(new_type, TallyType):
+            target_cls = _TALLY_TYPE_MAP.get(new_type)
+            if target_cls is None:
+                raise ValueError(f"No Tally subclass is registered for {new_type}.")
+        elif isinstance(new_type, type) and issubclass(new_type, Tally):
+            target_cls = new_type
+        else:
+            raise TypeError(
+                f"new_type must be a TallyType or a Tally subclass, got {new_type!r}."
+            )
+
+        if self._tally_category(type(self)) != self._tally_category(target_cls):
+            raise ValueError(
+                f"Cannot clone a {type(self).__name__} (tally type "
+                f"{self.tally_type}) as a {target_cls.__name__} (tally type "
+                f"{target_cls._TALLY_TYPE}); incompatible tally categories."
+            )
+
+        if target_cls is type(self):
+            return self.clone(starting_number, step)
+
+        ret = copy.deepcopy(self)
+        ret.__class__ = target_cls
+        new_number = self._next_number_for_type(target_cls._TALLY_TYPE, starting_number, step)
+        if self._problem:
+            ret.link_to_problem(self._problem)
+            ret.number = new_number
+            self._problem.tallies.append(ret)
+        else:
+            ret.number = new_number
+        return ret
 
     def __str__(self):
         try:
@@ -538,21 +758,27 @@ class SurfaceTally(Tally):
     def link_to_problem(self, problem, *, deepcopy=False):
         super().link_to_problem(problem)
         if problem is not None and not hasattr(self, "_not_parsed"):
+            # Rebuild from scratch: a deepcopy (e.g. from clone()) carries
+            # stale copied Surface objects that must be discarded, not
+            # merged with the live ones from `problem`.
+            self._surfaces = Surfaces()
             for group in self._groups:
                 self._link_group_surfaces(group, problem)
 
     def _link_group_surfaces(self, group, problem):
         if isinstance(group, FlatGroup):
+            group._cells_or_surfaces = []
             for num in group._old_numbers:
                 try:
                     # Use _surfaces directly to avoid triggering __relink_objs via the property.
                     surface = problem._surfaces[num]
-                    if surface not in group._cells_or_surfaces:
-                        group._cells_or_surfaces.append(surface)
-                    if surface not in self._surfaces:
-                        self._surfaces.append(surface)
                 except KeyError:
-                    pass
+                    continue
+                group._cells_or_surfaces.append(surface)
+                try:
+                    self._surfaces[surface.number]
+                except KeyError:
+                    self._surfaces.append(surface)
         elif isinstance(group, PathGroup):
             for level in group._levels:
                 self._link_group_surfaces(level, problem)
@@ -624,21 +850,27 @@ class CellTally(Tally):
     def link_to_problem(self, problem, *, deepcopy=False):
         super().link_to_problem(problem)
         if problem is not None and not hasattr(self, "_not_parsed"):
+            # Rebuild from scratch: a deepcopy (e.g. from clone()) carries
+            # stale copied Cell objects that must be discarded, not merged
+            # with the live ones from `problem`.
+            self._cells = Cells()
             for group in self._groups:
                 self._link_group_cells(group, problem)
 
     def _link_group_cells(self, group, problem):
         if isinstance(group, FlatGroup):
+            group._cells_or_surfaces = []
             for num in group._old_numbers:
                 try:
                     # Use _cells directly to avoid triggering __relink_objs via the property.
                     cell = problem._cells[num]
-                    if cell not in group._cells_or_surfaces:
-                        group._cells_or_surfaces.append(cell)
-                    if cell not in self._cells:
-                        self._cells.append(cell)
                 except KeyError:
-                    pass
+                    continue
+                group._cells_or_surfaces.append(cell)
+                try:
+                    self._cells[cell.number]
+                except KeyError:
+                    self._cells.append(cell)
         elif isinstance(group, PathGroup):
             if group._levels:
                 self._link_group_cells(group._levels[0], problem)
@@ -648,6 +880,7 @@ class DetectorTally(Tally):
     """F5: point/ring detector tally."""
 
     _TALLY_TYPE = TallyType.DETECTOR
+    _DEFAULT_SCORES = (Score.FLUX,)
 
 
 # ── Concrete subclasses ────────────────────────────────────────────────────────
@@ -657,36 +890,42 @@ class SurfaceCurrentTally(SurfaceTally):
     """F1: surface current tally."""
 
     _TALLY_TYPE = TallyType.CURRENT
+    _DEFAULT_SCORES = (Score.CURRENT,)
 
 
 class SurfaceFluxTally(SurfaceTally):
     """F2: average surface flux tally."""
 
     _TALLY_TYPE = TallyType.SURFACE_FLUX
+    _DEFAULT_SCORES = (Score.FLUX,)
 
 
 class CellFluxTally(CellTally):
     """F4: cell flux tally."""
 
     _TALLY_TYPE = TallyType.CELL_FLUX
+    _DEFAULT_SCORES = (Score.FLUX,)
 
 
 class EnergyDepositionTally(CellTally):
     """F6: energy deposition tally."""
 
     _TALLY_TYPE = TallyType.ENERGY_DEPOSITION
+    _DEFAULT_SCORES = (Score.ENERGY_DEPOSITION,)
 
 
 class FissionEnergyDepositionTally(CellTally):
     """F7: fission energy deposition tally."""
 
     _TALLY_TYPE = TallyType.FISSION_ENERGY_DEPOSITION
+    _DEFAULT_SCORES = (Score.FISSION_ENERGY_DEPOSITION,)
 
 
 class EnergyDetectorPulseTally(CellTally):
     """F8: energy-detector pulse height tally."""
 
     _TALLY_TYPE = TallyType.ENERGY_DETECTOR_PULSE
+    _DEFAULT_SCORES = (Score.PULSE_HEIGHT,)
 
 
 _TALLY_TYPE_MAP: dict[TallyType, type[Tally]] = {
