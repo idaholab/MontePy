@@ -40,7 +40,7 @@ class TallyParser(DataParser):
         """ """
         return self._flush_phrase(p, str)
 
-    @_("PARTICLE", "PARTICLE padding")
+    @_("PARTICLE", "PARTICLE padding", "TEXT", "TEXT padding")
     def end_phrase(self, p):
         """A non-zero number with or without padding.
 
@@ -48,6 +48,12 @@ class TallyParser(DataParser):
         -------
         ValueNode
             a float ValueNode
+
+        Notes
+        -----
+        ``T`` (total) happens to lex as ``PARTICLE`` (the triton letter), but
+        ``C`` (cumulative, FM cards only) isn't a particle letter and lexes
+        as ``TEXT`` instead -- both alternatives are needed here.
         """
         return self._flush_phrase(p, str)
 
@@ -114,12 +120,24 @@ class TallyParser(DataParser):
         "lattice_phrase",
         "universe_phrase",
         "tally_group",
+        "reaction_operator",
     )
     def tally_group_item(self, p):
         return p[0]
 
     @_("PARTICLE_SPECIAL", "PARTICLE_SPECIAL padding")
     def path_sep(self, p):
+        return self._flush_phrase(p, str)
+
+    @_('":"', '":" padding', "COMPLEMENT", "COMPLEMENT padding")
+    def reaction_operator(self, p):
+        """An FM tally-multiplier reaction-list operator: ``:`` (add) or ``#`` (subtract).
+
+        Returns
+        -------
+        ValueNode
+            a str ValueNode holding the raw operator symbol.
+        """
         return self._flush_phrase(p, str)
 
     @_('"[" lattice_body "]"', '"[" lattice_body "]" padding')
