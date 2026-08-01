@@ -160,7 +160,8 @@ class TestTallyObject:
         [
             (1, [Score.CURRENT]),
             (2, [Score.FLUX]),
-            (4, [Score.FLUX]),
+            # not 4: it has a linked fm4 card, tested in test_tally_multiplier.py
+            (34, [Score.FLUX]),
             (6, [Score.ENERGY_DEPOSITION]),
             (7, [Score.FISSION_ENERGY_DEPOSITION]),
             (8, [Score.PULSE_HEIGHT]),

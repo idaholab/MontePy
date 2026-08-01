@@ -7,7 +7,7 @@ import io
 import os
 import warnings
 
-from montepy.data_inputs import mode, tally as tally_mod, transform
+from montepy.data_inputs import mode, tally as tally_mod, tally_multiplier, transform
 from montepy._cell_data_control import CellDataPrintController
 from montepy.utilities import *
 from montepy.cell import Cell
@@ -532,7 +532,9 @@ class MCNP_Problem:
                             self._materials.append(obj, insert_in_data=False)
                         elif isinstance(obj, transform.Transform):
                             self._transforms.append(obj, insert_in_data=False)
-                        elif isinstance(obj, tally_mod.Tally):
+                        elif isinstance(
+                            obj, (tally_mod.Tally, tally_multiplier.TallyMultiplier)
+                        ):
                             self._tallies.append(obj, insert_in_data=False)
                         elif isinstance(
                             obj, montepy.data_inputs.cell_modifier.CellModifierInput
@@ -865,7 +867,7 @@ class MCNP_Problem:
                     self._materials.append(obj, insert_in_data=False)
                 elif isinstance(obj, transform.Transform):
                     self._transforms.append(obj, insert_in_data=False)
-                elif isinstance(obj, tally_mod.Tally):
+                elif isinstance(obj, (tally_mod.Tally, tally_multiplier.TallyMultiplier)):
                     self._tallies.append(obj, insert_in_data=False)
         return obj
 

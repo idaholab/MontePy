@@ -22,8 +22,10 @@ class Score(Enum):
 
     A shallow analog of OpenMC's tally scores: for MontePy this is just the
     quantity implied by the tally type digit (e.g. F4 always scores
-    :class:`Score.FLUX`), not something derived from FM tally-multiplier
-    cards, which aren't modeled yet.
+    :class:`Score.FLUX`). If an FM tally-multiplier card is linked to the
+    tally, :attr:`~montepy.data_inputs.tally.Tally.scores` returns a list of
+    :class:`~montepy.data_inputs.tally_multiplier.MultiplierScore` instead of
+    this enum -- see :attr:`~montepy.data_inputs.tally.Tally.multiplier`.
     """
 
     CURRENT = 1

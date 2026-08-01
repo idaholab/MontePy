@@ -115,30 +115,52 @@ C tally multiplier reaction list: subtract (pound) operator
 fm94:n (1.0 26 16#103)
 C tally multiplier reaction list precedence: (16*103) + 104
 fm104:n (1.0 26 16 103 : 104)
+C tally for fm204
+f204:n 1 2 3
 C tally multiplier reaction list precedence: 16 + (103*104)
-fm105:n (1.0 26 16 : 103 104)
+fm204:n (1.0 26 16 : 103 104)
+C tally for fm214
+f214:n 1 2 3
 C tally multiplier reaction list precedence: (16*103) + (104*105)
-fm106:n (1.0 26 16 103 : 104 105)
+fm214:n (1.0 26 16 103 : 104 105)
+C tally for fm224
+f224:n 1 2 3
 C tally multiplier reaction list precedence: 16 - (103*104)
-fm107:n (1.0 26 16 # 103 104)
+fm224:n (1.0 26 16 # 103 104)
+C tally for fm234
+f234:n 1 2 3
 C tally multiplier reaction list precedence: (16*103) - 104
-fm108:n (1.0 26 16 103 # 104)
+fm234:n (1.0 26 16 103 # 104)
+C tally for fm244
+f244:n 1 2 3
 C tally multiplier reaction list precedence: 16 + 103 - (104*105)
-fm109:n (1.0 26 16 : 103 # 104 105)
+fm244:n (1.0 26 16 : 103 # 104 105)
+C tally for fm254
+f254:n 1 2 3
 C tally multiplier reaction list precedence: (16*103) + 104 - (105*106)
-fm110:n (1.0 26 16 103 : 104 # 105 106)
+fm254:n (1.0 26 16 103 : 104 # 105 106)
+C tally for fm264
+f264:n 1 2 3
 C tally multiplier reaction list precedence: 16 - 103 + (104*105)
-fm111:n (1.0 26 16 # 103 : 104 105)
+fm264:n (1.0 26 16 # 103 : 104 105)
 C tally multiplier single-layer attenuator
 fm114:n (1.0 -1 26 0.5)
+C tally for fm124
+f124:n 1 2 3
 C tally multiplier multi-layer attenuator
 fm124:n (1.0 -1 26 0.5 27 -0.3)
+C tally for fm134
+f134:n 1 2 3
 C tally multiplier combining multiplier sets with an attenuator set
 fm134:n ((1.0 26 16) (2.0 27 102) (3.0 -1 28 0.1))
+C tally for fm144
+f144:n 1 2 3
 C tally multiplier negative constant (type-4 atom density normalization)
 fm144:n (-1.0 26 103)
 C tally multiplier special option: 1/weight
 fm154:n 1 -1
+C tally for fm164
+f164:n 1 2 3
 C tally multiplier special option: 1/velocity
 fm164:n (1 -2)
 C tally multiplier special option: microscopic xs of first interaction

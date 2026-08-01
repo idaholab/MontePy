@@ -8,6 +8,7 @@ import montepy
 from montepy.cells import Cells
 from montepy.surface_collection import Surfaces
 from montepy.data_inputs.data_input import DataInputAbstract
+from montepy.data_inputs import tally_multiplier
 from montepy.data_inputs.tally_type import Score, TallyType
 from montepy.exceptions import MalformedInputError, NumberConflictError
 from montepy.input_parser.tally_parser import TallyParser
@@ -368,6 +369,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
 
     _POINTER_ATTRS = set()
     _DEFAULT_SCORES = ()
+    _KEYS_TO_PRESERVE = {"_multiplier"}
 
     @staticmethod
     def _parser():
@@ -378,6 +380,11 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         self._old_number = self._generate_default_node(int, -1)
         self._groups = []
         self._include_total = False
+        self._multiplier = None
+
+    def _jit_light_init(self, input):
+        super()._jit_light_init(input)
+        self._old_number = self._input_number
 
     def _parse_tree(self):
         super()._parse_tree()
@@ -477,15 +484,30 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         """``True`` if a total bin (T) is appended."""
         return self._include_total
 
+    @make_prop_pointer("_multiplier", tally_multiplier.TallyMultiplier)
+    def multiplier(self) -> tally_multiplier.TallyMultiplier:
+        """The ``FM`` tally-multiplier card linked to this tally, if any.
+
+        Returns
+        -------
+        TallyMultiplier
+        """
+        pass
+
     @property
     @needs_full_ast
-    def scores(self) -> list[Score]:
+    def scores(self) -> list[Score] | list[tally_multiplier.MultiplierScore]:
         """The physical quantities this tally scores, e.g. ``[Score.FLUX]`` for F4.
 
-        This is just the quantity implied by the tally type digit, not
-        something derived from an ``FM`` tally-multiplier card, which isn't
-        modeled yet.
+        This is just the quantity implied by the tally type digit, unless an
+        ``FM`` tally-multiplier card is linked (see :attr:`multiplier`), in
+        which case this returns one :class:`~montepy.data_inputs.tally_multiplier.MultiplierScore`
+        per output bin the multiplier defines instead.
         """
+        if self.multiplier is not None:
+            return [
+                score for bin_ in self.multiplier.bins for score in bin_.scores
+            ]
         return list(self._DEFAULT_SCORES)
 
     @property
@@ -629,9 +651,15 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
     ) -> Tally:
         """Clone this tally with a new number.
 
+        Note that the clone does **not** carry over a linked ``FM``
+        multiplier (see :attr:`multiplier`) -- a multiplier is a companion
+        card tied to this exact tally number, not something that
+        meaningfully transfers to a renumbered copy.
+
         See :meth:`~montepy.numbered_mcnp_object.Numbered_MCNP_Object.clone`.
         """
         ret = copy.deepcopy(self)
+        ret._multiplier = None
         new_number = self._next_number_for_type(self.tally_type, starting_number, step)
         if self._problem:
             ret.link_to_problem(self._problem)
@@ -683,6 +711,13 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         -------
         Tally
             A new tally of the requested type, with the same scoring groups.
+
+        Note
+        ----
+        The clone does **not** carry over a linked ``FM`` multiplier (see
+        :attr:`multiplier`) -- a multiplier is a companion card tied to this
+        exact tally number, not something that meaningfully transfers to a
+        retyped/renumbered copy.
         """
         if isinstance(new_type, TallyType):
             target_cls = _TALLY_TYPE_MAP.get(new_type)
@@ -707,6 +742,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
 
         ret = copy.deepcopy(self)
         ret.__class__ = target_cls
+        ret._multiplier = None
         new_number = self._next_number_for_type(target_cls._TALLY_TYPE, starting_number, step)
         if self._problem:
             ret.link_to_problem(self._problem)
