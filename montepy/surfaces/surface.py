@@ -553,8 +553,8 @@ class Surface(Numbered_MCNP_Object, metaclass=_SurfaceClassFactory):
         ----------
         surfaces : Surfaces
             A Surfaces collection of the surfaces in the problem.
-        data_cards : list
-            the data_cards in the problem.
+        data_inputs : list
+            the data inputs in the problem.
         """
         if self.old_periodic_surface:
             try:

@@ -760,8 +760,8 @@ class Nuclide:
 
         Parameters
         ----------
-        identifier
-        idenitifer : Union[str, int, element, Nucleus, Nuclide]
+        identifier : Union[str, int, element, Nucleus, Nuclide]
+            the name to parse.
 
         Returns
         -------
