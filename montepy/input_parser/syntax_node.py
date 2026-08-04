@@ -698,8 +698,8 @@ class PaddingNode(SyntaxNodeBase):
 
         Parameters
         ----------
-        node : str, CommentNode
-            node
+        val : str, CommentNode
+            the node to append.
         is_comment : bool
             whether or not the node is a comment.
         """
@@ -1862,8 +1862,8 @@ class ListNode(SyntaxNodeBase):
 
         Parameters
         ----------
-        node : ValueNode, ShortcutNode
-            node
+        val : ValueNode, ShortcutNode
+            the node to append.
         from_parsing : bool
             If this is being append from the parsers, and not elsewhere.
         """
