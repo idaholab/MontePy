@@ -3,6 +3,7 @@ import hypothesis
 from hypothesis import given, settings, strategies as st
 import copy
 import itertools as it
+import re
 
 import montepy
 import montepy.cells
@@ -101,6 +102,20 @@ class TestNumberedObjectCollection:
         assert mat.number > 0
         with pytest.raises(ValueError):
             cp_simple_problem.materials.check_number(-1)
+
+    def test_get_by_comment(self):
+        problem = montepy.read_input(os.path.join("tests", "inputs", "pin_cell.imcnp"))
+
+        by_text = list(problem.cells.get_by_comment("uranium rod"))
+        assert by_text == [problem.cells[1]]
+
+        by_regex = list(problem.cells.get_by_comment(re.compile(r"URANIUM", re.I)))
+        assert by_regex == [problem.cells[1]]
+
+        assert list(problem.cells.get_by_comment("not present")) == []
+
+        with pytest.raises(TypeError):
+            list(problem.cells.get_by_comment(5))
 
     def test_update_number_not_in_cache(self):
         """Test that _update_number silently returns when object is not in cache."""
