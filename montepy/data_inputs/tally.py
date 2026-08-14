@@ -529,9 +529,8 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
             filters.append(SpatialFilter(self._groups))
         return filters
 
+    @needs_full_ast
     def __contains__(self, item) -> bool:
-        if hasattr(self, "_not_parsed"):
-            return False
         for group in self._groups:
             if item in group:
                 return True

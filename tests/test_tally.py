@@ -196,3 +196,36 @@ class TestTallyObject:
     def test_from_input_invalid_tally_type_digit(self):
         with pytest.raises(montepy.exceptions.MalformedInputError):
             parse_data(Input(["f3:n 1 2 3"], BlockType.DATA))
+
+    def test_contains_linked_flat_group(self, tally_problem):
+        f34 = tally_problem.tallies[34]
+        assert tally_problem.cells[1] in f34
+        assert tally_problem.cells[99] not in f34
+
+    def test_contains_linked_path_group(self, tally_problem):
+        f64 = tally_problem.tallies[64]
+        assert tally_problem.cells[1] in f64
+
+    def test_contains_forces_full_parse(self, tally_problem):
+        # __contains__ is @needs_full_ast: membership must be checked
+        # against real data, not silently read as False while still JIT.
+        f34 = tally_problem.tallies[34]
+        assert not f34.fully_parsed
+        assert tally_problem.cells[1] in f34
+        assert f34.fully_parsed
+
+    def test_contains_unlinked_flat_group_by_number_only(self):
+        t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA))
+
+        class FakeCellByNumber:
+            number = 2
+
+        assert FakeCellByNumber() in t
+
+    def test_contains_unlinked_flat_group_by_old_number(self):
+        t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA))
+
+        class FakeCellByOldNumber:
+            old_number = 2
+
+        assert FakeCellByOldNumber() in t
