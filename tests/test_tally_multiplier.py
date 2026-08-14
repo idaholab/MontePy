@@ -14,7 +14,10 @@ from montepy.data_inputs.tally_multiplier import (
     SpecialMultiplierSet,
     TallyMultiplier,
 )
-from montepy.data_inputs.tally_multiplier_type import ReactionOperator, SpecialMultiplier
+from montepy.data_inputs.tally_multiplier_type import (
+    ReactionOperator,
+    SpecialMultiplier,
+)
 from montepy.data_inputs.tally_type import Score
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input
@@ -90,12 +93,16 @@ class TestReactionExpressionPrecedence:
             (244, Reaction(16) + Reaction(103) - Reaction(104) * Reaction(105)),
             (
                 254,
-                Reaction(16) * Reaction(103) + Reaction(104) - Reaction(105) * Reaction(106),
+                Reaction(16) * Reaction(103)
+                + Reaction(104)
+                - Reaction(105) * Reaction(106),
             ),
             (264, Reaction(16) - Reaction(103) + Reaction(104) * Reaction(105)),
         ],
     )
-    def test_precedence_matches_hand_built_expression(self, tally_problem, number, expected):
+    def test_precedence_matches_hand_built_expression(
+        self, tally_problem, number, expected
+    ):
         fm = tally_problem.tallies[number].multiplier
         [reaction] = fm.bins[0].terms[0].reactions
         assert reaction == expected
@@ -133,7 +140,11 @@ class TestOperatorOverloading:
         assert built == MultiplierSet(1.5, 26, [ReactionNumber.CAPTURE])
 
     def test_reaction_number_dsl_composes(self):
-        expr = ReactionNumber.TOTAL - ReactionNumber.CAPTURE - ReactionNumber.INELASTIC_SCATTER
+        expr = (
+            ReactionNumber.TOTAL
+            - ReactionNumber.CAPTURE
+            - ReactionNumber.INELASTIC_SCATTER
+        )
         assert expr.left == ReactionNumber.TOTAL - ReactionNumber.CAPTURE
         assert expr.right == ReactionNumber.INELASTIC_SCATTER
         assert expr.operator == ReactionOperator.SUBTRACT
@@ -170,7 +181,9 @@ class TestAttenuator:
 class TestCompanionCardLinking:
     def test_multiplier_is_linked(self, tally_problem):
         assert tally_problem.tallies[4].multiplier is not None
-        assert tally_problem.tallies[4].multiplier.parent_tally is tally_problem.tallies[4]
+        assert (
+            tally_problem.tallies[4].multiplier.parent_tally is tally_problem.tallies[4]
+        )
 
     def test_multiplier_is_none_without_fm(self, tally_problem):
         assert tally_problem.tallies[1].multiplier is None
@@ -233,3 +246,123 @@ class TestScoresIntegration:
         f4 = tally_problem.tallies[4]
         clone = f4.clone()
         assert clone.multiplier is None
+
+
+class TestFlags:
+    def test_include_total_and_cumulative_flags(self, tally_problem):
+        assert tally_problem.tallies[184].multiplier.include_total is True
+        assert tally_problem.tallies[184].multiplier.cumulative is False
+        assert tally_problem.tallies[194].multiplier.include_total is False
+        assert tally_problem.tallies[194].multiplier.cumulative is True
+
+    def test_attenuator_only_bin_scores(self, tally_problem):
+        fm = tally_problem.tallies[114].multiplier
+        attenuator = fm.bins[0].attenuator
+        assert tally_problem.tallies[114].scores == [
+            MultiplierScore(1.0, None, None, None, attenuator)
+        ]
+
+
+class TestParseTermEdgeCases:
+    def test_material_with_no_reaction_list(self):
+        fm = TallyMultiplier(Input(["fm999 (1.0 26)"], BlockType.DATA), jit_parse=False)
+        assert fm.bins[0].terms[0] == MultiplierSet(1.0, 26, [])
+
+    def test_coerce_type_error(self):
+        with pytest.raises(TypeError):
+            Reaction(16) + "not a reaction"
+
+
+class TestDuplicateFmCards:
+    def test_duplicate_fm_cards_warn(self):
+        problem = montepy.MCNP_Problem(None)
+        tally = parse_data(Input(["f4:n 1 2 3"], BlockType.DATA))
+        problem.tallies.append(tally)
+        fm1 = TallyMultiplier(Input(["fm4 (1.0)"], BlockType.DATA), jit_parse=False)
+        fm2 = TallyMultiplier(Input(["fm4 (2.0)"], BlockType.DATA), jit_parse=False)
+        problem.tallies.append(fm1)
+        with pytest.warns(montepy.exceptions.MalformedInputWarning):
+            problem.tallies.append(fm2)
+
+
+class TestBlankConstruction:
+    def test_blank_tally_multiplier_construction(self):
+        fm = TallyMultiplier()
+        assert fm.bins == []
+        assert str(fm)
+        assert repr(fm)
+
+    def test_str_and_repr_on_uninitialized_tally_multiplier(self):
+        # __new__ bypasses __init__ entirely -- exactly the partially
+        # constructed state __str__/__repr__'s except branches exist to
+        # report gracefully.
+        fm = TallyMultiplier.__new__(TallyMultiplier)
+        assert str(fm) == "TALLY MULTIPLIER: (unparsed)"
+        assert repr(fm) == "TALLY MULTIPLIER: (unparsed)"
+
+
+class TestReprAndEquality:
+    """Smoke tests for __repr__, __eq__-against-wrong-type, and otherwise
+    unexercised property getters across the tally_multiplier.py value
+    objects. Coverage only counts a line as hit if it executes, and pytest
+    only reprs on assertion *failure*, so these branches need explicit
+    exercising; likewise the existing tests only ever compare MultiplierScore
+    via == (which reads the private attributes directly), never through its
+    public properties."""
+
+    def test_reaction_expression_eq_wrong_type_and_repr(self):
+        expr = Reaction(16) * Reaction(103)
+        assert expr != "not an expression"
+        assert "ReactionExpression" in repr(expr)
+
+    def test_reaction_number_and_eq_wrong_type_and_repr(self):
+        r = Reaction(16)
+        assert r.number == 16
+        assert r != "not a reaction"
+        assert repr(r) == "Reaction(16)"
+
+    def test_attenuator_layer_material_and_eq_wrong_type_and_repr(self):
+        layer = AttenuatorLayer(26, 0.5)
+        assert layer.material == 26
+        assert layer.is_atom_density is True
+        assert layer != "not a layer"
+        assert "AttenuatorLayer" in repr(layer)
+
+    def test_attenuator_set_constant_and_eq_wrong_type_and_repr(self):
+        att = AttenuatorSet(1.0, [AttenuatorLayer(26, 0.5)])
+        assert att.constant == 1.0
+        assert att != "not an attenuator set"
+        assert "AttenuatorSet" in repr(att)
+
+    def test_multiplier_set_eq_wrong_type_and_repr(self):
+        ms = MultiplierSet(1.0, 26, [Reaction(16)])
+        assert ms != "not a multiplier set"
+        assert "MultiplierSet" in repr(ms)
+
+    def test_special_multiplier_set_eq_wrong_type_and_repr(self):
+        sms = SpecialMultiplierSet(1.0, SpecialMultiplier.INVERSE_WEIGHT)
+        assert sms == SpecialMultiplierSet(1.0, SpecialMultiplier.INVERSE_WEIGHT)
+        assert sms != "not a special multiplier set"
+        assert "SpecialMultiplierSet" in repr(sms)
+
+    def test_multiplier_score_properties_eq_wrong_type_and_repr(self):
+        attenuator = AttenuatorSet(1.0, [AttenuatorLayer(26, 0.5)])
+        score = MultiplierScore(
+            1.0, 26, Reaction(16), SpecialMultiplier.INVERSE_WEIGHT, attenuator
+        )
+        assert score.constant == 1.0
+        assert score.material == 26
+        assert score.reaction == Reaction(16)
+        assert score.kind == SpecialMultiplier.INVERSE_WEIGHT
+        assert score.attenuator == attenuator
+        assert score != "not a score"
+        assert "MultiplierScore" in repr(score)
+
+    def test_multiplier_bin_eq_wrong_type_and_repr(self):
+        mb = MultiplierBin([MultiplierSet(1.0, 26, [Reaction(16)])])
+        assert mb == MultiplierBin([MultiplierSet(1.0, 26, [Reaction(16)])])
+        assert mb != "not a bin"
+        assert "MultiplierBin" in repr(mb)
+
+    def test_parent_collections(self):
+        assert TallyMultiplier._parent_collections() == ()

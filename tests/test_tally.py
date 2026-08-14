@@ -8,8 +8,12 @@ from montepy.data_inputs.tally import (
     F1Tally,
     F4Tally,
     F6Tally,
+    FlatGroup,
+    LatticeIndex,
     ParticleFilter,
+    PathGroup,
     SpatialFilter,
+    TallyGroup,
 )
 from montepy.data_inputs.tally_type import Score, TallyType
 from montepy.input_parser.block_type import BlockType
@@ -96,6 +100,7 @@ class TestTallyPathSyntax:
             "F1464:n  (1 < 2[0:1 0:1 0:0] < 5)",
             "F174:n  (1 < (2[0:1 0:1 0:0]) < 5)",
             "F184:n  (1 < 2[0 0 0, 0 1 0] < 5)",
+            "F184:n  (1 < 2[0 0 0,0 1 0] < 5)",  # comma with no trailing padding
             "F194:n  (1 < 2 < 5)",
             "F104:n  ((u=1) < 2[0 0 0] < 5)",
             "F114:n  (u=1 < 2[0 0 0] < 5)",
@@ -197,6 +202,75 @@ class TestTallyObject:
         with pytest.raises(montepy.exceptions.MalformedInputError):
             parse_data(Input(["f3:n 1 2 3"], BlockType.DATA))
 
+    def test_direct_tally_construction_invalid_digit(self):
+        # Tally() bypasses from_input's dispatch-time digit check, so
+        # _parse_tally_body must catch it too, once fully parsed.
+        from montepy.data_inputs.tally import Tally
+
+        t = Tally(Input(["f3:n 1 2 3"], BlockType.DATA), jit_parse=True)
+        with pytest.raises(montepy.exceptions.MalformedInputError):
+            t.groups
+
+    def test_jump_in_tally_numbers_is_skipped(self):
+        t = F4Tally(Input(["f4:n 1 J 3"], BlockType.DATA))
+        assert [g.old_numbers[0] for g in t.groups] == [1, 3]
+
+    def test_universe_spec_nested_in_bare_group(self):
+        # A universe designator wrapped in its own parens, inside a group
+        # with no `<` path separator at all: _extract_universe_spec_from_nodes
+        # must recurse into the nested "tally group" node to find it.
+        t = F4Tally(Input(["f4:n (5 (u=2) 7)"], BlockType.DATA))
+        assert t.groups[0].universe_spec == 2
+
+    def test_from_input_bare_prefix_no_number(self):
+        # A tally card with no number at all: the light JIT parser succeeds
+        # (it doesn't validate structure), so from_input's own "has no
+        # number" check and except-Exception fallback both have to run,
+        # and the fallback's real full construction is what actually
+        # surfaces the parsing error.
+        with pytest.raises(montepy.exceptions.ParsingError):
+            parse_data(Input(["f"], BlockType.DATA))
+
+    def test_clone_as_non_tally_type_raises_type_error(self, tally_problem):
+        f34 = tally_problem.tallies[34]
+        with pytest.raises(TypeError):
+            f34.clone_as(str)
+
+    def test_clone_as_custom_subclass_outside_category_raises(self, tally_problem):
+        from montepy.data_inputs.tally import Tally
+
+        class CustomTally(Tally):
+            _TALLY_TYPE = TallyType.CELL_FLUX
+
+        f34 = tally_problem.tallies[34]
+        with pytest.raises(ValueError):
+            f34.clone_as(CustomTally)
+
+    def test_str_and_repr_on_uninitialized_tally(self):
+        # __new__ bypasses __init__ entirely, leaving no _number/_groups --
+        # exactly the partially-constructed state __str__/__repr__'s except
+        # branches exist to report gracefully.
+        from montepy.data_inputs.tally import Tally
+
+        t = Tally.__new__(Tally)
+        assert str(t) == "TALLY: (unparsed)"
+        assert repr(t) == "TALLY: (unparsed)"
+
+    def test_all_fixture_tallies_fully_parse(self, tally_problem):
+        # Force a full parse of every tally in the fixture, including the
+        # path/lattice/universe forms (104, 114, 154, 1464, 174, 184, 194)
+        # that no other test touches directly.
+        for t in tally_problem.tallies:
+            groups = t.groups
+            assert groups is not None
+            assert len(groups) > 0
+            _ = t.include_total
+
+    def test_include_total(self, tally_problem):
+        assert tally_problem.tallies[24].include_total is True
+        assert tally_problem.tallies[34].include_total is True
+        assert tally_problem.tallies[1].include_total is False
+
     def test_contains_linked_flat_group(self, tally_problem):
         f34 = tally_problem.tallies[34]
         assert tally_problem.cells[1] in f34
@@ -229,3 +303,147 @@ class TestTallyObject:
             old_number = 2
 
         assert FakeCellByOldNumber() in t
+
+    def test_number_validator_rejects_wrong_digit(self, tally_problem):
+        f34 = tally_problem.tallies[34]
+        with pytest.raises(ValueError):
+            f34.number = 16
+
+    def test_clone_unlinked_tally(self):
+        t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA))
+        clone = t.clone()
+        assert clone.number != t.number
+        assert clone.number % 10 == 4
+
+    def test_clone_as_unlinked_tally(self):
+        t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA))
+        new = t.clone_as(F6Tally)
+        assert isinstance(new, EnergyDepositionTally)
+        assert new.number % 10 == 6
+
+    def test_clone_as_same_type_delegates_to_clone(self, tally_problem):
+        f34 = tally_problem.tallies[34]
+        new = f34.clone_as(type(f34))
+        assert new.number % 10 == 4
+        assert new in tally_problem.tallies
+
+    def test_clone_starting_number_needs_alignment(self, tally_problem):
+        # starting_number's digit (9) doesn't match the tally type's digit
+        # (4), forcing _align_to_type's "aligned < start" +10 branch.
+        f34 = tally_problem.tallies[34]
+        new = f34.clone(starting_number=9)
+        assert new.number % 10 == 4
+        assert new.number >= 14
+
+    def test_blank_tally_construction(self):
+        t = F4Tally()
+        assert t.groups == []
+
+
+class TestTallyBuilders:
+    """Tests for the from-scratch tally-building API: add_surface, add_group,
+    add_path_group, and PathGroup.inside chaining."""
+
+    def test_surface_tally_add_surface_and_group(self, tally_problem):
+        f1 = tally_problem.tallies[1]  # f1:n,p 1000 -- only surface 1000 so far
+        s = tally_problem.surfaces[1005]
+        f1.add_surface(s)
+        assert s in f1.surfaces
+        assert f1.groups[-1].old_numbers == [s.number]
+
+        s_already_present = tally_problem.surfaces[1000]
+        s_new = tally_problem.surfaces[1010]
+        f1.add_group([s_already_present, s_new])
+        assert f1.groups[-1].is_grouped
+        assert set(f1.groups[-1].old_numbers) == {
+            s_already_present.number,
+            s_new.number,
+        }
+        assert s_new in f1.surfaces
+
+    def test_surface_tally_add_path_group_and_inside_chaining(self, tally_problem):
+        f1 = tally_problem.tallies[1]
+        s1, s2 = tally_problem.surfaces[1000], tally_problem.surfaces[1005]
+        pg = f1.add_path_group(s1)
+        assert isinstance(pg, PathGroup)
+        pg.inside(s2, lattice=[0, 0, 0])
+        assert pg in f1.groups
+        assert len(pg.levels) == 2
+
+        # Re-linking must recurse into the newly added PathGroup too.
+        f1.link_to_problem(tally_problem)
+        assert s1 in f1.surfaces and s2 in f1.surfaces
+
+    def test_link_group_surfaces_skips_missing_surface(self, tally_problem):
+        f1 = tally_problem.tallies[1]
+        _ = f1.surfaces  # force full parse
+        f1._groups.append(FlatGroup([99999], is_grouped=False))
+        f1.link_to_problem(tally_problem)
+        assert 99999 not in list(f1.surfaces.numbers)
+
+    def test_cell_tally_add_group(self, tally_problem):
+        f34 = tally_problem.tallies[34]  # cells 1,2,3,5 -- 99 is new
+        c_already_present = tally_problem.cells[1]
+        c_new = tally_problem.cells[99]
+        f34.add_group([c_already_present, c_new])
+        assert f34.groups[-1].is_grouped
+        assert set(f34.groups[-1].old_numbers) == {
+            c_already_present.number,
+            c_new.number,
+        }
+        assert c_new in f34.cells
+
+    def test_cell_tally_add_path_group_and_inside_chaining(self, tally_problem):
+        f34 = tally_problem.tallies[34]
+        c1, c2 = tally_problem.cells[1], tally_problem.cells[2]
+        pg = f34.add_path_group(c1)
+        assert isinstance(pg, PathGroup)
+        pg.inside(c2)
+        assert pg in f34.groups
+        assert len(pg.levels) == 2
+
+
+class TestReprAndEquality:
+    """Smoke tests for __repr__ and __eq__-against-wrong-type on the small
+    standalone value objects in tally.py. Coverage only counts a line as hit
+    if it executes, and pytest only reprs on assertion *failure*, so these
+    branches need explicit exercising."""
+
+    def test_lattice_index(self):
+        li = LatticeIndex([1, (2, 3)])
+        assert li.dimensions == [1, (2, 3)]
+        assert "LatticeIndex" in repr(li)
+
+    def test_tally_group_contains_not_implemented(self):
+        with pytest.raises(NotImplementedError):
+            1 in TallyGroup()
+
+    def test_particle_filter_eq_wrong_type_and_repr(self):
+        obj = ParticleFilter([montepy.Particle.NEUTRON])
+        assert obj != "not a filter"
+        assert "ParticleFilter" in repr(obj)
+
+    def test_spatial_filter_eq_wrong_type_and_repr(self):
+        obj = SpatialFilter([FlatGroup([1], is_grouped=False)])
+        assert obj != "not a filter"
+        assert "SpatialFilter" in repr(obj)
+
+    def test_flat_group_properties_and_repr(self):
+        fg = FlatGroup([1, 2], is_grouped=True, universe_spec=3)
+        assert fg.old_numbers == [1, 2]
+        assert fg.is_grouped is True
+        assert fg.universe_spec == 3
+        assert "FlatGroup" in repr(fg)
+
+    def test_path_group_levels_and_repr(self):
+        pg = PathGroup([FlatGroup([1], is_grouped=False)])
+        assert len(pg.levels) == 1
+        assert "PathGroup" in repr(pg)
+
+    def test_path_group_empty_levels_contains(self):
+        assert 1 not in PathGroup([])
+
+    def test_tally_parent_collections(self):
+        from montepy.data_inputs.tally import Tally
+
+        assert Tally._parent_collections() == ()
