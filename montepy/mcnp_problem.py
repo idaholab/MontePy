@@ -867,7 +867,9 @@ class MCNP_Problem:
                     self._materials.append(obj, insert_in_data=False)
                 elif isinstance(obj, transform.Transform):
                     self._transforms.append(obj, insert_in_data=False)
-                elif isinstance(obj, (tally_mod.Tally, tally_multiplier.TallyMultiplier)):
+                elif isinstance(
+                    obj, (tally_mod.Tally, tally_multiplier.TallyMultiplier)
+                ):
                     self._tallies.append(obj, insert_in_data=False)
         return obj
 

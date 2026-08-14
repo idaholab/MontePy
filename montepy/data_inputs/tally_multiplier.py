@@ -7,7 +7,10 @@ from typing import Union
 
 import montepy
 from montepy.data_inputs.data_input import DataInputAbstract
-from montepy.data_inputs.tally_multiplier_type import ReactionOperator, SpecialMultiplier
+from montepy.data_inputs.tally_multiplier_type import (
+    ReactionOperator,
+    SpecialMultiplier,
+)
 from montepy.exceptions import MalformedInputWarning
 from montepy.input_parser.tally_parser import TallyParser
 from montepy.input_parser import syntax_node
@@ -43,7 +46,12 @@ class ReactionExpression:
     with no custom precedence-climbing code.
     """
 
-    def __init__(self, left: ReactionExpression, operator: ReactionOperator, right: ReactionExpression):
+    def __init__(
+        self,
+        left: ReactionExpression,
+        operator: ReactionOperator,
+        right: ReactionExpression,
+    ):
         self._left = left
         self._operator = operator
         self._right = right
@@ -514,21 +522,35 @@ class MultiplierBin:
     def scores(self) -> list[MultiplierScore]:
         """Flatten this bin set's terms into one :class:`MultiplierScore` per actual output bin."""
         if not self._terms and self._attenuator is not None:
-            return [MultiplierScore(self._attenuator.constant, None, None, None, self._attenuator)]
+            return [
+                MultiplierScore(
+                    self._attenuator.constant, None, None, None, self._attenuator
+                )
+            ]
         result = []
         for term in self._terms:
             if isinstance(term, MultiplierSet):
                 if not term.reactions:
                     result.append(
-                        MultiplierScore(term.constant, term.material, None, None, self._attenuator)
+                        MultiplierScore(
+                            term.constant, term.material, None, None, self._attenuator
+                        )
                     )
                 for reaction in term.reactions:
                     result.append(
-                        MultiplierScore(term.constant, term.material, reaction, None, self._attenuator)
+                        MultiplierScore(
+                            term.constant,
+                            term.material,
+                            reaction,
+                            None,
+                            self._attenuator,
+                        )
                     )
             elif isinstance(term, SpecialMultiplierSet):
                 result.append(
-                    MultiplierScore(term.constant, None, None, term.kind, self._attenuator)
+                    MultiplierScore(
+                        term.constant, None, None, term.kind, self._attenuator
+                    )
                 )
         return result
 
@@ -589,7 +611,9 @@ def _parse_term(items: list) -> MultiplierSet | SpecialMultiplierSet | Attenuato
         return MultiplierSet(constant, None, [])
 
     first = rest[0]
-    first_val = _numeric_value(first) if isinstance(first, syntax_node.ValueNode) else None
+    first_val = (
+        _numeric_value(first) if isinstance(first, syntax_node.ValueNode) else None
+    )
 
     if first_val in _SPECIAL_KIND_MAP and len(rest) == 1:
         return SpecialMultiplierSet(constant, _SPECIAL_KIND_MAP[first_val])
@@ -633,7 +657,11 @@ def _parse_reaction_expr(items: list) -> ReactionExpression:
         val = item.value
         if isinstance(val, str) and val.strip() in (":", "#"):
             groups.append((current_op, current_nums))
-            current_op = ReactionOperator.ADD if val.strip() == ":" else ReactionOperator.SUBTRACT
+            current_op = (
+                ReactionOperator.ADD
+                if val.strip() == ":"
+                else ReactionOperator.SUBTRACT
+            )
             current_nums = []
         else:
             current_nums.append(Reaction(int(val)))
