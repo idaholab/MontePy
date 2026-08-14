@@ -35,11 +35,6 @@ class TallyParser(DataParser):
             "tally list", {"tally": p.tally_numbers, "end": text}
         )
 
-    @_('"("', '"(" padding', '")"', '")" padding')
-    def paren_phrase(self, p):
-        """ """
-        return self._flush_phrase(p, str)
-
     @_("PARTICLE", "PARTICLE padding", "TEXT", "TEXT padding")
     def end_phrase(self, p):
         """A non-zero number with or without padding.

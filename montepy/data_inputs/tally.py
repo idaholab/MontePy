@@ -267,7 +267,11 @@ def _extract_numbers_with_lattice(nodes):
     i = 0
     while i < len(nodes):
         n = nodes[i]
-        if isinstance(n, syntax_node.ValueNode) and isinstance(n.value, (int, float)) and not isinstance(n.value, bool):
+        if (
+            isinstance(n, syntax_node.ValueNode)
+            and isinstance(n.value, (int, float))
+            and not isinstance(n.value, bool)
+        ):
             numbers.append(int(n.value))
             if (
                 i + 1 < len(nodes)
@@ -288,7 +292,9 @@ def _extract_universe_spec_from_nodes(nodes):
     for n in nodes:
         if isinstance(n, syntax_node.ListNode) and n.name == "universe phrase":
             for m in n.nodes:
-                if isinstance(m, syntax_node.ValueNode) and isinstance(m.value, (int, float)):
+                if isinstance(m, syntax_node.ValueNode) and isinstance(
+                    m.value, (int, float)
+                ):
                     return int(m.value)
         elif isinstance(n, syntax_node.ListNode) and n.name == "tally group":
             inner = list(n.nodes)[1:-1]
@@ -301,7 +307,9 @@ def _extract_universe_spec_from_nodes(nodes):
 def _parse_body_segment(nodes, *, is_grouped) -> FlatGroup:
     numbers, lattice_indices = _extract_numbers_with_lattice(nodes)
     universe_spec = _extract_universe_spec_from_nodes(nodes)
-    return FlatGroup(numbers, lattice_indices, is_grouped=is_grouped, universe_spec=universe_spec)
+    return FlatGroup(
+        numbers, lattice_indices, is_grouped=is_grouped, universe_spec=universe_spec
+    )
 
 
 def _parse_segment_as_level(seg) -> FlatGroup:
@@ -347,8 +355,6 @@ def _parse_tally_group_node(group_node) -> TallyGroup:
 def _parse_tally_numbers(tally_numbers_node) -> list[TallyGroup]:
     groups = []
     for node in tally_numbers_node:
-        if isinstance(node, syntax_node.PaddingNode):
-            continue
         if isinstance(node, syntax_node.ValueNode):
             v = node.value
             if v is None:
@@ -505,9 +511,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         per output bin the multiplier defines instead.
         """
         if self.multiplier is not None:
-            return [
-                score for bin_ in self.multiplier.bins for score in bin_.scores
-            ]
+            return [score for bin_ in self.multiplier.bins for score in bin_.scores]
         return list(self._DEFAULT_SCORES)
 
     @property
@@ -534,15 +538,17 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         return False
 
     @staticmethod
-    def _dispatch_class(input, num: int) -> type[Tally] | None:
-        """The :class:`Tally` subclass for a tally number, or ``None`` if generic."""
+    def _dispatch_class(input, num: int) -> type[Tally]:
+        """The :class:`Tally` subclass for a tally number."""
         try:
             tally_type = TallyType(num % _TALLY_TYPE_MODULUS)
         except ValueError as e:
             raise MalformedInputError(
                 input, f"Tally type digit {num % _TALLY_TYPE_MODULUS} is not valid."
             ) from e
-        return _TALLY_TYPE_MAP.get(tally_type)
+        # _TALLY_TYPE_MAP's keys are exactly TallyType's members (both
+        # defined by hand in lockstep in this module), so this can never miss.
+        return _TALLY_TYPE_MAP[tally_type]
 
     @classmethod
     def from_input(cls, input, *, jit_parse: bool = True) -> Tally:
@@ -574,14 +580,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
             # proper file/line context on error.
             base = Tally(input, jit_parse=True)
             subclass = Tally._dispatch_class(input, base._number.value)
-            if subclass is None:
-                if not jit_parse:
-                    base.full_parse()
-                return base
-            return subclass(input, jit_parse=jit_parse)
 
-        if subclass is None:
-            return Tally(input, jit_parse=jit_parse)
         return subclass(input, jit_parse=jit_parse)
 
     def link_to_problem(self, problem, *, deepcopy=False):
@@ -617,7 +616,11 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         """
         collection = self._problem.tallies if self._problem else None
         if collection is not None:
-            start = starting_number if starting_number is not None else collection.starting_number
+            start = (
+                starting_number
+                if starting_number is not None
+                else collection.starting_number
+            )
             step = step if step is not None else collection.step
         else:
             start = starting_number if starting_number is not None else 1
@@ -720,9 +723,10 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         retyped/renumbered copy.
         """
         if isinstance(new_type, TallyType):
-            target_cls = _TALLY_TYPE_MAP.get(new_type)
-            if target_cls is None:
-                raise ValueError(f"No Tally subclass is registered for {new_type}.")
+            # _TALLY_TYPE_MAP's keys are exactly TallyType's members (both
+            # defined by hand in lockstep in this module), so this can never
+            # miss.
+            target_cls = _TALLY_TYPE_MAP[new_type]
         elif isinstance(new_type, type) and issubclass(new_type, Tally):
             target_cls = new_type
         else:
@@ -743,7 +747,9 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         ret = copy.deepcopy(self)
         ret.__class__ = target_cls
         ret._multiplier = None
-        new_number = self._next_number_for_type(target_cls._TALLY_TYPE, starting_number, step)
+        new_number = self._next_number_for_type(
+            target_cls._TALLY_TYPE, starting_number, step
+        )
         if self._problem:
             ret.link_to_problem(self._problem)
             ret.number = new_number
