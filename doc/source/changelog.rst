@@ -10,6 +10,14 @@ MontePy Changelog
 =============
 
 
+#Next Version#
+--------------
+
+**Features Added**
+
+* Added a :class:`~montepy.Tally`/:class:`~montepy.TallyMultiplier` object model for reading, creating, and editing MCNP tally (F card) and tally multiplier (FM card) inputs (:issue:`11`).
+
+
 1.6.0b1
 --------------
 

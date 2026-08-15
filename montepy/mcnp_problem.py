@@ -430,6 +430,8 @@ class MCNP_Problem:
         Tallies
             a collection of the tally objects, ordered by the order
             they appeared in the input file.
+
+        .. versionadded:: 1.6.0b2
         """
         return self._tallies
 

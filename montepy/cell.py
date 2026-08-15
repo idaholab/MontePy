@@ -718,6 +718,8 @@ class Cell(Numbered_MCNP_Object):
         Yields
         ------
         Tally
+
+        .. versionadded:: 1.6.0b2
         """
         if self._problem:
             for t in self._problem.tallies:
