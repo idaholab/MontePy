@@ -185,7 +185,54 @@ Materials
    montepy.Nucleus
    montepy.Nuclide
    montepy.ThermalScatteringLaw
-   
+
+
+
+Tallies
+^^^^^^^
+
+.. note::
+
+   You will rarely create the ``Group``, ``Filter``, ``ReactionExpression``, or
+   ``Multiplier*`` classes directly, rather get them from :attr:`montepy.Tally.groups`,
+   :attr:`montepy.Tally.filters`, and :attr:`montepy.TallyMultiplier.bins`.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
+
+   montepy.Tally
+   montepy.SurfaceTally
+   montepy.CellTally
+   montepy.DetectorTally
+   montepy.SurfaceCurrentTally
+   montepy.SurfaceFluxTally
+   montepy.CellFluxTally
+   montepy.EnergyDepositionTally
+   montepy.FissionEnergyDepositionTally
+   montepy.EnergyDetectorPulseTally
+   montepy.Tallies
+   montepy.TallyType
+   montepy.Score
+   montepy.data_inputs.tally.TallyGroup
+   montepy.data_inputs.tally.FlatGroup
+   montepy.data_inputs.tally.PathGroup
+   montepy.data_inputs.tally.LatticeIndex
+   montepy.data_inputs.tally.Filter
+   montepy.data_inputs.tally.ParticleFilter
+   montepy.data_inputs.tally.SpatialFilter
+   montepy.TallyMultiplier
+   montepy.Reaction
+   montepy.MultiplierSet
+   montepy.SpecialMultiplierSet
+   montepy.SpecialMultiplier
+   montepy.AttenuatorLayer
+   montepy.AttenuatorSet
+   montepy.data_inputs.tally_multiplier.ReactionExpression
+   montepy.data_inputs.tally_multiplier.MultiplierScore
+   montepy.data_inputs.tally_multiplier.MultiplierBin
+   montepy.data_inputs.tally_multiplier_type.ReactionOperator
 
 
 Cell Modifiers

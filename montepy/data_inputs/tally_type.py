@@ -18,14 +18,14 @@ class TallyType(Enum):
 
 @unique
 class Score(Enum):
-    """The physical quantity a :class:`~montepy.data_inputs.tally.Tally` scores.
+    """The physical quantity a :class:`~montepy.Tally` scores.
 
     A shallow analog of OpenMC's tally scores: for MontePy this is just the
     quantity implied by the tally type digit (e.g. F4 always scores
     :class:`Score.FLUX`). If an FM tally-multiplier card is linked to the
-    tally, :attr:`~montepy.data_inputs.tally.Tally.scores` returns a list of
+    tally, :attr:`~montepy.Tally.scores` returns a list of
     :class:`~montepy.data_inputs.tally_multiplier.MultiplierScore` instead of
-    this enum -- see :attr:`~montepy.data_inputs.tally.Tally.multiplier`.
+    this enum -- see :attr:`~montepy.Tally.multiplier`.
     """
 
     CURRENT = 1

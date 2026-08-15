@@ -140,3 +140,4 @@ You can install this with ``pip install montepy[demo-present]``.
    guide/cells
    guide/materials
    guide/universes
+   guide/tallies

@@ -87,7 +87,7 @@ class ParticleFilter(Filter):
 class SpatialFilter(Filter):
     """Filters a tally to its scoring bins (cells, surfaces, or paths).
 
-    A thin wrapper around a :class:`Tally`'s :attr:`~Tally.groups`.
+    A thin wrapper around a :class:`~montepy.Tally`'s :attr:`~montepy.Tally.groups`.
 
     Parameters
     ----------
@@ -103,7 +103,7 @@ class SpatialFilter(Filter):
 
     @property
     def groups(self):
-        """The scoring bins (:class:`TallyGroup` objects) this filter covers."""
+        """The scoring bins (:class:`~montepy.data_inputs.tally.TallyGroup` objects) this filter covers."""
         return list(self._groups)
 
     def __eq__(self, other):
@@ -481,7 +481,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
     @property
     @needs_full_ast
     def groups(self) -> list[TallyGroup]:
-        """The list of :class:`TallyGroup` objects defining what is scored."""
+        """The list of :class:`~montepy.data_inputs.tally.TallyGroup` objects defining what is scored."""
         return list(self._groups)
 
     @property
@@ -519,8 +519,10 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
     def filters(self) -> list[Filter]:
         """A shallow analog of OpenMC's tally filters.
 
-        Defaults to a :class:`ParticleFilter` (from :attr:`particle_classifiers`)
-        and a :class:`SpatialFilter` (from :attr:`groups`), whichever are present.
+        Defaults to a :class:`~montepy.data_inputs.tally.ParticleFilter` (from
+        :attr:`particle_classifiers`) and a
+        :class:`~montepy.data_inputs.tally.SpatialFilter` (from :attr:`groups`),
+        whichever are present.
         """
         filters = []
         if self.particle_classifiers:
@@ -821,7 +823,7 @@ class SurfaceTally(Tally):
     def add_path_group(self, *surfaces: montepy.Surface) -> PathGroup:
         """Add a universe-path group rooted at the given surfaces.
 
-        Returns the :class:`PathGroup` for chaining via :meth:`PathGroup.inside`.
+        Returns the :class:`~montepy.data_inputs.tally.PathGroup` for chaining via :meth:`~montepy.data_inputs.tally.PathGroup.inside`.
 
         Parameters
         ----------
@@ -918,7 +920,7 @@ class CellTally(Tally):
     def add_path_group(self, *cells: montepy.Cell) -> PathGroup:
         """Add a universe-path group rooted at the given cells.
 
-        Returns the :class:`PathGroup` for chaining via :meth:`PathGroup.inside`.
+        Returns the :class:`~montepy.data_inputs.tally.PathGroup` for chaining via :meth:`~montepy.data_inputs.tally.PathGroup.inside`.
 
         Parameters
         ----------
