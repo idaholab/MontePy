@@ -24,6 +24,8 @@ _TALLY_TYPE_MODULUS = 10
 class LatticeIndex:
     """A lattice element index ``[i j k]`` in a tally path specification.
 
+    .. versionadded:: 1.6.0b2
+
     Parameters
     ----------
     dimensions : list
@@ -47,18 +49,26 @@ class LatticeIndex:
 
 
 class TallyGroup:
-    """Abstract base for a tally scoring group."""
+    """Abstract base for a tally scoring group.
+
+    .. versionadded:: 1.6.0b2
+    """
 
     def __contains__(self, item) -> bool:
         raise NotImplementedError
 
 
 class Filter:
-    """Abstract analog of an OpenMC-style tally filter."""
+    """Abstract analog of an OpenMC-style tally filter.
+
+    .. versionadded:: 1.6.0b2
+    """
 
 
 class ParticleFilter(Filter):
     """Filters a tally to the particle types in its classifier (e.g. ``:n,p``).
+
+    .. versionadded:: 1.6.0b2
 
     Parameters
     ----------
@@ -89,6 +99,8 @@ class SpatialFilter(Filter):
 
     A thin wrapper around a :class:`~montepy.Tally`'s :attr:`~montepy.Tally.groups`.
 
+    .. versionadded:: 1.6.0b2
+
     Parameters
     ----------
     groups : list[TallyGroup]
@@ -118,6 +130,8 @@ class FlatGroup(TallyGroup):
 
     Used as both a top-level bin and as an individual level in a
     :class:`PathGroup` chain.
+
+    .. versionadded:: 1.6.0b2
 
     Parameters
     ----------
@@ -186,6 +200,8 @@ class FlatGroup(TallyGroup):
 
 class PathGroup(TallyGroup):
     """A universe-path group for repeated-structures tallies.
+
+    .. versionadded:: 1.6.0b2
 
     Parameters
     ----------
@@ -371,6 +387,8 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
 
     Use :meth:`from_input` as a factory to create the appropriate subclass
     when reading from a file.
+
+    .. versionadded:: 1.6.0b2
     """
 
     _POINTER_ATTRS = set()
@@ -775,7 +793,10 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
 
 
 class SurfaceTally(Tally):
-    """Intermediate class for tallies that score on surfaces (F1, F2)."""
+    """Intermediate class for tallies that score on surfaces (F1, F2).
+
+    .. versionadded:: 1.6.0b2
+    """
 
     def _init_blank(self):
         super()._init_blank()
@@ -872,7 +893,10 @@ class SurfaceTally(Tally):
 
 
 class CellTally(Tally):
-    """Intermediate class for tallies that score in cells (F4, F6, F7, F8)."""
+    """Intermediate class for tallies that score in cells (F4, F6, F7, F8).
+
+    .. versionadded:: 1.6.0b2
+    """
 
     def _init_blank(self):
         super()._init_blank()
@@ -969,7 +993,10 @@ class CellTally(Tally):
 
 
 class DetectorTally(Tally):
-    """F5: point/ring detector tally."""
+    """F5: point/ring detector tally.
+
+    .. versionadded:: 1.6.0b2
+    """
 
     _TALLY_TYPE = TallyType.DETECTOR
     _DEFAULT_SCORES = (Score.FLUX,)
@@ -979,42 +1006,60 @@ class DetectorTally(Tally):
 
 
 class SurfaceCurrentTally(SurfaceTally):
-    """F1: surface current tally."""
+    """F1: surface current tally.
+
+    .. versionadded:: 1.6.0b2
+    """
 
     _TALLY_TYPE = TallyType.CURRENT
     _DEFAULT_SCORES = (Score.CURRENT,)
 
 
 class SurfaceFluxTally(SurfaceTally):
-    """F2: average surface flux tally."""
+    """F2: average surface flux tally.
+
+    .. versionadded:: 1.6.0b2
+    """
 
     _TALLY_TYPE = TallyType.SURFACE_FLUX
     _DEFAULT_SCORES = (Score.FLUX,)
 
 
 class CellFluxTally(CellTally):
-    """F4: cell flux tally."""
+    """F4: cell flux tally.
+
+    .. versionadded:: 1.6.0b2
+    """
 
     _TALLY_TYPE = TallyType.CELL_FLUX
     _DEFAULT_SCORES = (Score.FLUX,)
 
 
 class EnergyDepositionTally(CellTally):
-    """F6: energy deposition tally."""
+    """F6: energy deposition tally.
+
+    .. versionadded:: 1.6.0b2
+    """
 
     _TALLY_TYPE = TallyType.ENERGY_DEPOSITION
     _DEFAULT_SCORES = (Score.ENERGY_DEPOSITION,)
 
 
 class FissionEnergyDepositionTally(CellTally):
-    """F7: fission energy deposition tally."""
+    """F7: fission energy deposition tally.
+
+    .. versionadded:: 1.6.0b2
+    """
 
     _TALLY_TYPE = TallyType.FISSION_ENERGY_DEPOSITION
     _DEFAULT_SCORES = (Score.FISSION_ENERGY_DEPOSITION,)
 
 
 class EnergyDetectorPulseTally(CellTally):
-    """F8: energy-detector pulse height tally."""
+    """F8: energy-detector pulse height tally.
+
+    .. versionadded:: 1.6.0b2
+    """
 
     _TALLY_TYPE = TallyType.ENERGY_DETECTOR_PULSE
     _DEFAULT_SCORES = (Score.PULSE_HEIGHT,)

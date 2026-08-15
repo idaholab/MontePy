@@ -44,6 +44,8 @@ class ReactionExpression:
     ``+``/``-``) gives MCNP's "multiply first" reaction-list rule for free:
     ``Reaction(16) * Reaction(103) + Reaction(104)`` builds ``(16*103) + 104``
     with no custom precedence-climbing code.
+
+    .. versionadded:: 1.6.0b2
     """
 
     def __init__(
@@ -142,6 +144,8 @@ class Reaction(ReactionExpression):
     aliases (``TOTAL_MCNP``, ``ABSORPTION``, etc.) are MCNP's own special
     reaction-number aliases, computed directly from transport data rather
     than corresponding to a single ENDF MT channel.
+
+    .. versionadded:: 1.6.0b2
     """
 
     def __init__(self, number: int):
@@ -200,6 +204,8 @@ Reaction.FISSION_MCNP = Reaction(-6)
 
 class AttenuatorLayer:
     """One layer of an FM attenuator set: ``m px``.
+
+    .. versionadded:: 1.6.0b2
 
     Parameters
     ----------
@@ -270,6 +276,8 @@ class AttenuatorSet:
 
         attenuator = AttenuatorSet(1.0, [AttenuatorLayer(3, 0.05)])
         attenuator = attenuator & AttenuatorLayer(4, 0.1, is_atom_density=False)
+
+    .. versionadded:: 1.6.0b2
     """
 
     __slots__ = ("_constant", "_layers")
@@ -309,6 +317,8 @@ class AttenuatorSet:
 
 class MultiplierSet:
     """An FM multiplier set: ``c m (reaction list 1) (reaction list 2) ...``.
+
+    .. versionadded:: 1.6.0b2
 
     Parameters
     ----------
@@ -378,6 +388,8 @@ class MultiplierSet:
 class SpecialMultiplierSet:
     """An FM special multiplier set: ``c k``.
 
+    .. versionadded:: 1.6.0b2
+
     Parameters
     ----------
     constant : float
@@ -418,6 +430,8 @@ class MultiplierScore:
     Exactly one of ``reaction``/``kind`` is non-``None``: ``reaction`` for a
     bin coming from a :class:`MultiplierSet`, ``kind`` for one coming from a
     :class:`SpecialMultiplierSet`.
+
+    .. versionadded:: 1.6.0b2
     """
 
     __slots__ = ("_constant", "_material", "_reaction", "_kind", "_attenuator")
@@ -481,6 +495,8 @@ class MultiplierScore:
 
 class MultiplierBin:
     """One top-level ``(bin set k)`` group of an FM card.
+
+    .. versionadded:: 1.6.0b2
 
     Parameters
     ----------
@@ -691,6 +707,8 @@ class TallyMultiplier(DataInputAbstract, Numbered_MCNP_Object):
     response function. Must be paired with a
     :class:`~montepy.data_inputs.tally.Tally` of the same number -- see
     :attr:`parent_tally`.
+
+    .. versionadded:: 1.6.0b2
     """
 
     _KEYS_TO_PRESERVE = {"_parent_tally"}

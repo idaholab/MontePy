@@ -11,6 +11,8 @@ class Tallies(NumberedDataObjectCollection):
 
     :param objects: the list of tallies to start with if needed
     :type objects: list
+
+    .. versionadded:: 1.6.0b2
     """
 
     def __init__(self, objects=None, problem=None):

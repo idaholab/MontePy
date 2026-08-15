@@ -10,6 +10,8 @@ class ReactionOperator(Enum):
     See MCNP manual section 5.9.7, footnote 4: a space means multiply, a
     colon means add, and a pound sign means subtract, with multiply binding
     tighter than add/subtract.
+
+    .. versionadded:: 1.6.0b2
     """
 
     MULTIPLY = " "
@@ -24,6 +26,8 @@ class SpecialMultiplier(Enum):
     A closed, fixed 3-value set with no arithmetic use case, unlike
     reaction numbers, so unlike :class:`~montepy.data_inputs.tally_multiplier.Reaction`
     this is a real :class:`~enum.Enum`.
+
+    .. versionadded:: 1.6.0b2
     """
 
     INVERSE_WEIGHT = -1
