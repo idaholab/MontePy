@@ -1,7 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import copy
-from numbers import Integral
 from typing import Generator
 
 import montepy
@@ -36,7 +35,7 @@ class LatticeIndex:
     __slots__ = ("_dimensions",)
 
     @args_checked
-    def __init__(self, dimensions: list[Integral | tuple[Integral, Integral]]):
+    def __init__(self, dimensions: list[ty.Integral | tuple[ty.Integral, ty.Integral]]):
         self._dimensions = list(dimensions)
 
     @property
@@ -157,11 +156,11 @@ class FlatGroup(TallyGroup):
     @args_checked
     def __init__(
         self,
-        numbers: list[Integral],
+        numbers: list[ty.Integral],
         lattice_indices: list[LatticeIndex | None] | None = None,
         *,
         is_grouped: bool,
-        universe_spec: Integral | None = None,
+        universe_spec: ty.Integral | None = None,
     ):
         self._old_numbers = list(numbers)
         self._lattice_indices = lattice_indices or [None] * len(self._old_numbers)
@@ -224,7 +223,7 @@ class PathGroup(TallyGroup):
     def inside(
         self,
         *cells_or_surfaces: montepy.Cell | montepy.Surface,
-        lattice: list[Integral] | None = None,
+        lattice: list[ty.Integral] | None = None,
     ) -> PathGroup:
         """Append an outer level and return self for chaining.
 

@@ -36,6 +36,7 @@ Collections
    montepy.CommentCollection
    montepy.Materials
    montepy.Surfaces
+   montepy.Tallies
    montepy.Transforms
    montepy.Universes
 
@@ -191,11 +192,8 @@ Materials
 Tallies
 ^^^^^^^
 
-.. note::
-
-   You will rarely create the ``Group``, ``Filter``, ``ReactionExpression``, or
-   ``Multiplier*`` classes directly, rather get them from :attr:`montepy.Tally.groups`,
-   :attr:`montepy.Tally.filters`, and :attr:`montepy.TallyMultiplier.bins`.
+Tally Objects
+~~~~~~~~~~~~~
 
 .. autosummary::
    :toctree: generated
@@ -212,9 +210,22 @@ Tallies
    montepy.EnergyDepositionTally
    montepy.FissionEnergyDepositionTally
    montepy.EnergyDetectorPulseTally
-   montepy.Tallies
    montepy.TallyType
    montepy.Score
+
+Scoring Groups and Filters
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. note::
+
+   You will rarely create these directly, rather get them from
+   :attr:`montepy.Tally.groups` and :attr:`montepy.Tally.filters`.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
+
    montepy.data_inputs.tally.TallyGroup
    montepy.data_inputs.tally.FlatGroup
    montepy.data_inputs.tally.PathGroup
@@ -222,17 +233,31 @@ Tallies
    montepy.data_inputs.tally.Filter
    montepy.data_inputs.tally.ParticleFilter
    montepy.data_inputs.tally.SpatialFilter
+
+Tally Multipliers
+~~~~~~~~~~~~~~~~~
+
+.. note::
+
+   You will rarely create the ``Multiplier*`` classes directly, rather get
+   them from :attr:`montepy.TallyMultiplier.bins`.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: myclass.rst
+
    montepy.TallyMultiplier
    montepy.Reaction
+   montepy.data_inputs.tally_multiplier.ReactionExpression
+   montepy.data_inputs.tally_multiplier_type.ReactionOperator
    montepy.MultiplierSet
    montepy.SpecialMultiplierSet
    montepy.SpecialMultiplier
    montepy.AttenuatorLayer
    montepy.AttenuatorSet
-   montepy.data_inputs.tally_multiplier.ReactionExpression
    montepy.data_inputs.tally_multiplier.MultiplierScore
    montepy.data_inputs.tally_multiplier.MultiplierBin
-   montepy.data_inputs.tally_multiplier_type.ReactionOperator
 
 
 Cell Modifiers

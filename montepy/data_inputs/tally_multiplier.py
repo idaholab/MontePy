@@ -2,7 +2,6 @@
 from __future__ import annotations
 import copy
 import warnings
-from numbers import Integral, Real
 from typing import Union
 
 import montepy
@@ -30,7 +29,7 @@ def _coerce(value) -> ReactionExpression:
     """Wrap a bare ``int`` reaction number in a :class:`Reaction`, or pass through."""
     if isinstance(value, ReactionExpression):
         return value
-    if isinstance(value, Integral):
+    if isinstance(value, ty.Integral):
         return Reaction(int(value))
     raise TypeError(f"Cannot combine a reaction expression with {value!r}.")
 
@@ -93,7 +92,9 @@ class ReactionExpression:
     def __rsub__(self, other) -> ReactionExpression:
         return ReactionExpression(_coerce(other), ReactionOperator.SUBTRACT, self)
 
-    def __rand__(self, material: Union[Integral, "montepy.Material"]) -> MultiplierSet:
+    def __rand__(
+        self, material: Union[ty.Integral, "montepy.Material"]
+    ) -> MultiplierSet:
         """``material_or_number & reaction_expr`` -> a one-term :class:`MultiplierSet`.
 
         Defined here so both leaves and composite trees support it via
@@ -227,8 +228,8 @@ class AttenuatorLayer:
     @args_checked
     def __init__(
         self,
-        material: Integral,
-        areal_density: Real,
+        material: ty.Integral,
+        areal_density: ty.Real,
         is_atom_density: bool = True,
     ):
         self._material = material
@@ -283,7 +284,7 @@ class AttenuatorSet:
     __slots__ = ("_constant", "_layers")
 
     @args_checked
-    def __init__(self, constant: Real, layers: list[AttenuatorLayer]):
+    def __init__(self, constant: ty.Real, layers: list[AttenuatorLayer]):
         self._constant = constant
         self._layers = list(layers)
 
@@ -338,8 +339,8 @@ class MultiplierSet:
     @args_checked
     def __init__(
         self,
-        constant: Real,
-        material: Integral | None,
+        constant: ty.Real,
+        material: ty.Integral | None,
         reactions: list[ReactionExpression],
     ):
         self._constant = constant
@@ -361,7 +362,7 @@ class MultiplierSet:
         """One :class:`~montepy.data_inputs.tally_multiplier.ReactionExpression` per output bin this set creates."""
         return list(self._reactions)
 
-    def __rmul__(self, constant: Real) -> MultiplierSet:
+    def __rmul__(self, constant: ty.Real) -> MultiplierSet:
         """``1.5 * (mat1 & Reaction.CAPTURE)`` sets the constant.
 
         Completes the DSL alongside ``ReactionExpression.__rand__``:
@@ -401,7 +402,7 @@ class SpecialMultiplierSet:
     __slots__ = ("_constant", "_kind")
 
     @args_checked
-    def __init__(self, constant: Real, kind: SpecialMultiplier):
+    def __init__(self, constant: ty.Real, kind: SpecialMultiplier):
         self._constant = constant
         self._kind = kind
 
@@ -438,8 +439,8 @@ class MultiplierScore:
 
     def __init__(
         self,
-        constant: Real,
-        material: Integral | None,
+        constant: ty.Real,
+        material: ty.Integral | None,
         reaction: ReactionExpression | None,
         kind: SpecialMultiplier | None,
         attenuator: AttenuatorSet | None,
