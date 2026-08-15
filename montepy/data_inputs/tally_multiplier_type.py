@@ -22,7 +22,7 @@ class SpecialMultiplier(Enum):
     """The ``c k`` special-multiplier flags (FM spec footnote 2).
 
     A closed, fixed 3-value set with no arithmetic use case, unlike
-    reaction numbers, so unlike :class:`~montepy.data_inputs.tally_multiplier.ReactionNumber`
+    reaction numbers, so unlike :class:`~montepy.data_inputs.tally_multiplier.Reaction`
     this is a real :class:`~enum.Enum`.
     """
 

@@ -94,13 +94,14 @@ class ReactionExpression:
     def __rand__(self, material: Union[Integral, "montepy.Material"]) -> MultiplierSet:
         """``material_or_number & reaction_expr`` -> a one-term :class:`MultiplierSet`.
 
-        Defined here (not on :class:`Reaction`) so both leaves and composite
-        trees support it via inheritance: ``mat1 & ReactionNumber.CAPTURE``
-        and ``26 & (ReactionNumber.CAPTURE - ReactionNumber.INELASTIC_SCATTER)``
-        both work, building a single-reaction :class:`MultiplierSet` with
+        Defined here so both leaves and composite trees support it via
+        inheritance: ``mat1 & Reaction.CAPTURE`` and
+        ``26 & (Reaction.CAPTURE - Reaction.INELASTIC_SCATTER)`` both work,
+        building a single-reaction :class:`MultiplierSet` with
         ``constant=1.0``. Scale it with ``*`` afterwards (see
-        :func:`MultiplierSet.__rmul__`) or drop it straight into a
-        :class:`MultiplierBin`'s ``terms`` list.
+        ``MultiplierSet.__rmul__``) or drop it straight into a
+        :class:`~montepy.data_inputs.tally_multiplier.MultiplierBin`'s
+        ``terms`` list.
         """
         if isinstance(material, montepy.Material):
             material = material.number
@@ -122,12 +123,25 @@ class ReactionExpression:
 class Reaction(ReactionExpression):
     """A leaf reaction number: a single ENDF (MT) or special (R) reaction.
 
-    Does **not** call :func:`ReactionExpression.__init__` — mirrors
+    Does **not** call ``ReactionExpression.__init__`` — mirrors
     ``UnitHalfSpace``, which holds independent leaf state rather than being a
     degenerate composite node pointing at itself. Inherits
     ``__mul__``/``__add__``/``__sub__``/``__rand__`` from
-    :class:`ReactionExpression` unchanged; only ``__eq__``/``__repr__`` need
-    leaf-specific overrides.
+    :class:`~montepy.data_inputs.tally_multiplier.ReactionExpression` unchanged;
+    only ``__eq__``/``__repr__`` need leaf-specific overrides.
+
+    Common reaction numbers are available as ready-to-use class attributes,
+    e.g. ``Reaction.CAPTURE``, so you don't need to remember that capture is
+    MT 102. These are not exhaustive or closed — any other MT/reaction
+    number still works via ``Reaction(n)`` directly; the class attributes
+    are just a convenience for the common ones. ``Reaction.CAPTURE`` is MT
+    102, (n,gamma) radiative capture. ``Reaction.RADIATION_DAMAGE`` and its
+    ``RADIATION_DAMAGE_*`` siblings are NJOY HEATR-computed
+    displacement-damage energies, not standard ENDF physics MTs, split the
+    same way ENDF splits total/elastic/inelastic/capture. The negative
+    aliases (``TOTAL_MCNP``, ``ABSORPTION``, etc.) are MCNP's own special
+    reaction-number aliases, computed directly from transport data rather
+    than corresponding to a single ENDF MT channel.
     """
 
     def __init__(self, number: int):
@@ -150,59 +164,38 @@ class Reaction(ReactionExpression):
         return f"Reaction({self._number})"
 
 
-class ReactionNumber:
-    """Common reaction numbers as ready-to-use :class:`Reaction` instances.
+# Common reaction numbers as ready-to-use Reaction instances, attached here
+# rather than in the class body above, since `Reaction` isn't bound as a
+# name until the class statement finishes executing.
 
-    Deliberately **not** an :class:`~enum.Enum`: an ``Enum`` member isn't a
-    ``Reaction`` and isn't an ``int`` — ``ReactionNumber.CAPTURE -
-    ReactionNumber.INELASTIC_SCATTER`` would need ``.value`` unwrapping and
-    couldn't produce a :class:`ReactionExpression` without extra glue. A
-    plain class of named :class:`Reaction` instances gets identical
-    dot-completion ergonomics for free while being directly composable via
-    the operators :class:`Reaction` already inherits.
+# ENDF MT numbers (positive; direct ENDF cross-section channel)
+Reaction.TOTAL = Reaction(1)
+Reaction.ELASTIC = Reaction(2)
+Reaction.INELASTIC_SCATTER = Reaction(4)
+Reaction.N_2N = Reaction(16)
+Reaction.N_3N = Reaction(17)
+Reaction.FISSION = Reaction(18)
+Reaction.CAPTURE = Reaction(102)
+Reaction.N_P = Reaction(103)
+Reaction.N_D = Reaction(104)
+Reaction.N_T = Reaction(105)
+Reaction.N_HE3 = Reaction(106)
+Reaction.N_ALPHA = Reaction(107)
 
-    Not exhaustive or closed — any other MT/reaction number still works via
-    ``Reaction(n)`` directly; this is a convenience for the common ones.
-    Named "ReactionNumber", not "MT", because this codebase's "MT" prefix
-    already means something else
-    (:class:`~montepy.data_inputs.thermal_scattering.ThermalScatteringLaw`).
-    """
+# NJOY HEATR radiation-damage-energy family.
+Reaction.RADIATION_DAMAGE = Reaction(444)
+Reaction.RADIATION_DAMAGE_ELASTIC = Reaction(445)
+Reaction.RADIATION_DAMAGE_INELASTIC = Reaction(446)
+Reaction.RADIATION_DAMAGE_DISAPPEARANCE = Reaction(447)
 
-    # ENDF MT numbers (positive; direct ENDF cross-section channel)
-    TOTAL = Reaction(1)
-    ELASTIC = Reaction(2)
-    INELASTIC_SCATTER = Reaction(4)
-    N_2N = Reaction(16)
-    N_3N = Reaction(17)
-    FISSION = Reaction(18)
-    CAPTURE = Reaction(102)
-    """(n,gamma), radiative capture."""
-    N_P = Reaction(103)
-    N_D = Reaction(104)
-    N_T = Reaction(105)
-    N_HE3 = Reaction(106)
-    N_ALPHA = Reaction(107)
-
-    # NJOY HEATR radiation-damage-energy family (not standard ENDF physics
-    # MTs -- HEATR-computed displacement-damage cross sections, split the
-    # same way ENDF splits total/elastic/inelastic/capture above).
-    RADIATION_DAMAGE = Reaction(444)
-    """Total damage energy."""
-    RADIATION_DAMAGE_ELASTIC = Reaction(445)
-    """Damage energy from the elastic channel (MT2)."""
-    RADIATION_DAMAGE_INELASTIC = Reaction(446)
-    """Damage energy from the inelastic channels (MT51-91)."""
-    RADIATION_DAMAGE_DISAPPEARANCE = Reaction(447)
-    """Damage energy from the capture/absorption channels (MT102-120)."""
-
-    # MCNP's own special reaction-number aliases (negative; computed
-    # directly from transport data, not a single ENDF MT channel).
-    TOTAL_MCNP = Reaction(-1)
-    ABSORPTION = Reaction(-2)
-    ELASTIC_MCNP = Reaction(-3)
-    HEATING = Reaction(-4)
-    PHOTON_PRODUCTION = Reaction(-5)
-    FISSION_MCNP = Reaction(-6)
+# MCNP's own special reaction-number aliases (negative; computed directly
+# from transport data, not a single ENDF MT channel).
+Reaction.TOTAL_MCNP = Reaction(-1)
+Reaction.ABSORPTION = Reaction(-2)
+Reaction.ELASTIC_MCNP = Reaction(-3)
+Reaction.HEATING = Reaction(-4)
+Reaction.PHOTON_PRODUCTION = Reaction(-5)
+Reaction.FISSION_MCNP = Reaction(-6)
 
 
 class AttenuatorLayer:
@@ -269,9 +262,9 @@ class AttenuatorSet:
 
     Models the thin-shield line-of-sight attenuation factor
     ``exp(-sum(sigma_i * px_i))``. Layers chain via ``&`` (mirrors
-    :func:`~montepy.surfaces.half_space.HalfSpace.__and__`; layers stack
-    multiplicatively in the exponent, like an intersection of independent
-    attenuating conditions):
+    :class:`~montepy.HalfSpace`'s own ``&``; layers stack multiplicatively
+    in the exponent, like an intersection of independent attenuating
+    conditions):
 
     .. code-block:: python
 
@@ -325,7 +318,7 @@ class MultiplierSet:
     material : int, optional
         Material number from an ``Mm`` card. ``None``/``0`` means "the
         material of the current cell."
-    reactions : list[ReactionExpression]
+    reactions : list[montepy.data_inputs.tally_multiplier.ReactionExpression]
         One entry per output bin this set creates (MCNP creates one bin per
         reaction list, per FM spec footnote 4).
     """
@@ -355,16 +348,16 @@ class MultiplierSet:
 
     @property
     def reactions(self) -> list[ReactionExpression]:
-        """One :class:`ReactionExpression` per output bin this set creates."""
+        """One :class:`~montepy.data_inputs.tally_multiplier.ReactionExpression` per output bin this set creates."""
         return list(self._reactions)
 
     def __rmul__(self, constant: Real) -> MultiplierSet:
-        """``1.5 * (mat1 & ReactionNumber.CAPTURE)`` sets the constant.
+        """``1.5 * (mat1 & Reaction.CAPTURE)`` sets the constant.
 
-        Completes the DSL alongside :func:`ReactionExpression.__rand__`:
+        Completes the DSL alongside ``ReactionExpression.__rand__``:
         ``material & reaction`` builds a :class:`MultiplierSet` with
         ``constant=1.0``, and this lets you scale it afterwards, mirroring
-        :func:`ReactionExpression.__rmul__`'s int-first convenience
+        ``ReactionExpression.__rmul__``'s int-first convenience
         (``16 * Reaction(103)``).
         """
         return MultiplierSet(constant, self._material, self._reactions)

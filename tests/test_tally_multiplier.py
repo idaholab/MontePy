@@ -10,7 +10,6 @@ from montepy.data_inputs.tally_multiplier import (
     MultiplierScore,
     MultiplierSet,
     Reaction,
-    ReactionNumber,
     SpecialMultiplierSet,
     TallyMultiplier,
 )
@@ -126,27 +125,23 @@ class TestOperatorOverloading:
         assert expr.right == Reaction(103)
 
     def test_rand_builds_multiplier_set(self):
-        built = 26 & ReactionNumber.CAPTURE
-        assert built == MultiplierSet(1.0, 26, [ReactionNumber.CAPTURE])
+        built = 26 & Reaction.CAPTURE
+        assert built == MultiplierSet(1.0, 26, [Reaction.CAPTURE])
 
     def test_rand_with_material_object(self):
         mat = montepy.Material()
         mat.number = 26
-        built = mat & ReactionNumber.CAPTURE
-        assert built == MultiplierSet(1.0, 26, [ReactionNumber.CAPTURE])
+        built = mat & Reaction.CAPTURE
+        assert built == MultiplierSet(1.0, 26, [Reaction.CAPTURE])
 
     def test_rmul_scales_constant(self):
-        built = 1.5 * (26 & ReactionNumber.CAPTURE)
-        assert built == MultiplierSet(1.5, 26, [ReactionNumber.CAPTURE])
+        built = 1.5 * (26 & Reaction.CAPTURE)
+        assert built == MultiplierSet(1.5, 26, [Reaction.CAPTURE])
 
-    def test_reaction_number_dsl_composes(self):
-        expr = (
-            ReactionNumber.TOTAL
-            - ReactionNumber.CAPTURE
-            - ReactionNumber.INELASTIC_SCATTER
-        )
-        assert expr.left == ReactionNumber.TOTAL - ReactionNumber.CAPTURE
-        assert expr.right == ReactionNumber.INELASTIC_SCATTER
+    def test_named_reaction_constants_compose(self):
+        expr = Reaction.TOTAL - Reaction.CAPTURE - Reaction.INELASTIC_SCATTER
+        assert expr.left == Reaction.TOTAL - Reaction.CAPTURE
+        assert expr.right == Reaction.INELASTIC_SCATTER
         assert expr.operator == ReactionOperator.SUBTRACT
 
 
