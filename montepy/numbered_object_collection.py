@@ -2,6 +2,7 @@
 from __future__ import annotations
 from abc import ABC
 import itertools as it
+import re
 import typing
 import weakref
 from numbers import Integral
@@ -261,6 +262,44 @@ class NumberedObjectCollection(ABC):
             raise NumberConflictError(
                 f"Number {number} is already in use for the collection: {type(self).__name__} by {self[number]}"
             )
+
+    def get_by_comment(
+        self, searcher: str | re.Pattern
+    ) -> typing.Generator[Numbered_MCNP_Object, None, None]:
+        """Yield all objects whose comments match the given text or pattern.
+
+        The search is applied to each object's
+        :attr:`~montepy.mcnp_object.MCNP_Object.comments`, so both leading and
+        inline comments are considered.
+
+        Parameters
+        ----------
+        searcher : str or re.Pattern
+            A substring to search for, or a compiled regular expression.
+
+        Returns
+        -------
+        Generator[Numbered_MCNP_Object, None, None]
+            A generator of all matching objects.
+
+        Raises
+        ------
+        TypeError
+            if ``searcher`` is not a string or a regex compiled from a string.
+        """
+        if isinstance(searcher, re.Pattern):
+            if not isinstance(searcher.pattern, str):
+                raise TypeError(
+                    f"searcher must be a str, or a pattern compiled from a str. {searcher} given."
+                )
+        elif not isinstance(searcher, str):
+            raise TypeError(
+                f"searcher must be a str, or a pattern compiled from a str. {searcher} given."
+            )
+
+        for obj in self:
+            if obj.comments.search(searcher):
+                yield obj
 
     def _update_number(self, old_num, new_num, obj):
         """Updates the number associated with a specific object in the internal cache.
