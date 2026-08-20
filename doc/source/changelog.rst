@@ -17,6 +17,7 @@ MontePy Changelog
 
 * Added a :class:`~montepy.Tally`/:class:`~montepy.TallyMultiplier` object model for reading, creating, and editing MCNP tally (``F``) and tally multiplier (``FM``) inputs (:issue:`11`).
 * Added named class-attribute constants on :class:`~montepy.data_inputs.tally_multiplier.Reaction` for essentially every officially-assigned ENDF-6 MT number from Appendix B of the ENDF-6 Formats Manual (:issue:`11`).
+* Added named class-attribute constants on :class:`~montepy.data_inputs.tally_multiplier.Reaction` for NJOY2016's own custom "MT" identifiers (GROUPR, HEATR, and DTFR module extensions beyond the official ENDF-6 MT set) (:issue:`11`).
 
 
 1.6.0b1

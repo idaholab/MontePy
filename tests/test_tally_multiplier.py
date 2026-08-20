@@ -144,6 +144,24 @@ class TestOperatorOverloading:
         assert expr.right == Reaction.INELASTIC_SCATTER
         assert expr.operator == ReactionOperator.SUBTRACT
 
+    def test_named_reaction_constants_are_unique(self):
+        constants = {
+            name: obj
+            for name, obj in vars(Reaction).items()
+            if isinstance(obj, Reaction)
+        }
+        # sanity: this should have picked up more than just a handful,
+        # confirming the Appendix B transcription actually landed.
+        assert len(constants) > 400
+        numbers_seen = {}
+        for name, reaction in constants.items():
+            if reaction.number in numbers_seen:
+                pytest.fail(
+                    f"Reaction.{name} (MT {reaction.number}) collides with "
+                    f"Reaction.{numbers_seen[reaction.number]}"
+                )
+            numbers_seen[reaction.number] = name
+
 
 class TestAttenuator:
     def test_and_chains_layers(self):
