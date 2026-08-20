@@ -198,7 +198,7 @@ Tally Objects
 .. autosummary::
    :toctree: generated
    :nosignatures:
-   :template: myclass.rst
+   :template: mytallyclass.rst
 
    montepy.Tally
    montepy.SurfaceTally
@@ -224,7 +224,7 @@ Scoring Groups and Filters
 .. autosummary::
    :toctree: generated
    :nosignatures:
-   :template: myclass.rst
+   :template: mytallyclass.rst
 
    montepy.data_inputs.tally.TallyGroup
    montepy.data_inputs.tally.FlatGroup
@@ -245,7 +245,7 @@ Tally Multipliers
 .. autosummary::
    :toctree: generated
    :nosignatures:
-   :template: myclass.rst
+   :template: mytallyclass.rst
 
    montepy.TallyMultiplier
    montepy.Reaction
