@@ -66,10 +66,10 @@ Their importances will all be set to 0.
 Setting How Cell Data Gets Displayed in the Input File
 ------------------------------------------------------
 
-Much of the cell data can show up in the cell block or the data block, like the importance card.
+Much of the cell data can show up in the cell block or the data block, like the importance input.
 These are referred to MontePy as "cell modifiers".
 You can change how these cell modifiers are printed with :attr:`~montepy.MCNP_Problem.print_in_data_block`.
-This acts like a dictionary where the key is the MCNP card name.
+This acts like a dictionary where the key is the MCNP input name.
 So to make cell importance data show up in the cell block just run:
 ``problem.print_in_data_block["imp"] = False``.
 

@@ -2,7 +2,7 @@
    :description lang=en:
         How to implement CellModifierInput subclasses in MontePy for data inputs that modify cells.
 
-Data Cards that Modify Cells: :class:`~montepy.data_inputs.cell_modifier.CellModifierInput`
+Data Inputs that Modify Cells: :class:`~montepy.data_inputs.cell_modifier.CellModifierInput`
 ============================================================================================
 This is a subclass of :class:`~montepy.data_inputs.data_input.DataInputAbstract` that is meant to handle data inputs that specify information about,
 and modify cells.

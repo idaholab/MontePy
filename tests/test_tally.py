@@ -253,7 +253,7 @@ class TestTallyObject:
         from montepy.data_inputs.tally import Tally
 
         t = Tally.__new__(Tally)
-        assert str(t) == "TALLY: (unparsed)"
+        assert str(t) == "Tally: (unparsed)"
         assert repr(t) == "TALLY: (unparsed)"
 
     def test_all_fixture_tallies_fully_parse(self, tally_problem):

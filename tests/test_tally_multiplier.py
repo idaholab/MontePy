@@ -292,7 +292,7 @@ class TestBlankConstruction:
         # constructed state __str__/__repr__'s except branches exist to
         # report gracefully.
         fm = TallyMultiplier.__new__(TallyMultiplier)
-        assert str(fm) == "TALLY MULTIPLIER: (unparsed)"
+        assert str(fm) == "TallyMultiplier: (unparsed)"
         assert repr(fm) == "TALLY MULTIPLIER: (unparsed)"
 
 

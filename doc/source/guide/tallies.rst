@@ -1,6 +1,6 @@
 .. meta::
    :description lang=en:
-        Working with MCNP tallies in MontePy: the Tally object model, building tallies, cloning, tally multipliers, and the reaction expression DSL.
+        Working with MCNP tallies in MontePy: the Tally object model, building tallies, cloning, tally multipliers, and building reaction expressions with Python operators.
 
 Tallies
 =======
@@ -10,9 +10,12 @@ Tallies
    import montepy
    problem = montepy.read_input("tests/inputs/test.imcnp")
 
-MontePy reads F cards and FM cards into real Python objects, not just text.
-This means you can inspect what a tally scores, build one from scratch, clone it, and
-work with its tally multiplier without touching a single string of MCNP syntax.
+This guide covers how to inspect and build tallies: what a tally
+scores, which cells or surfaces it covers, and how its tally
+multiplier modifies it. Every tally (``F``) input and tally multiplier
+(``FM``) input in a problem is available as a real object through
+``problem.tallies``, addressable by number like any other MontePy
+collection.
 
 The Tally Object Hierarchy
 ---------------------------
@@ -24,23 +27,55 @@ any other collection in MontePy.
 .. testcode::
 
    tally = problem.tallies[4]
-   print(type(tally).__name__)
+   print(tally)
 
 .. testoutput::
 
-   CellFluxTally
+   CellFluxTally: 4
 
-MontePy picks the class for you based on the tally's type digit (the ``4`` in ``F4``).
-:class:`~montepy.Tally` is the base class, and it has one subclass
-for every tally type: :class:`~montepy.SurfaceCurrentTally` (F1),
-:class:`~montepy.SurfaceFluxTally` (F2),
-:class:`~montepy.CellFluxTally` (F4),
-:class:`~montepy.DetectorTally` (F5),
-:class:`~montepy.EnergyDepositionTally` (F6),
-:class:`~montepy.FissionEnergyDepositionTally` (F7), and
-:class:`~montepy.EnergyDetectorPulseTally` (F8).
-These all also have short aliases, e.g. ``F4Tally`` is just another name for
-:class:`~montepy.CellFluxTally`.
+MontePy picks the class for you based on the tally's type digit (e.g., the ``4`` in
+``F4``).
+:class:`~montepy.Tally` is the base class, and it has one subclass for every tally
+type:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Quantity Tallied
+     - Type Digit
+     - MontePy Class
+     - Shorthand Alias
+   * - Surface current
+     - F1
+     - :class:`~montepy.SurfaceCurrentTally`
+     - ``montepy.F1Tally``
+   * - Average surface flux
+     - F2
+     - :class:`~montepy.SurfaceFluxTally`
+     - ``montepy.F2Tally``
+   * - Cell flux
+     - F4
+     - :class:`~montepy.CellFluxTally`
+     - ``montepy.F4Tally``
+   * - Point/ring detector flux
+     - F5
+     - :class:`~montepy.DetectorTally`
+     - ``montepy.F5Tally``
+   * - Energy deposition
+     - F6
+     - :class:`~montepy.EnergyDepositionTally`
+     - ``montepy.F6Tally``
+   * - Fission energy deposition
+     - F7
+     - :class:`~montepy.FissionEnergyDepositionTally`
+     - ``montepy.F7Tally``
+   * - Pulse height (energy deposition in a detector)
+     - F8
+     - :class:`~montepy.EnergyDetectorPulseTally`
+     - ``montepy.F8Tally``
+
+The Shorthand Alias is just another name for the same class, e.g.
+``montepy.F4Tally`` is :class:`~montepy.CellFluxTally`.
 
 Underneath these, there are two intermediate classes worth knowing about:
 :class:`~montepy.SurfaceTally` for tallies that score on surfaces
@@ -214,7 +249,7 @@ Trying to cross families raises a ``ValueError``.
 Tally Multipliers
 -------------------
 
-An FM card multiplies a tally's flux or current by a cross section, turning a plain
+A tally multiplier input multiplies a tally's flux or current by a cross section, turning a plain
 flux tally into a reaction rate, a heating rate, or similar.
 MontePy represents this as a :class:`~montepy.TallyMultiplier`,
 linked to its tally through :attr:`~montepy.Tally.multiplier`.
@@ -229,12 +264,12 @@ linked to its tally through :attr:`~montepy.Tally.multiplier`.
    >>> tally.multiplier is fm
    True
 
-An ``FMn`` card is linked to its tally purely by number, the same way an ``MTn``
-thermal scattering card gets linked to material ``n``.
+An ``FMn`` input is linked to its tally purely by number, the same way an ``MTn``
+thermal scattering input gets linked to material ``n``.
 You can append the ``TallyMultiplier`` and its ``Tally`` to the problem in either
 order, and MontePy will connect them once both are present.
 
-The bulk of an FM card is its :attr:`~montepy.TallyMultiplier.bins`,
+The bulk of a tally multiplier input is its :attr:`~montepy.TallyMultiplier.bins`,
 a list of :class:`~montepy.data_inputs.tally_multiplier.MultiplierBin`.
 Each bin holds one or more
 :class:`~montepy.MultiplierSet` or
@@ -263,10 +298,10 @@ reaction, and any attenuator) for every column of the tally's output.
    >>> tally.scores
    [MultiplierScore(constant=1.0, material=26, reaction=ReactionExpression(Reaction(16), ReactionOperator.MULTIPLY, Reaction(103)), kind=None, attenuator=None)]
 
-The Reaction Expression DSL
+Building Reaction Expressions
 ------------------------------
 
-A reaction list on an FM card, like ``16 103``, is really a small expression:
+A reaction list on a tally multiplier input, like ``16 103``, is really a small expression:
 multiply reaction 16 by reaction 103.
 Rather than making you build this out of strings, MontePy lets you write it as an
 actual Python expression, using ``*`` for multiply, ``+`` for add, and ``-`` for
@@ -335,8 +370,8 @@ chaining with ``&``, for building up multiple attenuating layers:
 
 .. note::
 
-   Right now this DSL is for building and comparing expressions, not for writing a
-   new FM card from scratch.
+   Right now these operators are for building and comparing expressions, not for
+   writing a new tally multiplier input from scratch.
    ``TallyMultiplier.bins`` is read-only, since it's parsed from the input file.
 
 Universe and Lattice Paths

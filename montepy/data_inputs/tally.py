@@ -778,9 +778,9 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
 
     def __str__(self):
         try:
-            return f"TALLY: {self.number}"
+            return f"{type(self).__name__}: {self.number}"
         except Exception:
-            return "TALLY: (unparsed)"
+            return f"{type(self).__name__}: (unparsed)"
 
     def __repr__(self):
         try:
