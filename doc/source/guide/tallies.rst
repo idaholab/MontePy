@@ -505,5 +505,5 @@ You can also build a path group from scratch with
 References
 ----------
 
-* :manual63:`5.9`
+* :manual63:`5.9.1`
 * :manual63:`5.9.7`
