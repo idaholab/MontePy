@@ -102,7 +102,7 @@ class MCNP_Problem:
         surface.Surface: Surfaces,
         Material: Materials,
         transform.Transform: Transforms,
-        montepy.data_inputs.tally.Tally: Tallies,
+        tally_mod.Tally: Tallies,
         Universe: Universes,
     }
 
