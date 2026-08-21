@@ -67,30 +67,49 @@ class Filter:
 class ParticleFilter(Filter):
     """Filters a tally to the particle types in its classifier (e.g. ``:n,p``).
 
+    A thin wrapper around the underlying
+    :class:`~montepy.input_parser.syntax_node.ParticleNode`, mirroring
+    :class:`~montepy.Mode`'s design: particle *membership* is what matters, not
+    order. Two filters with the same particles compare equal no matter what order
+    they were written in (``:n,p`` == ``:p,n``); order is only ever meaningful when
+    the underlying node formats itself back to MCNP text.
+
     .. versionadded:: 1.6.0b2
 
     Parameters
     ----------
-    particles : list[montepy.Particle]
-        The particles this tally is restricted to.
+    particles : montepy.input_parser.syntax_node.ParticleNode, list[montepy.Particle], set[montepy.Particle]
+        The parsed node backing this filter's particles, or a plain collection of
+        particles to build one from.
     """
 
-    __slots__ = ("_particles",)
+    __slots__ = ("_node",)
 
     @args_checked
-    def __init__(self, particles: list[montepy.Particle] | set[montepy.Particle]):
-        self._particles = list(particles)
+    def __init__(
+        self,
+        particles: (
+            syntax_node.ParticleNode | list[montepy.Particle] | set[montepy.Particle]
+        ),
+    ):
+        if isinstance(particles, syntax_node.ParticleNode):
+            self._node = particles
+        else:
+            token = ",".join(p.value for p in particles)
+            self._node = syntax_node.ParticleNode("particle_filter", token)
 
     @property
-    def particles(self):
+    def particles(self) -> set[montepy.Particle]:
         """The particles this tally is restricted to."""
-        return list(self._particles)
+        return set(self._node.particles)
 
     def __eq__(self, other):
-        return isinstance(other, ParticleFilter) and self._particles == other._particles
+        if not isinstance(other, ParticleFilter):
+            return NotImplemented
+        return frozenset(self.particles) == frozenset(other.particles)
 
     def __repr__(self):
-        return f"ParticleFilter({self._particles})"
+        return f"ParticleFilter({self._node.format()!r})"
 
 
 class SpatialFilter(Filter):
@@ -543,7 +562,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         """
         filters = []
         if self.particle_classifiers:
-            filters.append(ParticleFilter(self.particle_classifiers))
+            filters.append(ParticleFilter(self._classifier.particles))
         if self._groups:
             filters.append(SpatialFilter(self._groups))
         return filters

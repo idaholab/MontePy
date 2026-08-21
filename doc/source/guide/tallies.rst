@@ -275,7 +275,7 @@ This default is overridden if the tally has a tally multiplier attached; see
 
 .. testoutput::
 
-   ParticleFilter([<Particle.PHOTON: 'P'>])
+   ParticleFilter(':p')
    SpatialFilter([FlatGroup([1005], grouped=False)])
 
 .. note::
