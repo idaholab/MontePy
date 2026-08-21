@@ -94,7 +94,7 @@ Geometry Filters
 
 The cells or surfaces a tally scores over are its geometry filter, exposed as
 :attr:`~montepy.Tally.groups`, a list of
-:class:`~montepy.data_inputs.tally.TallyGroup`.
+:class:`~montepy.data_inputs.tally.TallyGroup` objects.
 
 This section covers flat cell/surface lists, where every entry is a
 :class:`~montepy.data_inputs.tally.FlatGroup`.
@@ -111,13 +111,14 @@ and MCNP creates a separate bin for each one:
 
    tally = problem.tallies[4]
    for group in tally.groups:
-       print(group.old_numbers, group.is_grouped)
+       cells = [problem.cells[n] for n in group.old_numbers]
+       print(*cells, group.is_grouped)
 
 .. testoutput::
 
-   [1] False
-   [2] False
-   [3] False
+   Cell: 1 False
+   Cell: 2 False
+   Cell: 3 False
 
 ``is_grouped`` is ``False`` for every group here, since ``F4:n 1 2 3`` has no
 parentheses: each of cells 1, 2, and 3 gets its own separate bin.
@@ -125,25 +126,26 @@ parentheses: each of cells 1, 2, and 3 gets its own separate bin.
 Wrapping cells or surfaces in parentheses instead unions them into a single bin,
 averaged for normalized tally types like ``F2``/``F4``/``F6``/``F7``, or summed for
 ``F1``/``F8``, rather than reported separately.
-A tally can mix flat entries and multiple parenthesized groups on the same card, and
+A tally can mix flat entries and multiple parenthesized groups on the same input, and
 each group becomes its own entry in ``groups``:
 
 .. testcode::
 
    grouped = montepy.CellFluxTally("f14:n (1 2) (3)")
    for group in grouped.groups:
-       print(group.old_numbers, group.is_grouped)
+       cells = [problem.cells[n] for n in group.old_numbers]
+       print(*cells, group.is_grouped)
 
 .. testoutput::
 
-   [1, 2] True
-   [3] True
+   Cell: 1 Cell: 2 True
+   Cell: 3 True
 
-Notice that ``[3]`` still has ``is_grouped`` set to ``True``, even though it's a
-single number: what matters is whether the parentheses were there, not how many
-numbers are inside them. Without the parentheses, ``f14:n 1 2 3`` would instead
-produce three separate, ungrouped bins, exactly like the cell flux tally example
-above.
+Notice that the second group here still has ``is_grouped`` set to ``True``, even
+though it only covers a single cell: what matters is whether the parentheses were
+there, not how many cells are inside them. Without the parentheses, ``f14:n 1 2 3``
+would instead produce three separate, ungrouped bins, exactly like the cell flux
+tally example above.
 To build flat and grouped bins like these from scratch instead of reading them from
 an existing tally, see `Building Tallies from Scratch`_ below.
 
@@ -168,6 +170,34 @@ Checking whether a specific cell is scored by a tally works the way you'd expect
    True
    >>> problem.cells[99] in tally
    False
+
+A tally can also end with a trailing ``T``, for "total": an extra bin that's the
+union of every other bin on the input, rather than a scoring region of its own.
+Because it isn't really its own region, MontePy doesn't represent it as another
+entry in ``groups``.
+Instead it's a separate flag, :attr:`~montepy.Tally.include_total`:
+
+.. testcode::
+
+   totaled = montepy.CellFluxTally("f24:n (1 2) (3) T")
+   for group in totaled.groups:
+       cells = [problem.cells[n] for n in group.old_numbers]
+       print(*cells, group.is_grouped)
+   print(totaled.include_total)
+
+.. testoutput::
+
+   Cell: 1 Cell: 2 True
+   Cell: 3 True
+   True
+
+Notice that ``groups`` only has the two real bins; the ``T`` never shows up as a
+third entry there, no matter how many bins came before it.
+Like ``scores`` and ``filters``, ``include_total`` is read-only: there's no way to
+turn total-bin reporting on for a tally you build from scratch with
+:func:`~montepy.CellTally.add_cell`/:func:`~montepy.CellTally.add_group` (see
+`Building Tallies from Scratch`_ below); it's only ever set by parsing a ``T`` off
+an existing input.
 
 Building Tallies from Scratch
 -------------------------------
@@ -387,14 +417,6 @@ write unnecessary parentheses to get the correct grouping.
    >>> bigger_expr.operator
    <ReactionOperator.ADD: ':'>
 
-Every common reaction number has a named constant like this, so you don't need to
-remember that capture is ``102``:
-
-.. doctest::
-
-   >>> Reaction.CAPTURE
-   Reaction(102)
-
 You can go one step further and build a whole
 :class:`~montepy.MultiplierSet` with ``&``, joining a
 material number to a reaction expression:
@@ -407,7 +429,7 @@ material number to a reaction expression:
    >>> fm.mcnp_str()
    'fm4 (1.0 26 16 103)'
 
-Scale the constant afterwards with ``*``:
+You can scale the constant afterward with ``*``:
 
 .. doctest::
 
