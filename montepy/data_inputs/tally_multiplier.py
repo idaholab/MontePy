@@ -23,6 +23,14 @@ _SPECIAL_KIND_MAP = {
     -2: SpecialMultiplier.INVERSE_VELOCITY,
     -3: SpecialMultiplier.FIRST_INTERACTION_XS,
 }
+_SPECIAL_KIND_MAP_INVERSE = {v: k for k, v in _SPECIAL_KIND_MAP.items()}
+
+
+def _make_value_node(value_type, default, padding=" ", never_pad=False):
+    padding_node = syntax_node.PaddingNode(padding) if padding else None
+    if default is None:
+        return syntax_node.ValueNode(default, value_type, padding_node, never_pad)
+    return syntax_node.ValueNode(str(default), value_type, padding_node, never_pad)
 
 
 def _coerce(value) -> ReactionExpression:
@@ -56,6 +64,29 @@ class ReactionExpression:
         self._left = left
         self._operator = operator
         self._right = right
+        self._node = None
+
+    @property
+    def node(self) -> syntax_node.ListNode:
+        """The syntax node for this reaction expression.
+
+        .. versionadded:: 1.6.0b3
+        """
+        self._ensure_has_node()
+        return self._node
+
+    def _ensure_has_node(self):
+        if self._node is not None:
+            return
+        node = syntax_node.ListNode("reaction expr")
+        for n in self.left.node.nodes:
+            node.append(n)
+        if self._operator != ReactionOperator.MULTIPLY:
+            symbol = ":" if self._operator == ReactionOperator.ADD else "#"
+            node.append(_make_value_node(str, symbol, padding=" "))
+        for n in self.right.node.nodes:
+            node.append(n)
+        self._node = node
 
     @make_prop_pointer("_left")
     def left(self):
@@ -106,8 +137,6 @@ class ReactionExpression:
         :class:`~montepy.data_inputs.tally_multiplier.MultiplierBin`'s
         ``terms`` list.
         """
-        if isinstance(material, montepy.Material):
-            material = material.number
         return MultiplierSet(1.0, material, [self])
 
     def __eq__(self, other):
@@ -159,11 +188,18 @@ class Reaction(ReactionExpression):
         self._left = None
         self._operator = None
         self._right = None
+        self._node = None
 
     @property
     def number(self) -> int:
         """The raw ENDF (MT) or special (R) reaction number."""
         return self._number
+
+    def _ensure_has_node(self):
+        if self._node is None:
+            node = syntax_node.ListNode("reaction expr")
+            node.append(_make_value_node(int, self._number, padding=" "))
+            self._node = node
 
     def __eq__(self, other):
         if not isinstance(other, Reaction):
@@ -835,12 +871,13 @@ class AttenuatorSet:
     .. versionadded:: 1.6.0b2
     """
 
-    __slots__ = ("_constant", "_layers")
+    __slots__ = ("_constant", "_layers", "_node")
 
     @args_checked
     def __init__(self, constant: ty.Real, layers: list[AttenuatorLayer]):
         self._constant = constant
         self._layers = list(layers)
+        self._node = None
 
     @property
     def constant(self) -> float:
@@ -851,6 +888,29 @@ class AttenuatorSet:
     def layers(self) -> list[AttenuatorLayer]:
         """The attenuating layers, in order."""
         return list(self._layers)
+
+    @property
+    def node(self) -> syntax_node.ListNode:
+        """The syntax node for this attenuator set.
+
+        .. versionadded:: 1.6.0b3
+        """
+        self._ensure_has_node()
+        return self._node
+
+    def _ensure_has_node(self):
+        if self._node is not None:
+            return
+        node = syntax_node.ListNode("attenuator set")
+        node.append(_make_value_node(float, self._constant))
+        node.append(_make_value_node(int, -1))
+        for layer in self._layers:
+            node.append(_make_value_node(int, layer.material))
+            density = (
+                layer.areal_density if layer.is_atom_density else -layer.areal_density
+            )
+            node.append(_make_value_node(float, density))
+        self._node = node
 
     @args_checked
     def __and__(self, other: Union[AttenuatorLayer, "AttenuatorSet"]) -> AttenuatorSet:
@@ -888,18 +948,20 @@ class MultiplierSet:
         reaction list, per FM spec footnote 4).
     """
 
-    __slots__ = ("_constant", "_material", "_reactions")
+    __slots__ = ("_constant", "_material", "_reactions", "_node", "_material_node")
 
     @args_checked
     def __init__(
         self,
         constant: ty.Real,
-        material: ty.Integral | None,
+        material: Union[ty.Integral, "montepy.Material", None],
         reactions: list[ReactionExpression],
     ):
         self._constant = constant
         self._material = material
         self._reactions = list(reactions)
+        self._node = None
+        self._material_node = None
 
     @property
     def constant(self) -> float:
@@ -908,13 +970,54 @@ class MultiplierSet:
 
     @property
     def material(self) -> int | None:
-        """The material number, or ``None`` for "current cell's material"."""
+        """The material number, or ``None`` for "current cell's material".
+
+        Resolved live from the linked :class:`~montepy.Material` if this set
+        was built from one (e.g. ``mat & Reaction.CAPTURE``), so a later
+        renumber of that material is reflected here too.
+        """
+        if isinstance(self._material, montepy.Material):
+            return self._material.number
         return self._material
 
     @property
     def reactions(self) -> list[ReactionExpression]:
         """One :class:`~montepy.data_inputs.tally_multiplier.ReactionExpression` per output bin this set creates."""
         return list(self._reactions)
+
+    @property
+    def node(self) -> syntax_node.ListNode:
+        """The syntax node for this multiplier set.
+
+        .. versionadded:: 1.6.0b3
+        """
+        self._ensure_has_node()
+        if (
+            self._material_node is not None
+            and self._material_node.value != self.material
+        ):
+            self._material_node.value = self.material
+        return self._node
+
+    def _ensure_has_node(self):
+        if self._node is not None:
+            return
+        node = syntax_node.ListNode("multiplier set")
+        node.append(_make_value_node(float, self._constant))
+        if self.material is not None:
+            self._material_node = _make_value_node(int, self.material)
+            node.append(self._material_node)
+        if len(self._reactions) == 1:
+            node.append(self._reactions[0].node)
+        else:
+            for reaction in self._reactions:
+                group = syntax_node.ListNode("tally group")
+                group.append(syntax_node.PaddingNode("("))
+                for n in reaction.node.nodes:
+                    group.append(n)
+                group.append(syntax_node.PaddingNode(")"))
+                node.append(group)
+        self._node = node
 
     def __rmul__(self, constant: ty.Real) -> MultiplierSet:
         """``1.5 * (mat1 & Reaction.CAPTURE)`` sets the constant.
@@ -932,12 +1035,12 @@ class MultiplierSet:
             return NotImplemented
         return (
             self._constant == other._constant
-            and self._material == other._material
+            and self.material == other.material
             and self._reactions == other._reactions
         )
 
     def __repr__(self):
-        return f"MultiplierSet({self._constant}, {self._material}, {self._reactions!r})"
+        return f"MultiplierSet({self._constant}, {self.material}, {self._reactions!r})"
 
 
 class SpecialMultiplierSet:
@@ -953,12 +1056,13 @@ class SpecialMultiplierSet:
         Which special multiplier option (``k``) this is.
     """
 
-    __slots__ = ("_constant", "_kind")
+    __slots__ = ("_constant", "_kind", "_node")
 
     @args_checked
     def __init__(self, constant: ty.Real, kind: SpecialMultiplier):
         self._constant = constant
         self._kind = kind
+        self._node = None
 
     @property
     def constant(self) -> float:
@@ -969,6 +1073,23 @@ class SpecialMultiplierSet:
     def kind(self) -> SpecialMultiplier:
         """Which special multiplier option this is."""
         return self._kind
+
+    @property
+    def node(self) -> syntax_node.ListNode:
+        """The syntax node for this special multiplier set.
+
+        .. versionadded:: 1.6.0b3
+        """
+        self._ensure_has_node()
+        return self._node
+
+    def _ensure_has_node(self):
+        if self._node is not None:
+            return
+        node = syntax_node.ListNode("special multiplier set")
+        node.append(_make_value_node(float, self._constant))
+        node.append(_make_value_node(int, _SPECIAL_KIND_MAP_INVERSE[self._kind]))
+        self._node = node
 
     def __eq__(self, other):
         if not isinstance(other, SpecialMultiplierSet):
@@ -1062,7 +1183,7 @@ class MultiplierBin:
         the ``terms`` produce.
     """
 
-    __slots__ = ("_terms", "_attenuator")
+    __slots__ = ("_terms", "_attenuator", "_node")
 
     def __init__(
         self,
@@ -1071,6 +1192,7 @@ class MultiplierBin:
     ):
         self._terms = list(terms)
         self._attenuator = attenuator
+        self._node = None
 
     @property
     def terms(self) -> list[MultiplierSet | SpecialMultiplierSet]:
@@ -1081,6 +1203,49 @@ class MultiplierBin:
     def attenuator(self) -> AttenuatorSet | None:
         """The attenuator set for this bin set, if any."""
         return self._attenuator
+
+    @property
+    def node(self) -> syntax_node.ListNode:
+        """The syntax node for this bin's own content (not including the
+        outer parens a sibling bin or multi-term structure may require --
+        that's decided by :class:`TallyMultiplier`, which knows about
+        sibling bins).
+
+        .. versionadded:: 1.6.0b3
+        """
+        self._ensure_has_node()
+        items = list(self._terms)
+        if self._attenuator is not None:
+            items.append(self._attenuator)
+        for item in items:
+            if item._node is not None:
+                item.node
+        return self._node
+
+    def _own_item_count(self):
+        return len(self._terms) + (1 if self._attenuator is not None else 0)
+
+    def _ensure_has_node(self):
+        if self._node is not None:
+            return
+        items = list(self._terms)
+        if self._attenuator is not None:
+            items.append(self._attenuator)
+        node = syntax_node.ListNode("bin body")
+        wrap_each = len(items) > 1
+        for item in items:
+            item_node = item.node
+            if wrap_each:
+                group = syntax_node.ListNode("tally group")
+                group.append(syntax_node.PaddingNode("("))
+                for n in item_node.nodes:
+                    group.append(n)
+                group.append(syntax_node.PaddingNode(")"))
+                node.append(group)
+            else:
+                for n in item_node.nodes:
+                    node.append(n)
+        self._node = node
 
     @property
     def scores(self) -> list[MultiplierScore]:
@@ -1121,6 +1286,7 @@ class MultiplierBin:
     @classmethod
     def from_items(cls, items: list) -> MultiplierBin:
         """Parse a bin set's flat CST items into a :class:`MultiplierBin`."""
+        original = list(items)
         items = _non_padding(items)
         nested_groups = [n for n in items if _is_group(n)]
         if nested_groups and len(nested_groups) == len(items):
@@ -1137,7 +1303,12 @@ class MultiplierBin:
                 attenuator = term
             else:
                 terms.append(term)
-        return cls(terms, attenuator)
+        result = cls(terms, attenuator)
+        node = syntax_node.ListNode("bin body")
+        for n in original:
+            node.append(n)
+        result._node = node
+        return result
 
     def __eq__(self, other):
         if not isinstance(other, MultiplierBin):
@@ -1213,6 +1384,7 @@ def _parse_reaction_expr(items: list) -> ReactionExpression:
     ``tally.py``'s own ``_parse_tally_group_node`` does its real
     interpretation as a second pass over a loosely structured CST.
     """
+    original = list(items)
     items = _non_padding(items)
     groups: list[tuple[ReactionOperator | None, list[Reaction]]] = []
     current_op = None
@@ -1241,12 +1413,31 @@ def _parse_reaction_expr(items: list) -> ReactionExpression:
     for op, nums in groups[1:]:
         term = fold_multiply(nums)
         expr = expr + term if op == ReactionOperator.ADD else expr - term
+    node = syntax_node.ListNode("reaction expr")
+    for n in original:
+        node.append(n)
+    expr._node = node
     return expr
+
+
+def _mark_never_pad(nodes):
+    for i, n in enumerate(nodes):
+        if (
+            isinstance(n, syntax_node.ValueNode)
+            and n.padding is None
+            and i + 1 < len(nodes)
+            and not isinstance(nodes[i + 1], syntax_node.PaddingNode)
+        ):
+            n.never_pad = True
+        if isinstance(n, syntax_node.ListNode):
+            _mark_never_pad(n.nodes)
 
 
 def _parse_multiplier_bins(tally_numbers_node) -> list[MultiplierBin]:
     """Parse a full FM card's ``tally numbers`` CST node into its bin sets."""
-    items = _non_padding(list(tally_numbers_node))
+    raw = list(tally_numbers_node)
+    _mark_never_pad(raw)
+    items = _non_padding(raw)
     top_groups = [n for n in items if _is_group(n)]
     if not top_groups:
         # FM parenthesization rule 3: the whole card is one bin set with one
@@ -1276,6 +1467,7 @@ class TallyMultiplier(DataInputAbstract, Numbered_MCNP_Object):
         super()._init_blank()
         self._old_number = self._generate_default_node(int, -1)
         self._bins = []
+        self._parsed_bins = []
         self._include_total = False
         self._cumulative = False
         self._parent_tally = None
@@ -1343,6 +1535,7 @@ class TallyMultiplier(DataInputAbstract, Numbered_MCNP_Object):
         self._include_total = end_val == "T"
         self._cumulative = end_val == "C"
         self._bins = _parse_multiplier_bins(tally_list["tally"])
+        self._parsed_bins = list(self._bins)
 
     @make_prop_val_node("_old_number")
     def old_number(self):
@@ -1354,6 +1547,30 @@ class TallyMultiplier(DataInputAbstract, Numbered_MCNP_Object):
     def bins(self) -> list[MultiplierBin]:
         """The bin sets (top-level parenthesized groups) of this FM card."""
         return list(self._bins)
+
+    @args_checked
+    @needs_full_cst
+    def add_bin(self, bin_: MultiplierBin) -> None:
+        """Add a bin set to this FM card.
+
+        Parameters
+        ----------
+        bin_ : MultiplierBin
+            The bin set to add.
+        """
+        self._bins.append(bin_)
+
+    @args_checked
+    @needs_full_cst
+    def remove_bin(self, bin_: MultiplierBin) -> None:
+        """Remove a bin set from this FM card.
+
+        Parameters
+        ----------
+        bin_ : MultiplierBin
+            The bin set to remove.
+        """
+        self._bins.remove(bin_)
 
     @property
     @needs_full_ast
@@ -1384,7 +1601,34 @@ class TallyMultiplier(DataInputAbstract, Numbered_MCNP_Object):
         super().link_to_problem(problem)
 
     def _update_values(self):
-        pass
+        if self._bins != self._parsed_bins:
+            tally_numbers_node = self._tree["data"]["tally"]
+            tally_numbers_node.nodes.clear()
+            wrap_each = len(self._bins) > 1
+            for bin_ in self._bins:
+                bin_node = bin_.node
+                if wrap_each or bin_._own_item_count() > 1:
+                    group = syntax_node.ListNode("tally group")
+                    group.append(syntax_node.PaddingNode("("))
+                    for n in bin_node.nodes:
+                        group.append(n)
+                    group.append(syntax_node.PaddingNode(")"))
+                    tally_numbers_node.nodes.append(group)
+                else:
+                    for n in bin_node.nodes:
+                        tally_numbers_node.nodes.append(n)
+            self._parsed_bins = list(self._bins)
+        else:
+            for bin_ in self._bins:
+                if bin_._node is not None:
+                    bin_.node
+        end_node = self._tree["data"]["end"]
+        if self._include_total:
+            end_node.value = "T"
+        elif self._cumulative:
+            end_node.value = "C"
+        else:
+            end_node.value = None
 
     def __str__(self):
         try:

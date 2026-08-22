@@ -379,3 +379,55 @@ class TestReprAndEquality:
 
     def test_parent_collections(self):
         assert TallyMultiplier._parent_collections() == ()
+
+
+class TestBinRoundTrip:
+    """Mutating a TallyMultiplier's bins through the public API must be
+    reflected in mcnp_str(), not just in the in-memory Python state."""
+
+    @pytest.mark.parametrize("line", FM_FIXTURE_LINES)
+    def test_unmodified_fm_round_trips_exactly(self, line):
+        fm = TallyMultiplier(Input([line], BlockType.DATA), jit_parse=False)
+        assert fm.mcnp_str() == line
+        fm.full_parse()
+        assert fm.mcnp_str() == line
+
+    def test_add_bin_reflected_in_mcnp_str(self):
+        fm = TallyMultiplier(
+            Input(["fm4 (1.0 26 16)"], BlockType.DATA), jit_parse=False
+        )
+        fm.add_bin(MultiplierBin([MultiplierSet(2.0, 27, [Reaction(102)])]))
+        text = fm.mcnp_str()
+        assert "27" in text and "102" in text and "2.0" in text
+
+    def test_blank_fm_add_bin_writes_valid_card(self):
+        fm = TallyMultiplier()
+        fm.number = 4
+        fm.add_bin(MultiplierBin([MultiplierSet(1.0, 26, [Reaction(16)])]))
+        text = fm.mcnp_str()
+        assert "26" in text and "16" in text
+
+    def test_remove_bin(self):
+        fm = TallyMultiplier(
+            Input(["fm4 (1.0 26 16)"], BlockType.DATA), jit_parse=False
+        )
+        bin_ = MultiplierBin([MultiplierSet(2.0, 27, [Reaction(102)])])
+        fm.add_bin(bin_)
+        fm.remove_bin(bin_)
+        assert bin_ not in fm.bins
+        text = fm.mcnp_str()
+        assert "27" not in text
+
+    def test_multiplier_set_material_object_resolves_live(self):
+        mat = montepy.Material()
+        mat.number = 26
+        built = mat & Reaction.N_2N
+        fm = TallyMultiplier()
+        fm.number = 4
+        fm.add_bin(MultiplierBin([built]))
+        assert "26" in fm.mcnp_str()
+        mat.number = 99
+        text = fm.mcnp_str()
+        assert "99" in text
+        assert "26" not in text
+        assert built.material == 99
