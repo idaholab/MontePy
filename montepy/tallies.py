@@ -1,6 +1,8 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+import warnings
+
 import montepy
-from montepy.exceptions import MalformedInputError
+from montepy.exceptions import MalformedInputError, MalformedInputWarning
 from montepy.numbered_object_collection import NumberedDataObjectCollection
 from montepy.utilities import *
 
@@ -67,6 +69,21 @@ class Tallies(NumberedDataObjectCollection):
                 and obj not in self._problem.data_inputs
             ):
                 self._problem.data_inputs.append(obj)
+
+    def _delete_hook(self, obj, **kwargs):
+        fm = getattr(obj, "_multiplier", None)
+        if fm is not None:
+            if fm in self._multipliers:
+                self._multipliers.remove(fm)
+            if self._problem is not None and fm in self._problem.data_inputs:
+                self._problem.data_inputs.remove(fm)
+            fm._parent_tally = None
+            warnings.warn(
+                f"Tally multiplier (FM) card for tally {obj.number} was removed "
+                "because its parent tally was deleted.",
+                MalformedInputWarning,
+            )
+        super()._delete_hook(obj, **kwargs)
 
     def finalize_init(self, jit_parse: bool = False):
         # Raise error for unflushed connection

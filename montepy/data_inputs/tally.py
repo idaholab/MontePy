@@ -719,6 +719,8 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
                 f"got {number % _TALLY_TYPE_MODULUS}."
             )
         super()._number_validator(number)
+        if self._multiplier is not None:
+            self._multiplier.number = number
 
     @make_prop_val_node("_old_number")
     def old_number(self):

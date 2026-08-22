@@ -1,5 +1,6 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 import io
+import warnings
 
 import pytest
 
@@ -339,6 +340,40 @@ class TestDuplicateFmCards:
         problem.tallies.append(fm1)
         with pytest.warns(montepy.exceptions.MalformedInputWarning):
             problem.tallies.append(fm2)
+
+    def test_deleting_tally_cascades_to_multiplier(self):
+        problem = montepy.MCNP_Problem(None)
+        tally = parse_data(Input(["f4:n 1 2 3"], BlockType.DATA))
+        problem.tallies.append(tally)
+        fm = TallyMultiplier(
+            Input(["fm4 (1.0 26 16)"], BlockType.DATA), jit_parse=False
+        )
+        problem.tallies.append(fm)
+        with pytest.warns(montepy.exceptions.MalformedInputWarning):
+            del problem.tallies[4]
+        assert fm not in problem.data_inputs
+        assert fm not in problem.tallies.multipliers
+        assert fm.parent_tally is None
+
+    def test_deleting_tally_without_multiplier_does_not_warn(self):
+        problem = montepy.MCNP_Problem(None)
+        tally = parse_data(Input(["f4:n 1 2 3"], BlockType.DATA))
+        problem.tallies.append(tally)
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            del problem.tallies[4]
+        assert tally not in problem.data_inputs
+
+    def test_renumbering_tally_syncs_multiplier_number(self):
+        problem = montepy.MCNP_Problem(None)
+        tally = parse_data(Input(["f4:n 1 2 3"], BlockType.DATA))
+        problem.tallies.append(tally)
+        fm = TallyMultiplier(
+            Input(["fm4 (1.0 26 16)"], BlockType.DATA), jit_parse=False
+        )
+        problem.tallies.append(fm)
+        tally.number = 14
+        assert fm.number == 14
 
 
 class TestBlankConstruction:
