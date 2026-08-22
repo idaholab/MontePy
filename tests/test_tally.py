@@ -403,6 +403,58 @@ class TestTallyBuilders:
         assert len(pg.levels) == 2
 
 
+class TestGroupRoundTrip:
+    """Mutating a Tally's groups through the public API must be reflected in
+    mcnp_str(), not just in the in-memory Python state. These lock in the
+    Tally._update_values / FlatGroup/PathGroup node-generation layer."""
+
+    def test_unmodified_tally_round_trips_exactly(self, tally_problem):
+        for number in (4, 14, 24, 34, 44, 54, 64, 74, 84, 94):
+            tally = tally_problem.tallies[number]
+            before = tally.mcnp_str()
+            tally.full_parse()
+            assert tally.mcnp_str() == before
+
+    def test_add_cell_reflected_in_mcnp_str(self):
+        t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)
+        cell = montepy.Cell()
+        cell.number = 99
+        t.add_cell(cell)
+        assert "99" in t.mcnp_str()
+        assert "1" in t.mcnp_str() and "2" in t.mcnp_str() and "3" in t.mcnp_str()
+
+    def test_blank_tally_add_cell_writes_valid_card(self):
+        t = F4Tally()
+        t.number = 4
+        cell = montepy.Cell()
+        cell.number = 1
+        t.add_cell(cell)
+        text = t.mcnp_str()
+        assert "1" in text
+        # the unfixed bug wrote out only 'F 4 ', with no cell number at all
+        assert text.strip() != "F 4"
+
+    def test_add_group_reflected_in_mcnp_str(self):
+        t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)
+        c1, c2 = montepy.Cell(), montepy.Cell()
+        c1.number = 10
+        c2.number = 11
+        t.add_group([c1, c2])
+        text = t.mcnp_str()
+        assert "10" in text and "11" in text
+        assert "(" in text and ")" in text
+
+    def test_renumbered_cell_reflected_in_mcnp_str(self):
+        t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)
+        cell = montepy.Cell()
+        cell.number = 99
+        t.add_cell(cell)
+        cell.number = 199
+        text = t.mcnp_str()
+        assert "199" in text
+        assert "99" not in text.replace("199", "")
+
+
 class TestReprAndEquality:
     """Smoke tests for __repr__ and __eq__-against-wrong-type on the small
     standalone value objects in tally.py. Coverage only counts a line as hit
