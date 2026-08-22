@@ -1,4 +1,6 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+import io
+
 import pytest
 
 import montepy
@@ -209,6 +211,47 @@ class TestCompanionCardLinking:
         problem.tallies.append(fm)
         with pytest.raises(montepy.exceptions.MalformedInputError):
             problem.tallies.finalize_init()
+
+    def test_appended_fm_registers_in_data_inputs(self):
+        problem = montepy.MCNP_Problem(None)
+        tally = parse_data(Input(["f4:n 1 2 3"], BlockType.DATA))
+        problem.tallies.append(tally)
+        fm = TallyMultiplier(
+            Input(["fm4 (1.0 26 16)"], BlockType.DATA), jit_parse=False
+        )
+        problem.tallies.append(fm)
+        assert fm in problem.data_inputs
+        assert fm in problem.tallies.multipliers
+        assert tally.multiplier is fm
+        assert fm.parent_tally is tally
+
+    def test_multiplier_setter_registers_in_data_inputs(self):
+        problem = montepy.MCNP_Problem(None)
+        tally = parse_data(Input(["f4:n 1 2 3"], BlockType.DATA))
+        problem.tallies.append(tally)
+        fm = TallyMultiplier(
+            Input(["fm4 (1.0 26 16)"], BlockType.DATA), jit_parse=False
+        )
+        tally.multiplier = fm
+        assert fm in problem.data_inputs
+        assert fm.parent_tally is tally
+
+    def test_appended_fm_survives_full_problem_export(self):
+        problem = montepy.MCNP_Problem(None)
+        problem.title = "test problem"
+        tally = parse_data(Input(["f4:n 1 2 3"], BlockType.DATA))
+        problem.tallies.append(tally)
+        fm = TallyMultiplier(
+            Input(["fm4 (1.0 26 16)"], BlockType.DATA), jit_parse=False
+        )
+        problem.tallies.append(fm)
+        with io.StringIO() as fh:
+            problem.write_problem(fh)
+            fh.seek(0)
+            new_problem = montepy.read_input(fh)
+        new_fm = new_problem.tallies[4].multiplier
+        assert new_fm is not None
+        assert new_fm.bins[0].terms[0].material == 26
 
 
 class TestScoresIntegration:

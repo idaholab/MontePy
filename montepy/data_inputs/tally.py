@@ -611,6 +611,12 @@ def _parse_tally_numbers(tally_numbers_node) -> list[TallyGroup]:
     return groups
 
 
+def _link_multiplier_to_tally(self, fm):
+    fm._link_to_parent(self)
+    if self._problem is not None:
+        self._problem.tallies.append(fm)
+
+
 class Tally(DataInputAbstract, Numbered_MCNP_Object):
     """Base class for MCNP F-card tallies (F1, F2, F4, F5, F6, F7, F8).
 
@@ -737,7 +743,11 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         """``True`` if a total bin (T) is appended."""
         return self._include_total
 
-    @make_prop_pointer("_multiplier", tally_multiplier.TallyMultiplier)
+    @make_prop_pointer(
+        "_multiplier",
+        tally_multiplier.TallyMultiplier,
+        validator=_link_multiplier_to_tally,
+    )
     def multiplier(self) -> tally_multiplier.TallyMultiplier:
         """The ``FM`` tally-multiplier card linked to this tally, if any.
 

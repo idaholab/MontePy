@@ -18,11 +18,32 @@ class Tallies(NumberedDataObjectCollection):
     def __init__(self, objects=None, problem=None):
         super().__init__(montepy.data_inputs.tally.Tally, objects, problem)
         self._fm_queue = {}
+        self._multipliers = []
+
+    @property
+    def multipliers(self):
+        """The :class:`~montepy.data_inputs.tally_multiplier.TallyMultiplier` instances
+        held by this collection.
+
+        Unlike the :class:`~montepy.data_inputs.tally.Tally` instances in this
+        collection, these are not stored in a
+        :class:`~montepy.numbered_object_collection.NumberedObjectCollection`,
+        as a ``TallyMultiplier``'s number is not an independent identity: it
+        always matches its parent tally's number, and two ``FM`` cards can
+        transiently share a number before one is linked.
+
+        Returns
+        -------
+        list
+            the tally multipliers ("FM" cards) in this problem.
+        """
+        return list(self._multipliers)
 
     @args_checked
     def append(
         self,
         obj: "montepy.data_inputs.tally.Tally | montepy.data_inputs.tally_multiplier.TallyMultiplier",
+        insert_in_data: bool = True,
         **kwargs,
     ):
         if isinstance(obj, montepy.data_inputs.tally.Tally):
@@ -30,14 +51,22 @@ class Tallies(NumberedDataObjectCollection):
                 fm = self._fm_queue.pop(obj.number)
                 fm._link_to_parent(obj)
                 obj._multiplier = fm
-            super().append(obj, **kwargs)
+            super().append(obj, insert_in_data=insert_in_data, **kwargs)
         elif isinstance(obj, montepy.data_inputs.tally_multiplier.TallyMultiplier):
+            if obj not in self._multipliers:
+                self._multipliers.append(obj)
             try:
                 tally = self[obj._old_number.value]
                 obj._link_to_parent(tally)
                 tally._multiplier = obj
             except KeyError:
                 self._fm_queue[obj._old_number.value] = obj
+            if (
+                insert_in_data
+                and self._problem is not None
+                and obj not in self._problem.data_inputs
+            ):
+                self._problem.data_inputs.append(obj)
 
     def finalize_init(self, jit_parse: bool = False):
         # Raise error for unflushed connection
