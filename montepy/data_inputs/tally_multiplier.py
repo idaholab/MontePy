@@ -163,22 +163,48 @@ class Reaction(ReactionExpression):
     only ``__eq__``/``__repr__`` need leaf-specific overrides.
 
     Common reaction numbers are available as ready-to-use class attributes,
-    e.g. ``Reaction.CAPTURE``, so you don't need to remember that capture is
-    MT 102. These are not exhaustive or closed — any other MT/reaction
-    number still works via ``Reaction(n)`` directly; the class attributes
-    are just a convenience for the common ones. ``Reaction.CAPTURE`` is MT
-    102, (n,gamma) radiative capture. ``Reaction.RADIATION_DAMAGE`` and its
-    ``RADIATION_DAMAGE_*`` siblings are NJOY HEATR-computed
-    displacement-damage energies, not standard ENDF physics MTs, split the
-    same way ENDF splits total/elastic/inelastic/capture. A handful of other
-    constants (``AVERAGE_LETHARGY``, ``INVERSE_VELOCITY``, ``WEIGHTING_FLUX``,
-    ``PHOTON_HEATING``, ``KINEMATIC_KERMA``, ``FISSION_STEADY_STATE_SPECTRUM``,
-    ``FISSION_DELAYED_SPECTRUM``) are likewise NJOY-module-specific "MT"
-    identifiers (from GROUPR, HEATR, and DTFR) rather than official ENDF-6
-    reaction numbers. The negative aliases (``TOTAL_MCNP``, ``ABSORPTION``,
-    etc.) are MCNP's own special reaction-number aliases, computed directly
-    from transport data rather than corresponding to a single ENDF MT
-    channel.
+    e.g. ``Reaction.CAPTURE`` for MT 102, (n,gamma) radiative capture, so you
+    don't need to remember raw MT numbers. These are not exhaustive or
+    closed — any other MT/reaction number still works via ``Reaction(n)``
+    directly; the class attributes are just a convenience. The full list is
+    intentionally large (500+ constants, covering every officially-assigned
+    ENDF-6 MT), so use your editor's autocomplete or search rather than
+    scanning the alphabetical attribute list below. Roughly, the categories
+    are:
+
+    * **Everyday physics** — ``TOTAL``, ``ELASTIC``, ``INELASTIC_SCATTER``,
+      ``N_2N``, ``N_3N``, ``FISSION``, ``CAPTURE``, ``N_P``, ``N_D``, ``N_T``,
+      ``N_HE3``, ``N_ALPHA`` — the handful of reactions most tallies actually
+      use.
+    * **MCNP's own aliases** (negative numbers: ``TOTAL_MCNP``,
+      ``ABSORPTION``, ``ELASTIC_MCNP``, ``HEATING``, ``PHOTON_PRODUCTION``,
+      ``FISSION_MCNP``) — computed directly from transport data, not a
+      single ENDF MT channel.
+    * **NJOY-derived quantities** — ``RADIATION_DAMAGE`` and its
+      ``RADIATION_DAMAGE_*`` siblings (HEATR displacement-damage energies,
+      split the same way ENDF splits total/elastic/inelastic/capture), plus
+      ``AVERAGE_LETHARGY``, ``INVERSE_VELOCITY``, ``WEIGHTING_FLUX``,
+      ``PHOTON_HEATING``, ``KINEMATIC_KERMA``,
+      ``FISSION_STEADY_STATE_SPECTRUM``, and ``FISSION_DELAYED_SPECTRUM``
+      (from GROUPR/HEATR/DTFR) — not official ENDF-6 reaction numbers, but
+      real values NJOY computes and MCNP libraries carry.
+    * **Everything else in ENDF-6 Appendix B** — redundant summary/total
+      cross sections (``NONELASTIC``, ``TOTAL_ABSORPTION``, ...); partial
+      fission chances (``FISSION_FIRST_CHANCE`` .. ``FISSION_FOURTH_CHANCE``);
+      exclusive multi-particle-emission channels (``N_2N_D``, ``N_N_ALPHA``,
+      ... roughly MT 11-200); total-particle-production sums
+      (``TOTAL_NEUTRON_PRODUCTION``, ...); fission nu-bar/yield/decay data
+      (``NU_TOTAL``, ``NU_DELAYED``, ...); photo-/electro-atomic data for
+      incident photons/electrons (``TOTAL_ATOMIC_INTERACTION``,
+      ``PHOTON_COHERENT_SCATTERING``, atomic subshells ``SUBSHELL_K`` ..
+      ``SUBSHELL_Q3``, ...); and discrete-level exit channels (``_L00`` ..
+      ``_L48``, plus a trailing ``_CONTINUUM``) for ``INELASTIC_SCATTER``,
+      ``N_P``, ``N_D``, ``N_T``, ``N_HE3``, ``N_ALPHA``, and ``N_2N``.
+
+    Non-standard, library-specific MT numbers that aren't covered by any
+    named constant — e.g. IRDF-II's non-standard capture reaction, MT 11102
+    — still work via plain ``Reaction(n)``: MontePy doesn't validate MT
+    numbers against any of these lists.
 
     .. versionadded:: 1.6.0b2
     """

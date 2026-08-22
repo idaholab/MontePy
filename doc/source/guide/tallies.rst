@@ -122,6 +122,15 @@ and MCNP creates a separate bin for each one:
 
 ``is_grouped`` is ``False`` for every group here, since ``F4:n 1 2 3`` has no
 parentheses: each of cells 1, 2, and 3 gets its own separate bin.
+``old_numbers`` is looked up by hand above to show how it relates to the raw numbers
+on the card, but once a group is linked to a problem you don't need to do that
+lookup yourself: :attr:`~montepy.data_inputs.tally.FlatGroup.cells_or_surfaces` gives
+you the resolved objects directly.
+
+.. doctest::
+
+   >>> [c.number for c in tally.groups[0].cells_or_surfaces]
+   [1]
 
 Wrapping cells or surfaces in parentheses instead unions them into a single bin,
 averaged for normalized tally types like ``F2``/``F4``/``F6``/``F7``, or summed for
@@ -193,11 +202,18 @@ Instead it's a separate flag, :attr:`~montepy.Tally.include_total`:
 
 Notice that ``groups`` only has the two real bins; the ``T`` never shows up as a
 third entry there, no matter how many bins came before it.
-Like ``scores`` and ``filters``, ``include_total`` is read-only: there's no way to
-turn total-bin reporting on for a tally you build from scratch with
-:func:`~montepy.CellTally.add_cell`/:func:`~montepy.CellTally.add_group` (see
-`Building Tallies from Scratch`_ below); it's only ever set by parsing a ``T`` off
-an existing input.
+Unlike ``scores`` and ``filters``, ``include_total`` is settable, so you can turn
+total-bin reporting on (or off) for any tally, including one you build from scratch
+with :func:`~montepy.CellTally.add_cell`/:func:`~montepy.CellTally.add_group` (see
+`Building Tallies from Scratch`_ below):
+
+.. doctest::
+
+   >>> totaled.include_total = False
+   >>> totaled.include_total
+   False
+   >>> "T" in totaled.mcnp_str()
+   False
 
 Building Tallies from Scratch
 -------------------------------
@@ -234,6 +250,24 @@ If you want a group of cells averaged into a single bin instead, use
 :class:`~montepy.SurfaceTally` has the matching
 :func:`~montepy.SurfaceTally.add_surface` and
 :func:`~montepy.SurfaceTally.add_group`.
+
+Each of these has a matching removal method:
+:func:`~montepy.CellTally.remove_cell`/:func:`~montepy.SurfaceTally.remove_surface`
+removes the single-item bin that ``add_cell``/``add_surface`` would have created, and
+:func:`~montepy.CellTally.remove_group` removes any group outright, whether it came
+from ``add_cell``, ``add_group``, or ``add_path_group``.
+A cell or surface only drops out of :attr:`~montepy.CellTally.cells`/
+:attr:`~montepy.SurfaceTally.surfaces` once no remaining group references it.
+
+.. doctest::
+
+   >>> new_tally.remove_cell(problem.cells[2])
+   >>> for group in new_tally.groups:
+   ...     print(group.old_numbers, group.is_grouped)
+   [1] False
+   [1, 3] True
+   >>> problem.cells[2] in new_tally.cells
+   False
 
 Scores and Filters
 --------------------
@@ -347,6 +381,27 @@ An ``FMn`` input is linked to its tally purely by number, the same way an ``MTn`
 thermal scattering input gets linked to material ``n``.
 You can append the ``TallyMultiplier`` and its ``Tally`` to the problem in either
 order, and MontePy will connect them once both are present.
+Because that link is the whole point of an ``FMn`` card, MontePy keeps it
+consistent for you: deleting a tally that has a linked multiplier removes the
+now-orphaned ``FM`` card from the problem too (with a warning), and renumbering a
+tally renumbers its linked multiplier to match.
+
+Since a ``TallyMultiplier``'s number always tracks its parent tally's rather than
+being independently assignable, it has its own
+:func:`~montepy.TallyMultiplier.clone`, separate from
+:func:`~montepy.Tally.clone`: pass the tally to attach the clone to (it takes that
+tally's number), or omit it for a detached, unregistered copy.
+
+.. testcode::
+
+   fm_clone = fm.clone(problem.tallies[14])
+
+.. doctest::
+
+   >>> fm_clone.number
+   14
+   >>> problem.tallies[14].multiplier is fm_clone
+   True
 
 The bulk of a tally multiplier input is its :attr:`~montepy.TallyMultiplier.bins`,
 a list of :class:`~montepy.data_inputs.tally_multiplier.MultiplierBin`.
@@ -453,11 +508,28 @@ chaining with ``&``, for building up multiple attenuating layers:
    >>> fm2.mcnp_str()
    'fm104:n (1.0 -1 26 0.5 27 -0.3)'
 
-.. note::
+These operators build and compare :class:`~montepy.MultiplierSet`/
+:class:`~montepy.data_inputs.tally_multiplier.ReactionExpression` values, but a
+:class:`~montepy.TallyMultiplier` needs one more step to actually add them to a card:
+wrap each term (and optional attenuator) in a
+:class:`~montepy.data_inputs.tally_multiplier.MultiplierBin`, then use
+:func:`~montepy.TallyMultiplier.add_bin` (and :func:`~montepy.TallyMultiplier.remove_bin`
+to take one back out). ``bins`` itself stays a read-only view, the same way ``groups``
+does for a :class:`~montepy.Tally`.
 
-   Right now these operators are for building and comparing expressions, not for
-   writing a new tally multiplier input from scratch.
-   ``TallyMultiplier.bins`` is read-only, since it's parsed from the input file.
+.. testcode::
+
+   from montepy.data_inputs.tally_multiplier import MultiplierBin
+
+   fm3 = montepy.TallyMultiplier(number=4)
+   fm3.add_bin(MultiplierBin([built]))
+
+.. doctest::
+
+   >>> fm3.bins[0].terms[0] == built
+   True
+   >>> fm3.mcnp_str()
+   'FM4 1.0 26 16 103 '
 
 Universe and Lattice Paths
 -----------------------------
@@ -506,6 +578,14 @@ The first level has no cell number at all, just a universe designator
 (``u=1``), meaning "any cell in universe 1".
 The second level narrows that down to lattice element ``[0 0 0]`` of cell 2, and the
 third level says that whole path has to live inside cell 5.
+That lattice element is available directly through
+:attr:`~montepy.data_inputs.tally.FlatGroup.lattice_indices`, parallel to
+``old_numbers``, as a list of :class:`~montepy.data_inputs.tally.LatticeIndex`:
+
+.. doctest::
+
+   >>> path_tally.groups[0].levels[1].lattice_indices[0].dimensions
+   [0, 0, 0]
 
 You can also build a path group from scratch with
 :func:`~montepy.CellTally.add_path_group` and
