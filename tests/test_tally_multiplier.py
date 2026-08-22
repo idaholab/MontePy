@@ -30,6 +30,33 @@ def tally_problem():
     return montepy.read_input("tests/inputs/test_tally.imcnp")
 
 
+def verify_export(fm):
+    """Format ``fm`` to MCNP text, re-parse it standalone, and confirm the
+    result is equivalent. Mirrors the ``verify_export`` convention in
+    ``tests/test_surfaces.py``/``tests/test_cell_problem.py``."""
+    output = fm.format_for_mcnp_input((6, 3, 0))
+    joined = "\n".join(output)
+    assert joined == fm.mcnp_str((6, 3, 0))
+    new_fm = type(fm)(joined)
+    assert new_fm.number == fm.number
+    assert new_fm.include_total == fm.include_total
+    assert new_fm.cumulative == fm.cumulative
+    assert len(new_fm.bins) == len(fm.bins)
+    return new_fm
+
+
+def verify_prob_export(problem, fm):
+    """Write the whole ``problem`` out and re-read it, returning the
+    equivalent multiplier from the new problem. The only test shape that
+    can catch bugs in problem/collection-level registration, since a
+    per-object :func:`verify_export` check never sees the problem at all."""
+    with io.StringIO() as fh:
+        problem.write_problem(fh)
+        fh.seek(0)
+        new_problem = montepy.read_input(fh)
+    return new_problem.tallies[fm.number].multiplier
+
+
 # Every "fm" line currently in tests/inputs/test_tally.imcnp, kept in sync
 # with that fixture so the grammar round-trip test below actually exercises
 # what's on disk.
@@ -406,6 +433,48 @@ class TestDuplicateFmCards:
         tally.number = 14
         assert fm.number == 14
 
+    def test_deleting_tally_removes_fm_from_full_problem_export(self):
+        # Regression test for the collection/problem-level cascade: a
+        # per-object mcnp_str() check can't see whether the FM actually made
+        # it out of the *problem's* data_inputs on a full write.
+        problem = montepy.MCNP_Problem(None)
+        problem.title = "test problem"
+        tally = parse_data(Input(["f4:n 1 2 3"], BlockType.DATA))
+        problem.tallies.append(tally)
+        fm = TallyMultiplier(
+            Input(["fm4 (1.0 26 16)"], BlockType.DATA), jit_parse=False
+        )
+        problem.tallies.append(fm)
+        with pytest.warns(montepy.exceptions.MalformedInputWarning):
+            del problem.tallies[4]
+        with io.StringIO() as fh:
+            problem.write_problem(fh)
+            fh.seek(0)
+            written = fh.read()
+            fh.seek(0)
+            new_problem = montepy.read_input(fh)
+        assert "fm4" not in written.lower()
+        assert 4 not in new_problem.tallies.numbers
+        assert new_problem.tallies.multipliers == []
+
+    def test_renumbering_tally_syncs_multiplier_across_full_problem_export(self):
+        problem = montepy.MCNP_Problem(None)
+        problem.title = "test problem"
+        tally = parse_data(Input(["f4:n 1 2 3"], BlockType.DATA))
+        problem.tallies.append(tally)
+        fm = TallyMultiplier(
+            Input(["fm4 (1.0 26 16)"], BlockType.DATA), jit_parse=False
+        )
+        problem.tallies.append(fm)
+        tally.number = 14
+        # 4 -> 14 widens the field; MCNP's historically column-based format
+        # warns on that regardless of this plan's changes (see test_integration.py).
+        with pytest.warns(montepy.exceptions.LineExpansionWarning):
+            new_fm = verify_prob_export(problem, fm)
+        assert new_fm is not None
+        assert new_fm.number == 14
+        assert new_fm.parent_tally.number == 14
+
 
 class TestClone:
     def test_clone_to_new_tally_registers_and_links(self):
@@ -552,6 +621,7 @@ class TestBinRoundTrip:
         assert fm.mcnp_str() == line
         fm.full_parse()
         assert fm.mcnp_str() == line
+        verify_export(fm)
 
     def test_add_bin_reflected_in_mcnp_str(self):
         fm = TallyMultiplier(
@@ -560,6 +630,31 @@ class TestBinRoundTrip:
         fm.add_bin(MultiplierBin([MultiplierSet(2.0, 27, [Reaction(102)])]))
         text = fm.mcnp_str()
         assert "27" in text and "102" in text and "2.0" in text
+        # two bins now -- MCNP requires each parenthesized separately.
+        assert text.count("(") == 2 and text.count(")") == 2
+        verify_export(fm)
+
+    def test_add_single_bin_from_scratch_has_no_extra_parens(self):
+        fm = TallyMultiplier()
+        fm.number = 4
+        fm.add_bin(MultiplierBin([MultiplierSet(1.0, 26, [Reaction(16)])]))
+        text = fm.mcnp_str()
+        assert "(" not in text and ")" not in text
+        verify_export(fm)
+
+    def test_add_attenuator_only_bin(self):
+        fm = TallyMultiplier(
+            Input(["fm4 (1.0 26 16)"], BlockType.DATA), jit_parse=False
+        )
+        att_bin = MultiplierBin(
+            [], attenuator=AttenuatorSet(1.0, [AttenuatorLayer(28, 0.2)])
+        )
+        fm.add_bin(att_bin)
+        text = fm.mcnp_str()
+        assert "28" in text and "0.2" in text
+        new_fm = verify_export(fm)
+        assert new_fm.bins[-1].attenuator == att_bin.attenuator
+        assert new_fm.bins[-1].terms == []
 
     def test_blank_fm_add_bin_writes_valid_card(self):
         fm = TallyMultiplier()
@@ -567,6 +662,7 @@ class TestBinRoundTrip:
         fm.add_bin(MultiplierBin([MultiplierSet(1.0, 26, [Reaction(16)])]))
         text = fm.mcnp_str()
         assert "26" in text and "16" in text
+        verify_export(fm)
 
     def test_remove_bin(self):
         fm = TallyMultiplier(
@@ -578,6 +674,7 @@ class TestBinRoundTrip:
         assert bin_ not in fm.bins
         text = fm.mcnp_str()
         assert "27" not in text
+        verify_export(fm)
 
     def test_multiplier_set_material_object_resolves_live(self):
         mat = montepy.Material()

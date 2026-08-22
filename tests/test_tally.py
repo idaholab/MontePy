@@ -1,4 +1,6 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+import io
+
 import pytest
 
 import montepy
@@ -403,6 +405,38 @@ class TestTallyBuilders:
         assert len(pg.levels) == 2
 
 
+def verify_export(tally):
+    """Format ``tally`` to MCNP text, re-parse it standalone, and confirm
+    the result is equivalent. Mirrors the ``verify_export`` convention in
+    ``tests/test_surfaces.py``/``tests/test_cell_problem.py``."""
+    output = tally.format_for_mcnp_input((6, 3, 0))
+    joined = "\n".join(output)
+    assert joined == tally.mcnp_str((6, 3, 0))
+    new_tally = type(tally)(joined)
+    assert new_tally.number == tally.number
+    assert new_tally.tally_type == tally.tally_type
+    assert new_tally.include_total == tally.include_total
+    assert len(new_tally.groups) == len(tally.groups)
+    for old_group, new_group in zip(tally.groups, new_tally.groups):
+        assert isinstance(new_group, type(old_group))
+        if isinstance(old_group, FlatGroup):
+            assert old_group.is_grouped == new_group.is_grouped
+    return new_tally
+
+
+def verify_prob_export(problem, tally):
+    """Write the whole ``problem`` out and re-read it, returning the
+    equivalent tally from the new problem. The only test shape that can
+    catch bugs in problem/collection-level registration (e.g. an FM card
+    silently missing from ``data_inputs``), since a per-object
+    :func:`verify_export` check never sees the problem at all."""
+    with io.StringIO() as fh:
+        problem.write_problem(fh)
+        fh.seek(0)
+        new_problem = montepy.read_input(fh)
+    return new_problem.tallies[tally.number]
+
+
 class TestGroupRoundTrip:
     """Mutating a Tally's groups through the public API must be reflected in
     mcnp_str(), not just in the in-memory Python state. These lock in the
@@ -414,6 +448,7 @@ class TestGroupRoundTrip:
             before = tally.mcnp_str()
             tally.full_parse()
             assert tally.mcnp_str() == before
+            verify_export(tally)
 
     def test_add_cell_reflected_in_mcnp_str(self):
         t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)
@@ -422,6 +457,7 @@ class TestGroupRoundTrip:
         t.add_cell(cell)
         assert "99" in t.mcnp_str()
         assert "1" in t.mcnp_str() and "2" in t.mcnp_str() and "3" in t.mcnp_str()
+        verify_export(t)
 
     def test_blank_tally_add_cell_writes_valid_card(self):
         t = F4Tally()
@@ -443,6 +479,7 @@ class TestGroupRoundTrip:
         text = t.mcnp_str()
         assert "10" in text and "11" in text
         assert "(" in text and ")" in text
+        verify_export(t)
 
     def test_renumbered_cell_reflected_in_mcnp_str(self):
         t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)
@@ -453,6 +490,7 @@ class TestGroupRoundTrip:
         text = t.mcnp_str()
         assert "199" in text
         assert "99" not in text.replace("199", "")
+        verify_export(t)
 
     def test_include_total_settable(self):
         t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)

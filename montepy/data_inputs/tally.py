@@ -659,7 +659,11 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         ret["classifier"].prefix = syntax_node.ValueNode(
             self._class_prefix().upper(), str, padding=None, never_pad=True
         )
-        ret["classifier"].number = self._generate_default_node(int, -1)
+        # A non-negative placeholder: ValueNode._reverse_engineer_formatting
+        # reserves a leading sign column for any token starting with "-",
+        # which would otherwise permanently corrupt this node's formatting
+        # once a real (positive) tally number is assigned to it.
+        ret["classifier"].number = self._generate_default_node(int, 1)
         ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
         tally_numbers = syntax_node.ListNode("tally numbers")
         end_node = syntax_node.ValueNode(None, str)
