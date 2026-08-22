@@ -1578,11 +1578,27 @@ class TallyMultiplier(DataInputAbstract, Numbered_MCNP_Object):
         """``True`` if a total bin (``T``) is appended."""
         return self._include_total
 
+    @include_total.setter
+    @args_checked
+    @needs_full_cst
+    def include_total(self, value: bool):
+        self._include_total = value
+        if value:
+            self._cumulative = False
+
     @property
     @needs_full_ast
     def cumulative(self) -> bool:
         """``True`` if the bins are cumulative (``C``), with the last being the total."""
         return self._cumulative
+
+    @cumulative.setter
+    @args_checked
+    @needs_full_cst
+    def cumulative(self, value: bool):
+        self._cumulative = value
+        if value:
+            self._include_total = False
 
     @property
     def parent_tally(self):
@@ -1599,6 +1615,39 @@ class TallyMultiplier(DataInputAbstract, Numbered_MCNP_Object):
 
     def link_to_problem(self, problem, *, deepcopy=False):
         super().link_to_problem(problem)
+
+    @args_checked
+    @needs_full_cst
+    def clone(
+        self, tally: "montepy.data_inputs.tally.Tally" = None
+    ) -> "TallyMultiplier":
+        """Create an independent copy of this ``FM`` card.
+
+        Unlike the generic :meth:`~montepy.numbered_mcnp_object.Numbered_MCNP_Object.clone`,
+        a ``TallyMultiplier`` has no independent number or collection of its
+        own -- its number always matches its parent tally's -- so this is a
+        bespoke override.
+
+        Parameters
+        ----------
+        tally : Tally
+            The tally to link the clone to. Its number is copied onto the
+            clone, and the clone is registered as that tally's
+            :attr:`~montepy.data_inputs.tally.Tally.multiplier`. If omitted,
+            a detached, unregistered clone is returned instead.
+
+        Returns
+        -------
+        TallyMultiplier
+            The cloned ``FM`` card.
+        """
+        ret = copy.deepcopy(self)
+        ret._parent_tally = None
+        if tally is not None:
+            ret.number = tally.number
+            ret._old_number.value = tally.number
+            tally.multiplier = ret
+        return ret
 
     def _update_values(self):
         if self._bins != self._parsed_bins:

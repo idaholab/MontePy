@@ -745,6 +745,12 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         """``True`` if a total bin (T) is appended."""
         return self._include_total
 
+    @include_total.setter
+    @args_checked
+    @needs_full_cst
+    def include_total(self, value: bool):
+        self._include_total = value
+
     @make_prop_pointer(
         "_multiplier",
         tally_multiplier.TallyMultiplier,
@@ -1119,6 +1125,46 @@ class SurfaceTally(Tally):
         self._groups.append(pg)
         return pg
 
+    @args_checked
+    @needs_full_cst
+    def remove_surface(self, surface: montepy.Surface) -> None:
+        """Remove the single-surface scoring bin added via :meth:`add_surface`.
+
+        Parameters
+        ----------
+        surface : Surface
+            The surface to remove.
+        """
+        for group in self._groups:
+            if (
+                isinstance(group, FlatGroup)
+                and not group.is_grouped
+                and group.cells_or_surfaces == [surface]
+            ):
+                self.remove_group(group)
+                return
+        raise ValueError(
+            f"No single-surface scoring group found for surface {surface.number}."
+        )
+
+    @args_checked
+    @needs_full_cst
+    def remove_group(self, group: TallyGroup) -> None:
+        """Remove a scoring group previously added via ``add_surface``/``add_group``/``add_path_group``.
+
+        A surface is only dropped from :attr:`surfaces` if no other
+        remaining group still references it.
+
+        Parameters
+        ----------
+        group : TallyGroup
+            The group to remove.
+        """
+        self._groups.remove(group)
+        for surface in list(self._surfaces):
+            if surface not in self:
+                self._surfaces.remove(surface)
+
     def link_to_problem(self, problem, *, deepcopy=False):
         super().link_to_problem(problem)
         if problem is not None and not hasattr(self, "_not_parsed"):
@@ -1223,6 +1269,44 @@ class CellTally(Tally):
         pg = PathGroup([first_level])
         self._groups.append(pg)
         return pg
+
+    @args_checked
+    @needs_full_cst
+    def remove_cell(self, cell: montepy.Cell) -> None:
+        """Remove the single-cell scoring bin added via :meth:`add_cell`.
+
+        Parameters
+        ----------
+        cell : Cell
+            The cell to remove.
+        """
+        for group in self._groups:
+            if (
+                isinstance(group, FlatGroup)
+                and not group.is_grouped
+                and group.cells_or_surfaces == [cell]
+            ):
+                self.remove_group(group)
+                return
+        raise ValueError(f"No single-cell scoring group found for cell {cell.number}.")
+
+    @args_checked
+    @needs_full_cst
+    def remove_group(self, group: TallyGroup) -> None:
+        """Remove a scoring group previously added via ``add_cell``/``add_group``/``add_path_group``.
+
+        A cell is only dropped from :attr:`cells` if no other remaining
+        group still references it.
+
+        Parameters
+        ----------
+        group : TallyGroup
+            The group to remove.
+        """
+        self._groups.remove(group)
+        for cell in list(self._cells):
+            if cell not in self:
+                self._cells.remove(cell)
 
     def link_to_problem(self, problem, *, deepcopy=False):
         super().link_to_problem(problem)

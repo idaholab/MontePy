@@ -454,6 +454,66 @@ class TestGroupRoundTrip:
         assert "199" in text
         assert "99" not in text.replace("199", "")
 
+    def test_include_total_settable(self):
+        t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)
+        assert not t.include_total
+        t.include_total = True
+        assert t.include_total
+        assert t.mcnp_str().strip().endswith("T")
+        t.include_total = False
+        assert not t.include_total
+        assert not t.mcnp_str().strip().endswith("T")
+
+    def test_remove_cell_reflected_in_mcnp_str(self):
+        t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)
+        cell = montepy.Cell()
+        cell.number = 99
+        t.add_cell(cell)
+        assert "99" in t.mcnp_str()
+        t.remove_cell(cell)
+        assert "99" not in t.mcnp_str()
+        assert cell not in t.cells
+
+    def test_remove_cell_keeps_cell_if_referenced_elsewhere(self):
+        t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)
+        cell = montepy.Cell()
+        cell.number = 99
+        other = montepy.Cell()
+        other.number = 98
+        t.add_cell(cell)
+        t.add_group([cell, other])
+        t.remove_cell(cell)
+        assert cell in t.cells
+        assert "99" in t.mcnp_str()
+
+    def test_remove_cell_raises_if_not_a_single_cell_group(self):
+        t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)
+        cell = montepy.Cell()
+        cell.number = 99
+        with pytest.raises(ValueError):
+            t.remove_cell(cell)
+
+    def test_remove_group_reflected_in_mcnp_str(self):
+        t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)
+        c1, c2 = montepy.Cell(), montepy.Cell()
+        c1.number = 10
+        c2.number = 11
+        t.add_group([c1, c2])
+        group = t.groups[-1]
+        t.remove_group(group)
+        text = t.mcnp_str()
+        assert "10" not in text and "11" not in text
+        assert c1 not in t.cells and c2 not in t.cells
+
+    def test_remove_surface_reflected_in_mcnp_str(self, tally_problem):
+        f1 = tally_problem.tallies[1]
+        s = tally_problem.surfaces[1005]
+        f1.add_surface(s)
+        assert "1005" in f1.mcnp_str()
+        f1.remove_surface(s)
+        assert "1005" not in f1.mcnp_str()
+        assert s not in f1.surfaces
+
 
 class TestReprAndEquality:
     """Smoke tests for __repr__ and __eq__-against-wrong-type on the small

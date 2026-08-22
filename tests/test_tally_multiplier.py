@@ -312,6 +312,37 @@ class TestFlags:
         assert tally_problem.tallies[194].multiplier.include_total is False
         assert tally_problem.tallies[194].multiplier.cumulative is True
 
+    def test_include_total_settable(self):
+        fm = TallyMultiplier(
+            Input(["fm4 (1.0 26 16)"], BlockType.DATA), jit_parse=False
+        )
+        assert not fm.include_total
+        fm.include_total = True
+        assert fm.include_total
+        assert not fm.cumulative
+        assert fm.mcnp_str().strip().endswith("T")
+
+    def test_cumulative_settable(self):
+        fm = TallyMultiplier(
+            Input(["fm4 (1.0 26 16)"], BlockType.DATA), jit_parse=False
+        )
+        fm.cumulative = True
+        assert fm.cumulative
+        assert not fm.include_total
+        assert fm.mcnp_str().strip().endswith("C")
+
+    def test_include_total_and_cumulative_are_mutually_exclusive(self):
+        fm = TallyMultiplier(
+            Input(["fm4 (1.0 26 16)"], BlockType.DATA), jit_parse=False
+        )
+        fm.include_total = True
+        fm.cumulative = True
+        assert fm.cumulative
+        assert not fm.include_total
+        fm.include_total = True
+        assert fm.include_total
+        assert not fm.cumulative
+
     def test_attenuator_only_bin_scores(self, tally_problem):
         fm = tally_problem.tallies[114].multiplier
         attenuator = fm.bins[0].attenuator
@@ -374,6 +405,58 @@ class TestDuplicateFmCards:
         problem.tallies.append(fm)
         tally.number = 14
         assert fm.number == 14
+
+
+class TestClone:
+    def test_clone_to_new_tally_registers_and_links(self):
+        problem = montepy.MCNP_Problem(None)
+        tally4 = parse_data(Input(["f4:n 1 2 3"], BlockType.DATA))
+        tally14 = parse_data(Input(["f14:n 4 5 6"], BlockType.DATA))
+        problem.tallies.append(tally4)
+        problem.tallies.append(tally14)
+        fm = TallyMultiplier(
+            Input(["fm4 (1.0 26 16)"], BlockType.DATA), jit_parse=False
+        )
+        problem.tallies.append(fm)
+
+        new_fm = fm.number
+        clone = fm.clone(tally14)
+
+        assert clone is not fm
+        assert clone.number == 14
+        assert clone.parent_tally is tally14
+        assert tally14.multiplier is clone
+        assert clone in problem.data_inputs
+        assert clone in problem.tallies.multipliers
+        # the original is untouched
+        assert fm.number == new_fm
+        assert fm.parent_tally.number == 4
+
+    def test_clone_without_tally_is_detached(self):
+        fm = TallyMultiplier(
+            Input(["fm4 (1.0 26 16)"], BlockType.DATA), jit_parse=False
+        )
+        clone = fm.clone()
+        assert clone is not fm
+        assert clone.parent_tally is None
+        assert clone.bins[0].terms[0].material == 26
+
+    def test_clone_to_tally_with_existing_multiplier_warns(self):
+        problem = montepy.MCNP_Problem(None)
+        tally4 = parse_data(Input(["f4:n 1 2 3"], BlockType.DATA))
+        tally14 = parse_data(Input(["f14:n 4 5 6"], BlockType.DATA))
+        problem.tallies.append(tally4)
+        problem.tallies.append(tally14)
+        fm4 = TallyMultiplier(
+            Input(["fm4 (1.0 26 16)"], BlockType.DATA), jit_parse=False
+        )
+        fm14 = TallyMultiplier(
+            Input(["fm14 (2.0 27 102)"], BlockType.DATA), jit_parse=False
+        )
+        problem.tallies.append(fm4)
+        problem.tallies.append(fm14)
+        with pytest.warns(montepy.exceptions.MalformedInputWarning):
+            fm4.clone(tally14)
 
 
 class TestBlankConstruction:
