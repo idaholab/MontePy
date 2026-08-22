@@ -26,6 +26,35 @@ from montepy.data_inputs.lattice import LatticeType
 from montepy.data_inputs import Mode
 from montepy.data_inputs.thermal_scattering import ThermalScatteringLaw
 from montepy.data_inputs.data_parser import parse_data
+from montepy.data_inputs.tally import (
+    Tally,
+    SurfaceTally,
+    CellTally,
+    DetectorTally,
+    SurfaceCurrentTally,
+    SurfaceFluxTally,
+    CellFluxTally,
+    EnergyDepositionTally,
+    FissionEnergyDepositionTally,
+    EnergyDetectorPulseTally,
+    F1Tally,
+    F2Tally,
+    F4Tally,
+    F5Tally,
+    F6Tally,
+    F7Tally,
+    F8Tally,
+)
+from montepy.data_inputs.tally_multiplier import (
+    TallyMultiplier,
+    Reaction,
+    MultiplierSet,
+    AttenuatorLayer,
+    AttenuatorSet,
+    SpecialMultiplierSet,
+)
+from montepy.data_inputs.tally_type import TallyType, Score
+from montepy.data_inputs.tally_multiplier_type import SpecialMultiplier
 
 # geometry
 from montepy.geometry_operators import Operator
@@ -50,6 +79,7 @@ from montepy.materials import Materials
 from montepy.universes import Universes
 from montepy.surface_collection import Surfaces
 from montepy.transforms import Transforms
+from montepy.tallies import Tallies
 
 import montepy.exceptions
 import montepy.errors  # deprecated

@@ -5,3 +5,7 @@ from .mode import Mode
 from .material import Material
 from .thermal_scattering import ThermalScatteringLaw
 from .data_parser import parse_data
+from .material import Material
+from .tally import Tally
+from .tally_multiplier import TallyMultiplier
+from .thermal_scattering import ThermalScatteringLaw

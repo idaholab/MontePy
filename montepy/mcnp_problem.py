@@ -7,7 +7,7 @@ import io
 import os
 import warnings
 
-from montepy.data_inputs import mode, transform
+from montepy.data_inputs import mode, tally as tally_mod, tally_multiplier, transform
 from montepy._cell_data_control import CellDataPrintController
 from montepy.utilities import *
 from montepy.cell import Cell
@@ -17,6 +17,7 @@ from montepy.constants import DEFAULT_VERSION
 from montepy.materials import Material, Materials
 from montepy.surfaces import surface, surface_builder
 from montepy.surface_collection import Surfaces
+from montepy.tallies import Tallies
 import montepy.types as ty
 
 # weird way to avoid circular imports
@@ -101,6 +102,7 @@ class MCNP_Problem:
         surface.Surface: Surfaces,
         Material: Materials,
         transform.Transform: Transforms,
+        tally_mod.Tally: Tallies,
         Universe: Universes,
     }
 
@@ -420,6 +422,20 @@ class MCNP_Problem:
         return self._universes
 
     @property
+    def tallies(self):
+        """A collection of the Tally objects in this problem.
+
+        Returns
+        -------
+        Tallies
+            a collection of the tally objects, ordered by the order
+            they appeared in the input file.
+
+        .. versionadded:: 1.6.0b2
+        """
+        return self._tallies
+
+    @property
     def transforms(self):
         """The collection of transform objects in this problem.
 
@@ -518,6 +534,10 @@ class MCNP_Problem:
                             self._materials.append(obj, insert_in_data=False)
                         elif isinstance(obj, transform.Transform):
                             self._transforms.append(obj, insert_in_data=False)
+                        elif isinstance(
+                            obj, (tally_mod.Tally, tally_multiplier.TallyMultiplier)
+                        ):
+                            self._tallies.append(obj, insert_in_data=False)
                         elif isinstance(
                             obj, montepy.data_inputs.cell_modifier.CellModifierInput
                         ):
@@ -847,8 +867,12 @@ class MCNP_Problem:
                 self.data_inputs.append(obj)
                 if isinstance(obj, Material):
                     self._materials.append(obj, insert_in_data=False)
-                if isinstance(obj, transform.Transform):
+                elif isinstance(obj, transform.Transform):
                     self._transforms.append(obj, insert_in_data=False)
+                elif isinstance(
+                    obj, (tally_mod.Tally, tally_multiplier.TallyMultiplier)
+                ):
+                    self._tallies.append(obj, insert_in_data=False)
         return obj
 
     def full_parse(self):

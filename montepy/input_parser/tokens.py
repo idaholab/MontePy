@@ -462,6 +462,25 @@ class DataLexer(ParticleLexer):
         return t
 
 
+class TallyLexer(DataLexer):
+    """A lexer for tally inputs.
+
+    Adds ``[`` and ``]`` as literals so lattice index syntax like
+    ``[0 0 0]`` tokenizes correctly instead of being consumed by FILE_PATH.
+    Tally inputs never legitimately contain a ``READ``-style file path, and the
+    tally grammar never references the ``file_atom``/``file_name`` productions
+    that are the only consumers of a FILE_PATH token, so FILE_PATH is disabled
+    outright here (rather than merely narrowed) with a regex that can never
+    match, ``(?!)``. This is stricter than necessary for lattice brackets alone,
+    but safer: it guarantees no tally input can ever be silently misread as a
+    file path.
+    """
+
+    tokens = DataLexer.tokens
+    literals = DataLexer.literals | {"[", "]"}
+    FILE_PATH = r"(?!)"
+
+
 class SurfaceLexer(MCNP_Lexer):
     """A lexer for Surface inputs.
 
