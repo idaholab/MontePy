@@ -73,9 +73,23 @@ type:
      - ``F8``
      - :class:`~montepy.EnergyDetectorPulseTally`
      - ``montepy.F8Tally``
+   * - Collision heating
+     - ``+F6``
+     - :class:`~montepy.CollisionHeatingTally`
+     - ``montepy.PlusF6Tally``
+   * - Charge deposition
+     - ``+F8``
+     - :class:`~montepy.ChargeDepositionTally`
+     - ``montepy.PlusF8Tally``
 
 The Shorthand Alias is just another name for the same class, e.g.
 ``montepy.F4Tally`` is :class:`~montepy.CellFluxTally`.
+
+The leading ``+`` on ``+F6``/``+F8`` is a real, separate MCNP tally variant, not
+a typo of the plain card: ``+F6`` (collision heating) and ``+F8`` (charge
+deposition) score a different physical quantity than plain ``F6``/``F8``, so
+MontePy treats them as distinct classes even though they share the same type
+digit.
 
 Underneath these, there are two intermediate classes worth knowing about:
 :class:`~montepy.SurfaceTally` for tallies that score on surfaces
@@ -358,6 +372,23 @@ the heating in those same cells, without retyping the cell list:
 ``F5`` point/ring detectors are their own family, since they don't have cells or
 surfaces to carry over.
 Trying to cross families raises a ``ValueError``.
+
+The ``+F6``/``+F8`` modifier variants (see the table above) are part of the same
+family as their plain counterparts, so ``clone_as`` converts freely between them
+too:
+
+.. testcode::
+
+   collision_heating = heating.clone_as(montepy.CollisionHeatingTally)
+
+.. doctest::
+
+   >>> print(collision_heating)
+   CollisionHeatingTally: 26
+   >>> collision_heating.scores
+   [<Score.COLLISION_HEATING: 9>]
+   >>> "+" in collision_heating.mcnp_str()
+   True
 
 Tally Multipliers
 -------------------

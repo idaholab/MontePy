@@ -1,4 +1,4 @@
-# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2026, Battelle Energy Alliance, LLC All Rights Reserved.
 """MontePy is a library for reading, editing, and writing MCNP input files.
 
 This creates a semantic understanding of the MCNP input file.
@@ -37,6 +37,8 @@ from montepy.data_inputs.tally import (
     EnergyDepositionTally,
     FissionEnergyDepositionTally,
     EnergyDetectorPulseTally,
+    CollisionHeatingTally,
+    ChargeDepositionTally,
     F1Tally,
     F2Tally,
     F4Tally,
@@ -44,6 +46,8 @@ from montepy.data_inputs.tally import (
     F6Tally,
     F7Tally,
     F8Tally,
+    PlusF6Tally,
+    PlusF8Tally,
 )
 from montepy.data_inputs.tally_multiplier import (
     TallyMultiplier,

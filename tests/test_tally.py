@@ -1,12 +1,16 @@
-# Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2026, Battelle Energy Alliance, LLC All Rights Reserved.
 import io
+import warnings
 
 import pytest
 
 import montepy
 from montepy.data_inputs.data_parser import parse_data
 from montepy.data_inputs.tally import (
+    ChargeDepositionTally,
+    CollisionHeatingTally,
     EnergyDepositionTally,
+    EnergyDetectorPulseTally,
     F1Tally,
     F4Tally,
     F6Tally,
@@ -15,6 +19,7 @@ from montepy.data_inputs.tally import (
     ParticleFilter,
     PathGroup,
     SpatialFilter,
+    Tally,
     TallyGroup,
 )
 from montepy.data_inputs.tally_type import Score, TallyType
@@ -118,6 +123,39 @@ class TestFmesh:
     @pytest.mark.parametrize("line", ["fmesh14:n vec=0 0 0", "fmesh14:n vec=0, 0, 0"])
     def test_fmesh_parse(_, line):
         parse_data(line)
+
+
+class TestTallyTypeShape:
+    """TallyType's value is (mnemonic, modulo, modifier), not a bare digit,
+    so it can represent +Fn variants (and eventually FMESH/TMESH) without
+    another redesign."""
+
+    @pytest.mark.parametrize(
+        "member, mnemonic, modulo, modifier",
+        [
+            (TallyType.CELL_FLUX, "F", 4, None),
+            (TallyType.ENERGY_DEPOSITION, "F", 6, None),
+            (TallyType.COLLISION_HEATING, "F", 6, "+"),
+            (TallyType.ENERGY_DETECTOR_PULSE, "F", 8, None),
+            (TallyType.CHARGE_DEPOSITION, "F", 8, "+"),
+        ],
+    )
+    def test_mnemonic_modulo_modifier(self, member, mnemonic, modulo, modifier):
+        assert member.mnemonic == mnemonic
+        assert member.modulo == modulo
+        assert member.modifier == modifier
+
+    def test_plain_and_modifier_variants_are_distinct_members(self):
+        assert TallyType.ENERGY_DEPOSITION != TallyType.COLLISION_HEATING
+        assert TallyType.ENERGY_DETECTOR_PULSE != TallyType.CHARGE_DEPOSITION
+
+    def test_repr_is_friendly(self):
+        assert repr(TallyType.CELL_FLUX) == "<TallyType.CELL_FLUX: 4>"
+        assert repr(TallyType.COLLISION_HEATING) == "<TallyType.COLLISION_HEATING: +6>"
+
+    def test_score_new_members(self):
+        assert Score.COLLISION_HEATING != Score.ENERGY_DEPOSITION
+        assert Score.CHARGE_DEPOSITION != Score.PULSE_HEIGHT
 
 
 @pytest.fixture
@@ -435,6 +473,64 @@ def verify_prob_export(problem, tally):
         fh.seek(0)
         new_problem = montepy.read_input(fh)
     return new_problem.tallies[tally.number]
+
+
+class TestPlusModifierTallies:
+    """+F6 (collision heating) and +F8 (charge deposition) are distinct
+    Tally subclasses from plain F6/F8, distinguished only by a leading
+    ``+`` in the classifier -- not by tally-type digit."""
+
+    @pytest.mark.parametrize("jit_parse", [True, False])
+    @pytest.mark.parametrize(
+        "line, expected_class, expected_score",
+        [
+            ("+F6:n 1 2 3", CollisionHeatingTally, Score.COLLISION_HEATING),
+            ("+F8:p 1", ChargeDepositionTally, Score.CHARGE_DEPOSITION),
+        ],
+    )
+    def test_dispatch(self, jit_parse, line, expected_class, expected_score):
+        t = Tally.from_input(line, jit_parse=jit_parse)
+        assert isinstance(t, expected_class)
+        assert t.scores == [expected_score]
+
+    def test_invalid_modifier_digit_combination_raises(self):
+        with pytest.raises(montepy.exceptions.MalformedInputError):
+            Tally.from_input("+F4:n 1 2 3", jit_parse=False)
+
+    @pytest.mark.parametrize("line", ["+f6:n 1 2 3", "+f8:p 1"])
+    def test_round_trip(self, line):
+        t = Tally.from_input(line, jit_parse=False)
+        assert t.mcnp_str() == line
+        verify_export(t)
+
+    def test_from_scratch_construction_writes_modifier(self):
+        t = CollisionHeatingTally(number=16)
+        t.add_cell(montepy.Cell(number=1))
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            text = t.mcnp_str()
+        assert text.strip().startswith("+F16")
+
+    def test_clone_as_adds_modifier(self):
+        flux = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)
+        heat = flux.clone_as(CollisionHeatingTally)
+        assert isinstance(heat, CollisionHeatingTally)
+        assert "+" in heat.mcnp_str()
+
+    def test_clone_as_removes_modifier(self):
+        heat = Tally.from_input("+F6:n 1 2 3", jit_parse=False)
+        back = heat.clone_as(EnergyDepositionTally)
+        assert isinstance(back, EnergyDepositionTally)
+        assert "+" not in back.mcnp_str()
+
+    def test_clone_as_bare_tally_type_works(self):
+        flux = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)
+        heat = flux.clone_as(TallyType.COLLISION_HEATING)
+        assert isinstance(heat, CollisionHeatingTally)
+
+    def test_fixture_file_dispatch(self, tally_problem):
+        assert isinstance(tally_problem.tallies[16], CollisionHeatingTally)
+        assert isinstance(tally_problem.tallies[18], ChargeDepositionTally)
 
 
 class TestGroupRoundTrip:

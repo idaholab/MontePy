@@ -210,6 +210,8 @@ Tally Objects
    montepy.EnergyDepositionTally
    montepy.FissionEnergyDepositionTally
    montepy.EnergyDetectorPulseTally
+   montepy.CollisionHeatingTally
+   montepy.ChargeDepositionTally
    montepy.TallyType
    montepy.Score
 

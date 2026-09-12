@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2026, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 import copy
 from typing import Generator
@@ -8,7 +8,7 @@ from montepy.cells import Cells
 from montepy.surface_collection import Surfaces
 from montepy.data_inputs.data_input import DataInputAbstract
 from montepy.data_inputs import tally_multiplier
-from montepy.data_inputs.tally_type import Score, TallyType
+from montepy.data_inputs.tally_type import Score, TallyType, _TallyKey
 from montepy.exceptions import MalformedInputError, NumberConflictError
 from montepy.input_parser.tally_parser import TallyParser
 from montepy.input_parser import syntax_node
@@ -18,6 +18,7 @@ from montepy.utilities import *
 from montepy.mcnp_object import InitInput
 
 _TALLY_TYPE_MODULUS = 10
+_VALID_MODULI = {t.modulo for t in TallyType if t.modulo is not None}
 
 
 def _make_value_node(value_type, default, padding=" ", never_pad=False):
@@ -656,6 +657,11 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         ret = {}
         ret["start_pad"] = syntax_node.PaddingNode()
         ret["classifier"] = syntax_node.ClassifierNode()
+        tally_type = getattr(type(self), "_TALLY_TYPE", None)
+        if tally_type is not None and tally_type.modifier:
+            ret["classifier"].modifier = syntax_node.ValueNode(
+                tally_type.modifier, str, padding=None
+            )
         ret["classifier"].prefix = syntax_node.ValueNode(
             self._class_prefix().upper(), str, padding=None, never_pad=True
         )
@@ -703,10 +709,9 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         if self._input is None:
             return
         num = self._input_number.value
-        try:
-            TallyType(num % _TALLY_TYPE_MODULUS)
-        except ValueError as e:
-            raise MalformedInputError(self._input, f"Invalid tally type digit: {e}")
+        digit = num % _TALLY_TYPE_MODULUS
+        if digit not in _VALID_MODULI:
+            raise MalformedInputError(self._input, f"Invalid tally type digit: {digit}")
         tally_list = self._tree["data"]
         end_node = tally_list["end"]
         self._include_total = (
@@ -716,10 +721,10 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
 
     def _number_validator(self, number):
         tally_type = getattr(type(self), "_TALLY_TYPE", None)
-        if tally_type is not None and number % _TALLY_TYPE_MODULUS != tally_type.value:
+        if tally_type is not None and number % _TALLY_TYPE_MODULUS != tally_type.modulo:
             raise ValueError(
                 f"Cannot change tally type via number setter; "
-                f"expected last digit {tally_type.value}, "
+                f"expected last digit {tally_type.modulo}, "
                 f"got {number % _TALLY_TYPE_MODULUS}."
             )
         super()._number_validator(number)
@@ -808,13 +813,15 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         return False
 
     @staticmethod
-    def _dispatch_class(input, num: int) -> type[Tally]:
-        """The :class:`Tally` subclass for a tally number."""
+    def _dispatch_class(input, num: int, modifier: str | None = None) -> type[Tally]:
+        """The :class:`Tally` subclass for a tally number/modifier."""
         try:
-            tally_type = TallyType(num % _TALLY_TYPE_MODULUS)
+            tally_type = TallyType(_TallyKey("F", num % _TALLY_TYPE_MODULUS, modifier))
         except ValueError as e:
             raise MalformedInputError(
-                input, f"Tally type digit {num % _TALLY_TYPE_MODULUS} is not valid."
+                input,
+                f"Tally type digit {num % _TALLY_TYPE_MODULUS} with modifier "
+                f"{modifier!r} is not valid.",
             ) from e
         # _TALLY_TYPE_MAP's keys are exactly TallyType's members (both
         # defined by hand in lockstep in this module), so this can never miss.
@@ -841,7 +848,9 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
             number_node = bare_tree.nodes["classifier"].number
             if number_node is None:
                 raise ValueError("Tally classifier has no number.")
-            subclass = Tally._dispatch_class(input, number_node.value)
+            modifier_node = bare_tree.nodes["classifier"].modifier
+            modifier = modifier_node.value if modifier_node is not None else None
+            subclass = Tally._dispatch_class(input, number_node.value, modifier)
         except Exception:
             # The JIT light parser isn't fully robust and can fail on valid
             # syntax. Fall back to building a real Tally: its own
@@ -849,7 +858,9 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
             # reliably determine the number instead of guessing, and gives
             # proper file/line context on error.
             base = Tally(input, jit_parse=True)
-            subclass = Tally._dispatch_class(input, base._number.value)
+            modifier_node = base._classifier.modifier
+            modifier = modifier_node.value if modifier_node is not None else None
+            subclass = Tally._dispatch_class(input, base._number.value, modifier)
 
         return subclass(input, jit_parse=jit_parse)
 
@@ -857,6 +868,16 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         super().link_to_problem(problem)
 
     def _update_values(self):
+        if self._classifier.modifier is None:
+            self._classifier.modifier = self._generate_default_node(
+                str, "", padding=None
+            )
+        tally_type = getattr(type(self), "_TALLY_TYPE", None)
+        self._classifier.modifier.value = (
+            tally_type.modifier
+            if tally_type is not None and tally_type.modifier
+            else ""
+        )
         tally_numbers_node = self._tree["data"]["tally"]
         tally_numbers_node.nodes.clear()
         for group in self._groups:
@@ -872,7 +893,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
     @staticmethod
     def _align_to_type(tally_type: TallyType, start: int) -> int:
         """The smallest number ``>= start`` whose last digit matches ``tally_type``."""
-        aligned = start - (start % 10) + tally_type.value
+        aligned = start - (start % 10) + tally_type.modulo
         if aligned < start:
             aligned += 10
         return aligned
@@ -1414,14 +1435,38 @@ class EnergyDetectorPulseTally(CellTally):
     _DEFAULT_SCORES = (Score.PULSE_HEIGHT,)
 
 
+class CollisionHeatingTally(CellTally):
+    """``+F6``: collision heating tally, distinct from the plain F6 energy
+    deposition tally.
+
+    .. versionadded:: 1.6.0b3
+    """
+
+    _TALLY_TYPE = TallyType.COLLISION_HEATING
+    _DEFAULT_SCORES = (Score.COLLISION_HEATING,)
+
+
+class ChargeDepositionTally(CellTally):
+    """``+F8``: charge deposition tally, distinct from the plain F8 pulse
+    height tally.
+
+    .. versionadded:: 1.6.0b3
+    """
+
+    _TALLY_TYPE = TallyType.CHARGE_DEPOSITION
+    _DEFAULT_SCORES = (Score.CHARGE_DEPOSITION,)
+
+
 _TALLY_TYPE_MAP: dict[TallyType, type[Tally]] = {
     TallyType.CURRENT: SurfaceCurrentTally,
     TallyType.SURFACE_FLUX: SurfaceFluxTally,
     TallyType.CELL_FLUX: CellFluxTally,
     TallyType.DETECTOR: DetectorTally,
     TallyType.ENERGY_DEPOSITION: EnergyDepositionTally,
+    TallyType.COLLISION_HEATING: CollisionHeatingTally,
     TallyType.FISSION_ENERGY_DEPOSITION: FissionEnergyDepositionTally,
     TallyType.ENERGY_DETECTOR_PULSE: EnergyDetectorPulseTally,
+    TallyType.CHARGE_DEPOSITION: ChargeDepositionTally,
 }
 
 # ── Convenience aliases ────────────────────────────────────────────────────────
@@ -1433,3 +1478,5 @@ F5Tally = DetectorTally
 F6Tally = EnergyDepositionTally
 F7Tally = FissionEnergyDepositionTally
 F8Tally = EnergyDetectorPulseTally
+PlusF6Tally = CollisionHeatingTally
+PlusF8Tally = ChargeDepositionTally

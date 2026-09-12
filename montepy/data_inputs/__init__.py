@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2026, Battelle Energy Alliance, LLC All Rights Reserved.
 __name__ = "montepy.data_inputs"
 from .data_input import DataInput
 from .mode import Mode
