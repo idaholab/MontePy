@@ -7,7 +7,7 @@
 Input: :class:`~montepy.mcnp_object.MCNP_Object`
 =================================================
 
-All classes that represent a single input card *must* subclass this.
+All classes that represent a single input *must* subclass this.
 For example: some children are: :class:`~montepy.Cell`, :class:`~montepy.Surface`.
 
 How to ``__init__``

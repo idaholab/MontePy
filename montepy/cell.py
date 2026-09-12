@@ -712,6 +712,21 @@ class Cell(Numbered_MCNP_Object):
         return self._surfaces
 
     @property
+    def tallies(self):
+        """Generator of tallies in the parent problem that score this cell.
+
+        Yields
+        ------
+        Tally
+
+        .. versionadded:: 1.6.0b2
+        """
+        if self._problem:
+            for t in self._problem.tallies:
+                if self in t:
+                    yield t
+
+    @property
     @needs_full_ast
     def parameters(self) -> dict[str, str]:
         """A dictionary of the additional parameters for the object.

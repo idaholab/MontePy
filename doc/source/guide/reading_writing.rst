@@ -181,7 +181,7 @@ Information Kept
 #. The optional message block at the beginning of the problem (it's a niche feature; check out section :manual63:`4.4.1` of the user manual)
 #. The problem title
 #. ``C`` style comments (e.g., ``C this is a banana``)
-#. (Almost) all MCNP inputs (cards). Only the read input is discarded.
+#. (Almost) all MCNP inputs. Only the read input is discarded.
 #. Dollar sign comments (e.g., ``1 0 $ this is a banana``)
 #. Other user formatting and spaces. If extra spaces between values are given the space will be expanded or shortened to try to keep
    the position of the next value in the same spot as the length of the first value changes.
@@ -195,11 +195,11 @@ Information Kept
 
 Information Lost
 ^^^^^^^^^^^^^^^^
-#. Read cards. These are handled properly, but when written out these cards themselves will disappear.
-   When MontePy encounters a read card it notes the file in the card, and then discard the card.
+#. Read inputs. These are handled properly, but when written out these inputs themselves will disappear.
+   When MontePy encounters a read input it notes the file in the input, and then discards the input.
    It will then read these extra files and append their contents to the appropriate block.
-   So If you were to write out a problem that used the read card in the surface block the surface
-   cards in that file from the read card will appear at the end of the new surface block in the newly written file.
+   So If you were to write out a problem that used the read input in the surface block the surface
+   inputs in that file from the read input will appear at the end of the new surface block in the newly written file.
 
 .. note::
 

@@ -42,11 +42,11 @@ if the surfaces did know, this would be bidirectional.
 
 So how do we decide which direction to point?
 In general we should default to MCNP.
-So a cell borrows a surface because a cell card in MCNP
+So a cell borrows a surface because a cell input in MCNP
 references surface numbers,
 and not vice versa.
 The exception to this is the case of inputs that modify another object.
-For example the ``MT`` card modifies its parent ``M`` card.
+For example the ``MT`` input modifies its parent ``M`` input.
 In general the parent object should own its children modifiers.
 This is an area of new development, and this may change.
 

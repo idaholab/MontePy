@@ -97,7 +97,7 @@ You can also easy apply a transform to the filling universe with:
 
    MCNP supports some rather complicated cell filling systems.
    Mainly the ability to fill a cell with different universes for every lattice site,
-   and to create an "anonymous transform" in the fill card.
+   and to create an "anonymous transform" in the fill input.
 
    MontePy can understand and manipulate fills with these features in the input.
    However, generating these from scratch may be cumbersome.
