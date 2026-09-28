@@ -421,6 +421,14 @@ class PathGroup(TallyGroup):
         return self
 
     def __contains__(self, item) -> bool:
+        """Whether ``item`` is scored by this path.
+
+        Only the innermost level (``self._levels[0]``, what's actually
+        scored) is checked -- an outer level is a containment constraint
+        ("...inside cell 5"), not itself scored, so it deliberately isn't
+        considered "in" the tally. For ``f104:n (2 < 5)``, cell 2 is in the
+        group; cell 5 is not.
+        """
         if not self._levels:
             return False
         return item in self._levels[0]

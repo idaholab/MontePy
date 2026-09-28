@@ -715,6 +715,17 @@ class TestGroupRoundTrip:
         assert "1005" not in f1.mcnp_str()
         assert s not in f1.surfaces
 
+    def test_path_group_contains_only_innermost_level(self, tally_problem):
+        # Locks in a deliberate design decision (documented on
+        # PathGroup.__contains__): only the innermost/scored level is
+        # considered "in" the group, not any outer containment level.
+        t = tally_problem.tallies[194]  # F194:n (1 < 2 < 5)
+        g = t.groups[0]
+        assert isinstance(g, PathGroup)
+        assert tally_problem.cells[1] in g
+        assert tally_problem.cells[2] not in g
+        assert tally_problem.cells[5] not in g
+
     def test_remove_group_is_not_quadratic(self):
         # Regression test: remove_group's own cleanup loop used to
         # re-scan every remaining group once per still-linked cell (via
