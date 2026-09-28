@@ -1663,7 +1663,7 @@ class TallyMultiplier(DataInputAbstract, Numbered_MCNP_Object):
         tally : Tally
             The tally to link the clone to. Its number is copied onto the
             clone, and the clone is registered as that tally's
-            :attr:`~montepy.data_inputs.tally.Tally.multiplier`. If omitted,
+            :attr:`~montepy.Tally.multiplier`. If omitted,
             a detached, unregistered clone is returned instead.
 
         Returns
