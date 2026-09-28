@@ -120,7 +120,7 @@ class ParticleFilter(Filter):
     def __eq__(self, other):
         if not isinstance(other, ParticleFilter):
             return NotImplemented
-        return frozenset(self.particles) == frozenset(other.particles)
+        return self.particles == other.particles
 
     def __repr__(self):
         return f"ParticleFilter({self._node.format()!r})"
