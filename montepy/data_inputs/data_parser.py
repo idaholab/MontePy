@@ -72,6 +72,10 @@ def parse_data(
     DataClass = PREFIX_MATCHES.get(prefix)
     if DataClass is not None:
         if DataClass is tally.Tally:
+            # A bare "F" prefix maps to many concrete Tally subclasses
+            # (by type digit and +/modifier), unlike every other DataClass
+            # here, which is instantiated directly -- from_input picks the
+            # right one.
             return tally.Tally.from_input(input, jit_parse=jit_parse)
         if issubclass(DataClass, montepy.data_inputs.cell_modifier.CellModifierInput):
             return DataClass(input, problem=problem, jit_parse=jit_parse)
