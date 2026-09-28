@@ -1121,13 +1121,15 @@ class SurfaceTally(Tally):
 
     @args_checked
     @needs_full_cst
-    def add_group(self, surfaces: list[montepy.Surface] | set[montepy.Surface]) -> None:
+    def add_group(
+        self, surfaces: list[montepy.Surface] | tuple[montepy.Surface, ...]
+    ) -> None:
         """Add surfaces as a single union (averaged) bin.
 
         Parameters
         ----------
-        surfaces : list[Surface], set[Surface]
-            The surfaces to group.
+        surfaces : list[Surface] | tuple[Surface, ...]
+            The surfaces to group, in order.
         """
         surfaces = list(surfaces)
         numbers = [s.number for s in surfaces]
@@ -1266,13 +1268,13 @@ class CellTally(Tally):
 
     @args_checked
     @needs_full_cst
-    def add_group(self, cells: list[montepy.Cell] | set[montepy.Cell]) -> None:
+    def add_group(self, cells: list[montepy.Cell] | tuple[montepy.Cell, ...]) -> None:
         """Add cells as a single union (averaged) bin.
 
         Parameters
         ----------
-        cells : list[Cell], set[Cell]
-            The cells to group.
+        cells : list[Cell] | tuple[Cell, ...]
+            The cells to group, in order.
         """
         cells = list(cells)
         numbers = [c.number for c in cells]
