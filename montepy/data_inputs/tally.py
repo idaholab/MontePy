@@ -992,6 +992,11 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         digit (e.g. ``clone_as`` targeting type 6) would start its search
         from >134 instead of the correctly-aligned 6, and drift to a number
         that still doesn't end in 6.
+
+        Successive candidates are exactly ``step`` apart -- ``step`` must
+        therefore be a multiple of 10 to keep the trailing type digit fixed
+        (:attr:`~montepy.tallies.Tallies.step` enforces this and defaults
+        to 10).
         """
         collection = self._problem.tallies if self._problem else None
         if collection is not None:
@@ -1003,7 +1008,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
             step = step if step is not None else collection.step
         else:
             start = starting_number if starting_number is not None else 1
-            step = step if step is not None else 1
+            step = step if step is not None else 10
         candidate = self._align_to_type(tally_type, start)
         while True:
             if collection is not None:
@@ -1014,7 +1019,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
                     pass
             elif candidate != self.number:
                 return candidate
-            candidate += step * 10
+            candidate += step
 
     @staticmethod
     def _tally_category(cls: type[Tally]) -> type[Tally] | None:

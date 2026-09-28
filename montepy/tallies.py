@@ -4,6 +4,7 @@ import warnings
 import montepy
 from montepy.exceptions import MalformedInputError, MalformedInputWarning
 from montepy.numbered_object_collection import NumberedDataObjectCollection
+import montepy.types as ty
 from montepy.utilities import *
 
 
@@ -21,6 +22,20 @@ class Tallies(NumberedDataObjectCollection):
         super().__init__(montepy.data_inputs.tally.Tally, objects, problem)
         self._fm_queue = {}
         self._multipliers = []
+        # Candidates must be spaced by a multiple of 10 to preserve a
+        # cloned/renumbered tally's trailing type digit -- see
+        # Tally._next_number_for_type.
+        self._step = 10
+
+    @NumberedDataObjectCollection.step.setter
+    @args_checked
+    def step(self, value: ty.Integral):
+        if value % 10 != 0:
+            raise ValueError(
+                f"Tallies.step must be a multiple of 10 to preserve a "
+                f"tally's trailing type digit; got {value}."
+            )
+        self._step = value
 
     @property
     def multipliers(self):

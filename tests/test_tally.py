@@ -385,6 +385,30 @@ class TestTallyObject:
         assert new.number % 10 == 4
         assert new.number >= 14
 
+    def test_tallies_step_defaults_to_10(self, tally_problem):
+        # Review feedback (PR #1005): Tallies.step should default to 10,
+        # since _next_number_for_type's candidates must always be spaced by
+        # a multiple of 10 to preserve the trailing type digit.
+        assert tally_problem.tallies.step == 10
+
+    def test_tallies_step_rejects_non_multiple_of_10(self, tally_problem):
+        with pytest.raises(ValueError):
+            tally_problem.tallies.step = 3
+
+    def test_next_number_for_type_honors_explicit_step(self, tally_problem):
+        # Regression test: _next_number_for_type used to multiply the
+        # collection's step by 10 internally (candidate += step * 10),
+        # silently doubling the effective spacing whenever step was set to
+        # anything other than its old default of 1. Now that step's
+        # docstring-promised meaning ("the gap between successive
+        # candidates") is literal, setting step=20 should space candidates
+        # by 20, not 200. Every multiple-of-20 candidate from 14 up through
+        # 254 is already taken in the fixture; 274 is the first free one.
+        tally_problem.tallies.step = 20
+        f34 = tally_problem.tallies[34]
+        new = f34.clone(starting_number=14)
+        assert new.number == 274
+
     def test_blank_tally_construction(self):
         t = F4Tally()
         assert t.groups == []
