@@ -252,6 +252,15 @@ class TestTallyObject:
         with pytest.raises(montepy.exceptions.MalformedInputError):
             t.groups
 
+    def test_dispatch_class_uses_actual_mnemonic_not_hardcoded_f(self):
+        # Regression test: _dispatch_class used to hard-bake the "F"
+        # mnemonic internally, so it could never distinguish a real F-card
+        # digit/modifier combination from the same combination under a
+        # different (currently hypothetical) mnemonic.
+        with pytest.raises(montepy.exceptions.MalformedInputError):
+            Tally._dispatch_class("f4:n 1", 4, mnemonic="G")
+        assert Tally._dispatch_class("f4:n 1", 4, mnemonic="F") is CellFluxTally
+
     def test_jump_in_tally_numbers_is_skipped(self):
         t = F4Tally(Input(["f4:n 1 J 3"], BlockType.DATA))
         assert [g.old_numbers[0] for g in t.groups] == [1, 3]

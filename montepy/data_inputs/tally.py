@@ -828,16 +828,18 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
 
     @staticmethod
     def _dispatch_class(
-        input, num: ty.Integral, modifier: str | None = None
+        input, num: ty.Integral, modifier: str | None = None, mnemonic: str = "F"
     ) -> type[Tally]:
-        """The :class:`Tally` subclass for a tally number/modifier."""
+        """The :class:`Tally` subclass for a tally mnemonic/number/modifier."""
         try:
-            tally_type = TallyType(_TallyKey("F", num % _TALLY_TYPE_MODULUS, modifier))
+            tally_type = TallyType(
+                _TallyKey(mnemonic, num % _TALLY_TYPE_MODULUS, modifier)
+            )
         except ValueError as e:
             raise MalformedInputError(
                 input,
-                f"Tally type digit {num % _TALLY_TYPE_MODULUS} with modifier "
-                f"{modifier!r} is not valid.",
+                f"Tally mnemonic {mnemonic!r} with type digit "
+                f"{num % _TALLY_TYPE_MODULUS} and modifier {modifier!r} is not valid.",
             ) from e
         # _TALLY_TYPE_MAP's keys are exactly TallyType's members (both
         # defined by hand in lockstep in this module), so this can never miss.
@@ -861,12 +863,16 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         """
         try:
             bare_tree = Tally._peek_light_parse(input)
-            number_node = bare_tree.nodes["classifier"].number
+            classifier = bare_tree.nodes["classifier"]
+            number_node = classifier.number
             if number_node is None:
                 raise ValueError("Tally classifier has no number.")
-            modifier_node = bare_tree.nodes["classifier"].modifier
+            modifier_node = classifier.modifier
             modifier = modifier_node.value if modifier_node is not None else None
-            subclass = Tally._dispatch_class(input, number_node.value, modifier)
+            mnemonic = classifier.prefix.value.upper()
+            subclass = Tally._dispatch_class(
+                input, number_node.value, modifier, mnemonic
+            )
         except (AttributeError, KeyError, ValueError, AssertionError):
             # The JIT light parser isn't fully robust and can fail on valid
             # syntax. Fall back to building a real Tally: its own
@@ -879,7 +885,10 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
             base = Tally(input, jit_parse=True)
             modifier_node = base._classifier.modifier
             modifier = modifier_node.value if modifier_node is not None else None
-            subclass = Tally._dispatch_class(input, base._number.value, modifier)
+            mnemonic = base._classifier.prefix.value.upper()
+            subclass = Tally._dispatch_class(
+                input, base._number.value, modifier, mnemonic
+            )
 
         return subclass(input, jit_parse=jit_parse)
 
