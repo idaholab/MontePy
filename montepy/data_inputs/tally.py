@@ -41,21 +41,21 @@ class LatticeIndex:
 
     Parameters
     ----------
-    dimensions : list
-        List of :class:`int` (single element index) or
-        ``tuple[int, int]`` (range ``i1:i2``).
+    dimensions : list[Integral | tuple[Integral, Integral]]
+        Each entry is either a single element index, or a ``(start, stop)``
+        range (``i1:i2``).
     """
 
     __slots__ = ("_dimensions",)
 
     @args_checked
     def __init__(self, dimensions: list[ty.Integral | tuple[ty.Integral, ty.Integral]]):
-        self._dimensions = list(dimensions)
+        self._dimensions = tuple(dimensions)
 
     @property
     def dimensions(self):
-        """The list of indices or (start, end) ranges."""
-        return list(self._dimensions)
+        """The indices or (start, end) ranges."""
+        return self._dimensions
 
     def __repr__(self):
         return f"LatticeIndex({self._dimensions})"

@@ -616,7 +616,7 @@ That lattice element is available directly through
 .. doctest::
 
    >>> path_tally.groups[0].levels[1].lattice_indices[0].dimensions
-   [0, 0, 0]
+   (0, 0, 0)
 
 You can also build a path group from scratch with
 :func:`~montepy.CellTally.add_path_group` and

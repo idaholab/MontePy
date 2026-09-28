@@ -657,7 +657,7 @@ class TestReprAndEquality:
 
     def test_lattice_index(self):
         li = LatticeIndex([1, (2, 3)])
-        assert li.dimensions == [1, (2, 3)]
+        assert li.dimensions == (1, (2, 3))
         assert "LatticeIndex" in repr(li)
 
     def test_tally_group_contains_not_implemented(self):
