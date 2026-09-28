@@ -7,6 +7,7 @@ import pytest
 import montepy
 from montepy.data_inputs.data_parser import parse_data
 from montepy.data_inputs.tally import (
+    CellFluxTally,
     ChargeDepositionTally,
     CollisionHeatingTally,
     EnergyDepositionTally,
@@ -597,6 +598,25 @@ class TestGroupRoundTrip:
         t.include_total = False
         assert not t.include_total
         assert not t.mcnp_str().strip().endswith("T")
+
+    def test_untouched_lowercase_total_flag_round_trips_exactly(self):
+        # Regression test: _update_values used to unconditionally rewrite
+        # the total-bin flag as uppercase "T" on every write, silently
+        # clobbering a parsed lowercase "t" even when include_total was
+        # never touched.
+        line = "f24:n (1 2) (3) t"
+        t = CellFluxTally(Input([line], BlockType.DATA), jit_parse=False)
+        assert t.include_total
+        assert t.mcnp_str() == line
+
+    def test_changed_include_total_writes_uppercase(self):
+        # A genuine value change (not merely touching the setter) always
+        # writes a fresh, normalized-uppercase node.
+        t = CellFluxTally(Input(["f24:n (1 2) (3) t"], BlockType.DATA), jit_parse=False)
+        t.include_total = False
+        assert t.mcnp_str().strip() == "f24:n (1 2) (3)"
+        t.include_total = True
+        assert t.mcnp_str().strip().endswith(" T")
 
     def test_remove_cell_reflected_in_mcnp_str(self):
         t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)

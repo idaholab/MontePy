@@ -646,6 +646,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         self._old_number = self._generate_default_node(int, -1)
         self._groups = []
         self._include_total = False
+        self._parsed_include_total = False
         self._multiplier = None
 
     def _jit_light_init(self, input):
@@ -727,6 +728,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         self._include_total = (
             end_node.value is not None and str(end_node.value).upper() == "T"
         )
+        self._parsed_include_total = self._include_total
         self._groups = _parse_tally_numbers(tally_list["tally"])
 
     def _number_validator(self, number):
@@ -905,7 +907,12 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
             else:
                 tally_numbers_node.nodes.append(node)
         end_node = self._tree["data"]["end"]
-        end_node.value = "T" if self._include_total else None
+        if self._include_total != self._parsed_include_total:
+            # Only rewrite when this actually changed -- preserves the
+            # original node (and its casing, e.g. a parsed lowercase "t")
+            # untouched for a tally whose include_total was never set.
+            end_node.value = "T" if self._include_total else None
+            self._parsed_include_total = self._include_total
 
     @staticmethod
     def _align_to_type(tally_type: TallyType, start: ty.Integral) -> ty.Integral:
