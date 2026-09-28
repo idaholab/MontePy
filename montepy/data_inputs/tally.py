@@ -861,12 +861,15 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
             modifier_node = bare_tree.nodes["classifier"].modifier
             modifier = modifier_node.value if modifier_node is not None else None
             subclass = Tally._dispatch_class(input, number_node.value, modifier)
-        except Exception:
+        except (AttributeError, KeyError, ValueError, AssertionError):
             # The JIT light parser isn't fully robust and can fail on valid
             # syntax. Fall back to building a real Tally: its own
             # JIT-with-fallback-to-full-parse handling in _parse_input will
             # reliably determine the number instead of guessing, and gives
-            # proper file/line context on error.
+            # proper file/line context on error. A MalformedInputError from
+            # _dispatch_class itself (e.g. an invalid digit/modifier
+            # combination) is a real, deliberate validation failure, not a
+            # light-parser robustness issue -- let it propagate directly.
             base = Tally(input, jit_parse=True)
             modifier_node = base._classifier.modifier
             modifier = modifier_node.value if modifier_node is not None else None
