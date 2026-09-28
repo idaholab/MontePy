@@ -715,6 +715,37 @@ class TestGroupRoundTrip:
         assert "1005" not in f1.mcnp_str()
         assert s not in f1.surfaces
 
+    def test_remove_group_is_not_quadratic(self):
+        # Regression test: remove_group's own cleanup loop used to
+        # re-scan every remaining group once per still-linked cell (via
+        # Tally.__contains__) -- an O(N*M) cost per call that, called once
+        # per group as groups are removed one at a time, made bulk removal
+        # super-quadratic overall. Confirmed empirically before the fix:
+        # N=800 took ~10s; N=400 already took ~1.3s. After the fix, N=800
+        # takes well under a tenth of a second (the remaining O(N^2) comes
+        # entirely from NumberedObjectCollection.remove()'s own O(N)
+        # linear-list removal, a separate, pre-existing, out-of-scope cost
+        # -- this test isolates just the containment-check fix).
+        import time
+
+        t = F4Tally(Input(["f4:n 1"], BlockType.DATA), jit_parse=False)
+        cells = []
+        for i in range(2, 802):
+            cell = montepy.Cell()
+            cell.number = i
+            cells.append(cell)
+            t.add_cell(cell)
+        groups = list(t.groups[1:])  # skip the original "f4:n 1" group
+        start = time.perf_counter()
+        for group in groups:
+            t.remove_group(group)
+        elapsed = time.perf_counter() - start
+        assert (
+            elapsed < 2.0
+        ), f"remove_group took {elapsed:.2f}s for N=800 -- likely quadratic"
+        assert len(t.groups) == 1
+        assert len(t.cells) == 0
+
 
 class TestReprAndEquality:
     """Smoke tests for __repr__ and __eq__-against-wrong-type on the small

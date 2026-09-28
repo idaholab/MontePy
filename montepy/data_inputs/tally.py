@@ -839,6 +839,28 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
                 return True
         return False
 
+    def _referenced_objects_and_numbers(self) -> tuple[set, set]:
+        """The objects (by identity)/numbers still referenced by
+        ``self._groups``, matching ``__contains__``'s per-group semantics
+        (only a ``PathGroup``'s innermost level counts). Computed once in
+        O(groups), for pruning a bookkeeping collection without re-scanning
+        every group once per candidate item. Objects are tracked by
+        ``id()`` since ``Surface`` overrides ``__eq__`` without
+        ``__hash__``, making it unhashable.
+        """
+        object_ids = set()
+        numbers = set()
+        for group in self._groups:
+            if isinstance(group, PathGroup):
+                if not group._levels:
+                    continue
+                group = group._levels[0]
+            if group._cells_or_surfaces:
+                object_ids.update(id(obj) for obj in group._cells_or_surfaces)
+            else:
+                numbers.update(group._old_numbers)
+        return object_ids, numbers
+
     @staticmethod
     def _dispatch_class(
         input, num: ty.Integral, modifier: str | None = None, mnemonic: str = "F"
@@ -1231,8 +1253,13 @@ class SurfaceTally(Tally):
             The group to remove.
         """
         self._groups.remove(group)
+        referenced_objects, referenced_numbers = self._referenced_objects_and_numbers()
         for surface in list(self._surfaces):
-            if surface not in self:
+            if (
+                id(surface) not in referenced_objects
+                and surface.old_number not in referenced_numbers
+                and surface.number not in referenced_numbers
+            ):
                 self._surfaces.remove(surface)
 
     def link_to_problem(self, problem, *, deepcopy=False):
@@ -1374,8 +1401,13 @@ class CellTally(Tally):
             The group to remove.
         """
         self._groups.remove(group)
+        referenced_objects, referenced_numbers = self._referenced_objects_and_numbers()
         for cell in list(self._cells):
-            if cell not in self:
+            if (
+                id(cell) not in referenced_objects
+                and cell.old_number not in referenced_numbers
+                and cell.number not in referenced_numbers
+            ):
                 self._cells.remove(cell)
 
     def link_to_problem(self, problem, *, deepcopy=False):
