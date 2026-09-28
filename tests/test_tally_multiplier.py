@@ -326,10 +326,44 @@ class TestScoresIntegration:
         assert new.multiplier is None
         assert new.scores == [Score.ENERGY_DEPOSITION]
 
-    def test_clone_does_not_carry_multiplier(self, tally_problem):
+    def test_clone_carries_over_multiplier(self, tally_problem):
+        # Review feedback (PR #1005): "clone is like for like: F4 in; F4
+        # out. clone_as should be the only route to change F4 to F6. I
+        # don't see why multipliers should be dropped then." clone() keeps
+        # the same tally type, so a linked FM's scoring relationship still
+        # applies to the clone -- clone_as (a real type change) still drops
+        # it, tested separately above.
         f4 = tally_problem.tallies[4]
+        original_multiplier = f4.multiplier
+        assert original_multiplier is not None
         clone = f4.clone()
+        assert clone.multiplier is not None
+        assert clone.multiplier is not original_multiplier
+        assert clone.multiplier.number == clone.number
+        assert clone.multiplier.parent_tally is clone
+        assert clone.multiplier in tally_problem.tallies.multipliers
+        assert clone.multiplier in tally_problem.data_inputs
+        # The original tally/multiplier pairing is untouched.
+        assert f4.multiplier is original_multiplier
+        assert original_multiplier.parent_tally is f4
+
+    def test_clone_without_multiplier_stays_none(self, tally_problem):
+        f2 = tally_problem.tallies[2]
+        assert f2.multiplier is None
+        clone = f2.clone()
         assert clone.multiplier is None
+
+    def test_clone_carries_over_multiplier_when_unlinked(self):
+        t = parse_data(Input(["f4:n 1 2 3"], BlockType.DATA))
+        fm = TallyMultiplier(
+            Input(["fm4 (1.0 26 16)"], BlockType.DATA), jit_parse=False
+        )
+        t.multiplier = fm
+        clone = t.clone()
+        assert clone.multiplier is not None
+        assert clone.multiplier is not fm
+        assert clone.multiplier.number == clone.number
+        assert clone.multiplier.parent_tally is clone
 
 
 class TestFlags:

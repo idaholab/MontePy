@@ -1038,13 +1038,14 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
     ) -> Tally:
         """Clone this tally with a new number.
 
-        Note that the clone does **not** carry over a linked ``FM``
-        multiplier (see :attr:`multiplier`) -- a multiplier is a companion
-        card tied to this exact tally number, not something that
-        meaningfully transfers to a renumbered copy.
+        If this tally has a linked ``FM`` multiplier (see :attr:`multiplier`),
+        it's cloned too and linked to the new tally's number -- unlike
+        :meth:`clone_as`, ``clone`` is like-for-like (same tally type), so
+        the multiplier's scoring relationship still applies.
 
         See :meth:`~montepy.numbered_mcnp_object.Numbered_MCNP_Object.clone`.
         """
+        multiplier = self.multiplier
         ret = copy.deepcopy(self)
         ret._multiplier = None
         new_number = self._next_number_for_type(self.tally_type, starting_number, step)
@@ -1054,6 +1055,8 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
             self._problem.tallies.append(ret)
         else:
             ret.number = new_number
+        if multiplier is not None:
+            multiplier.clone(ret)
         return ret
 
     @args_checked
