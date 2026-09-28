@@ -21,6 +21,11 @@ _TALLY_TYPE_MODULUS = 10
 _VALID_MODULI = {t.modulo for t in TallyType if t.modulo is not None}
 
 
+def _digit_of(num: ty.Integral) -> ty.Integral:
+    """The tally type digit (last digit) of a tally number."""
+    return num % _TALLY_TYPE_MODULUS
+
+
 def _make_value_node(value_type, default, padding=" ", never_pad=False):
     """Build a fresh :class:`~montepy.input_parser.syntax_node.ValueNode`.
 
@@ -709,7 +714,10 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         if self._input is None:
             return
         num = self._input_number.value
-        digit = num % _TALLY_TYPE_MODULUS
+        # Is this digit valid for *any* tally type -- the concrete subclass
+        # is already fixed by dispatch, so this only catches a hand-built
+        # Tally() bypassing from_input with a bogus digit.
+        digit = _digit_of(num)
         if digit not in _VALID_MODULI:
             raise MalformedInputError(self._input, f"Invalid tally type digit: {digit}")
         tally_list = self._tree["data"]
@@ -720,12 +728,14 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         self._groups = _parse_tally_numbers(tally_list["tally"])
 
     def _number_validator(self, number):
+        # Unlike _parse_tally_body's check, this is specific to *this*
+        # subclass's own digit, not just any valid one.
         tally_type = getattr(type(self), "_TALLY_TYPE", None)
-        if tally_type is not None and number % _TALLY_TYPE_MODULUS != tally_type.modulo:
+        if tally_type is not None and _digit_of(number) != tally_type.modulo:
             raise ValueError(
                 f"Cannot change tally type via number setter; "
                 f"expected last digit {tally_type.modulo}, "
-                f"got {number % _TALLY_TYPE_MODULUS}."
+                f"got {_digit_of(number)}."
             )
         super()._number_validator(number)
         if self._multiplier is not None:
