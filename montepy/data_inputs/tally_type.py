@@ -7,12 +7,23 @@ from typing import NamedTuple, Optional
 class _TallyKey(NamedTuple):
     """The identity of a :class:`TallyType` member.
 
-    ``modulo`` is the last digit of the card's number (``None`` for a card
-    that doesn't dispatch by trailing digit at all, e.g. a future ``FMESH``
-    entry). ``modifier`` is the classifier's leading symbol, if any (e.g.
-    ``"+"`` for MCNP's ``+F6``/``+F8`` variants) -- this is what lets two
-    members share the same ``mnemonic``/``modulo`` (``+F6`` vs plain ``F6``)
-    while staying distinct under :func:`~enum.unique`.
+    A :class:`~typing.NamedTuple` rather than a dataclass: it needs to be
+    hashable (an ``Enum`` member's value is looked up in a dict internally)
+    and immutable, which a plain :class:`~typing.NamedTuple` gives for free.
+
+    Attributes
+    ----------
+    mnemonic : str
+        The card mnemonic, e.g. ``"F"``.
+    modulo : int, optional
+        The last digit of the card's number (``None`` for a card that
+        doesn't dispatch by trailing digit at all, e.g. a future ``FMESH``
+        entry).
+    modifier : str, optional
+        The classifier's leading symbol, if any (e.g. ``"+"`` for MCNP's
+        ``+F6``/``+F8`` variants) -- this is what lets two members share the
+        same ``mnemonic``/``modulo`` (``+F6`` vs plain ``F6``) while staying
+        distinct under :func:`~enum.unique`.
     """
 
     mnemonic: str
@@ -20,6 +31,9 @@ class _TallyKey(NamedTuple):
     modifier: Optional[str] = None
 
     def __repr__(self):
+        # Overridden so TallyType's own repr (which embeds repr(self.value))
+        # shows the friendly "+6" instead of the raw
+        # _TallyKey(mnemonic='F', modulo=6, modifier='+').
         body = str(self.modulo) if self.modulo is not None else self.mnemonic
         return f"{self.modifier}{body}" if self.modifier else body
 
@@ -76,6 +90,15 @@ class Score(Enum):
     tally, :attr:`~montepy.Tally.scores` returns a list of
     :class:`~montepy.data_inputs.tally_multiplier.MultiplierScore` instead of
     this enum -- see :attr:`~montepy.Tally.multiplier`.
+
+    ``Score`` is deliberately coarser than :class:`TallyType`: several tally
+    types report the same physical quantity, so they collapse to one
+    ``Score`` (``SURFACE_FLUX``, ``CELL_FLUX``, and ``DETECTOR`` are three
+    distinct ``TallyType`` members that all report ``Score.FLUX`` -- flux is
+    flux, whether it's tallied at a surface, in a cell, or by a point
+    detector). ``TallyType`` answers "how is this number dispatched," while
+    ``Score`` answers "what quantity does it report" -- they aren't
+    redundant.
 
     .. versionadded:: 1.6.0b2
     """
