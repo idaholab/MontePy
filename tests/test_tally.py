@@ -618,6 +618,23 @@ class TestGroupRoundTrip:
         t.include_total = True
         assert t.mcnp_str().strip().endswith(" T")
 
+    @pytest.mark.parametrize("number", [1, 4])
+    def test_link_to_problem_forwards_deepcopy(self, tally_problem, number):
+        # Regression test: Tally/SurfaceTally/CellTally's link_to_problem
+        # overrides accepted a deepcopy kwarg but never forwarded it to
+        # super().link_to_problem(), silently dropping it. Every concrete
+        # Tally eventually bottoms out at MCNP_Object.link_to_problem
+        # regardless of how many CellTally/SurfaceTally levels sit between
+        # them, so spying there catches all of them.
+        import unittest.mock
+
+        t = tally_problem.tallies[number]
+        with unittest.mock.patch.object(
+            montepy.mcnp_object.MCNP_Object, "link_to_problem", autospec=True
+        ) as spy:
+            t.link_to_problem(tally_problem, deepcopy=True)
+        spy.assert_called_once_with(t, tally_problem, deepcopy=True)
+
     def test_remove_cell_reflected_in_mcnp_str(self):
         t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)
         cell = montepy.Cell()

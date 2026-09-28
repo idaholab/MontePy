@@ -884,7 +884,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         return subclass(input, jit_parse=jit_parse)
 
     def link_to_problem(self, problem, *, deepcopy=False):
-        super().link_to_problem(problem)
+        super().link_to_problem(problem, deepcopy=deepcopy)
 
     def _update_values(self):
         if self._classifier.modifier is None:
@@ -1214,7 +1214,7 @@ class SurfaceTally(Tally):
                 self._surfaces.remove(surface)
 
     def link_to_problem(self, problem, *, deepcopy=False):
-        super().link_to_problem(problem)
+        super().link_to_problem(problem, deepcopy=deepcopy)
         if problem is not None and not hasattr(self, "_not_parsed"):
             # Rebuild from scratch: a deepcopy (e.g. from clone()) carries
             # stale copied Surface objects that must be discarded, not
@@ -1357,7 +1357,7 @@ class CellTally(Tally):
                 self._cells.remove(cell)
 
     def link_to_problem(self, problem, *, deepcopy=False):
-        super().link_to_problem(problem)
+        super().link_to_problem(problem, deepcopy=deepcopy)
         if problem is not None and not hasattr(self, "_not_parsed"):
             # Rebuild from scratch: a deepcopy (e.g. from clone()) carries
             # stale copied Cell objects that must be discarded, not merged
