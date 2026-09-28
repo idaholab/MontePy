@@ -172,14 +172,14 @@ class FlatGroup(TallyGroup):
 
     Parameters
     ----------
-    numbers : list[int]
+    numbers : list[Integral]
         Cell or surface numbers.
     lattice_indices : list[LatticeIndex | None], optional
         Lattice indices parallel to ``numbers``.
     is_grouped : bool
         ``True`` = parenthesized union (one averaged bin);
         ``False`` = separate bins.
-    universe_spec : int, optional
+    universe_spec : Integral, optional
         Universe number if ``U=N`` syntax was used.
     """
 
@@ -389,7 +389,7 @@ class PathGroup(TallyGroup):
         ----------
         cells_or_surfaces : Cell | Surface
             Objects at this level.
-        lattice : list[int], optional
+        lattice : list[Integral], optional
             Lattice index dimensions for the first element.
 
         Returns
@@ -624,7 +624,8 @@ def _link_multiplier_to_tally(self, fm):
 
 
 class Tally(DataInputAbstract, Numbered_MCNP_Object):
-    """Base class for MCNP F-card tallies (F1, F2, F4, F5, F6, F7, F8).
+    """Base class for MCNP F-card tallies (``F1``, ``F2``, ``F4``, ``F5``,
+    ``F6``, ``F7``, ``F8``).
 
     Use :meth:`from_input` as a factory to create the appropriate subclass
     when reading from a file.
@@ -670,10 +671,11 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         ret["classifier"].prefix = syntax_node.ValueNode(
             self._class_prefix().upper(), str, padding=None, never_pad=True
         )
-        # A non-negative placeholder: ValueNode._reverse_engineer_formatting
-        # reserves a leading sign column for any token starting with "-",
-        # which would otherwise permanently corrupt this node's formatting
-        # once a real (positive) tally number is assigned to it.
+        # A positive placeholder (tally numbers start at 1, there's no T0):
+        # ValueNode._reverse_engineer_formatting reserves a leading sign
+        # column for any token starting with "-", which would otherwise
+        # permanently corrupt this node's formatting once a real number is
+        # assigned to it.
         ret["classifier"].number = self._generate_default_node(int, 1)
         ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
         tally_numbers = syntax_node.ListNode("tally numbers")
@@ -703,7 +705,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         return True
 
     @staticmethod
-    def _has_classifier() -> int:
+    def _has_classifier() -> ty.PositiveInt:
         return 1
 
     @staticmethod
@@ -749,7 +751,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
     @property
     @needs_full_ast
     def tally_type(self) -> TallyType | None:
-        """The MCNP tally type (e.g. ``TallyType.CELL_FLUX`` for F4)."""
+        """The MCNP tally type (e.g. ``TallyType.CELL_FLUX`` for ``F4``)."""
         return getattr(type(self), "_TALLY_TYPE", None)
 
     @property
@@ -787,7 +789,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
     @property
     @needs_full_ast
     def scores(self) -> list[Score] | list[tally_multiplier.MultiplierScore]:
-        """The physical quantities this tally scores, e.g. ``[Score.FLUX]`` for F4.
+        """The physical quantities this tally scores, e.g. ``[Score.FLUX]`` for ``F4``.
 
         This is just the quantity implied by the tally type digit, unless an
         ``FM`` tally-multiplier card is linked (see :attr:`multiplier`), in
@@ -823,7 +825,9 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         return False
 
     @staticmethod
-    def _dispatch_class(input, num: int, modifier: str | None = None) -> type[Tally]:
+    def _dispatch_class(
+        input, num: ty.Integral, modifier: str | None = None
+    ) -> type[Tally]:
         """The :class:`Tally` subclass for a tally number/modifier."""
         try:
             tally_type = TallyType(_TallyKey("F", num % _TALLY_TYPE_MODULUS, modifier))
@@ -904,7 +908,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         end_node.value = "T" if self._include_total else None
 
     @staticmethod
-    def _align_to_type(tally_type: TallyType, start: int) -> int:
+    def _align_to_type(tally_type: TallyType, start: ty.Integral) -> ty.Integral:
         """The smallest number ``>= start`` whose last digit matches ``tally_type``."""
         aligned = start - (start % 10) + tally_type.modulo
         if aligned < start:
@@ -913,7 +917,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
 
     def _next_number_for_type(
         self, tally_type: TallyType, starting_number, step
-    ) -> int:
+    ) -> ty.Integral:
         """Finds the next free tally number matching ``tally_type``'s digit.
 
         Note
@@ -996,38 +1000,20 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
     ) -> Tally:
         """Clone this tally as a different tally type, keeping the same scoring geometry.
 
-        For example, this can turn an F4 cell-flux tally into an F6
+        For example, this can turn an ``F4`` cell-flux tally into an ``F6``
         energy-deposition tally scoring the same cells:
 
         .. code-block:: python
 
-            from montepy.data_inputs.tally import F6Tally
-            from montepy.data_inputs.tally_type import TallyType
-
-            heating = flux_tally.clone_as(F6Tally)
+            heating = flux_tally.clone_as(montepy.EnergyDepositionTally)
             # or, equivalently:
-            heating = flux_tally.clone_as(TallyType.ENERGY_DEPOSITION)
+            heating = flux_tally.clone_as(montepy.TallyType.ENERGY_DEPOSITION)
 
         Only conversions within the same tally category are allowed:
-        F1/F2 (surface-based) convert freely among each other, as do
-        F4/F6/F7/F8 (cell-based); F5 (point/ring detector) has no
+        ``F1``/``F2`` (surface-based) convert freely among each other, as do
+        ``F4``/``F6``/``F7``/``F8`` (cell-based); ``F5`` (point/ring detector) has no
         cell/surface geometry to carry over and can't be converted to or
         from.
-
-        Parameters
-        ----------
-        new_type : TallyType, type[Tally]
-            The target tally type, either as a :class:`TallyType` member or
-            as a :class:`Tally` subclass (e.g. ``montepy.F6Tally``).
-        starting_number : int
-            The starting number to request for the new object's number.
-        step : int
-            The step size to use to find a new valid number.
-
-        Returns
-        -------
-        Tally
-            A new tally of the requested type, with the same scoring groups.
 
         Note
         ----
@@ -1035,6 +1021,21 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         :attr:`multiplier`) -- a multiplier is a companion card tied to this
         exact tally number, not something that meaningfully transfers to a
         retyped/renumbered copy.
+
+        Parameters
+        ----------
+        new_type : TallyType | type[Tally]
+            The target tally type, either as a :class:`TallyType` member or
+            as a :class:`Tally` subclass (e.g. ``montepy.EnergyDepositionTally``).
+        starting_number : Integral, optional
+            The starting number to request for the new object's number.
+        step : Integral, optional
+            The step size to use to find a new valid number.
+
+        Returns
+        -------
+        Tally
+            A new tally of the requested type, with the same scoring groups.
         """
         if isinstance(new_type, TallyType):
             # _TALLY_TYPE_MAP's keys are exactly TallyType's members (both
@@ -1088,7 +1089,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
 
 
 class SurfaceTally(Tally):
-    """Intermediate class for tallies that score on surfaces (F1, F2).
+    """Intermediate class for tallies that score on surfaces (``F1``, ``F2``).
 
     .. versionadded:: 1.6.0b2
     """
@@ -1235,7 +1236,7 @@ class SurfaceTally(Tally):
 
 
 class CellTally(Tally):
-    """Intermediate class for tallies that score in cells (F4, F6, F7, F8).
+    """Intermediate class for tallies that score in cells (``F4``, ``F6``, ``F7``, ``F8``).
 
     .. versionadded:: 1.6.0b2
     """
@@ -1378,7 +1379,7 @@ class CellTally(Tally):
 
 
 class DetectorTally(Tally):
-    """F5: point/ring detector tally.
+    """``F5``: point/ring detector tally.
 
     .. versionadded:: 1.6.0b2
     """
@@ -1391,7 +1392,7 @@ class DetectorTally(Tally):
 
 
 class SurfaceCurrentTally(SurfaceTally):
-    """F1: surface current tally.
+    """``F1``: surface current tally.
 
     .. versionadded:: 1.6.0b2
     """
@@ -1401,7 +1402,7 @@ class SurfaceCurrentTally(SurfaceTally):
 
 
 class SurfaceFluxTally(SurfaceTally):
-    """F2: average surface flux tally.
+    """``F2``: average surface flux tally.
 
     .. versionadded:: 1.6.0b2
     """
@@ -1411,7 +1412,7 @@ class SurfaceFluxTally(SurfaceTally):
 
 
 class CellFluxTally(CellTally):
-    """F4: cell flux tally.
+    """``F4``: cell flux tally.
 
     .. versionadded:: 1.6.0b2
     """
@@ -1421,7 +1422,7 @@ class CellFluxTally(CellTally):
 
 
 class EnergyDepositionTally(CellTally):
-    """F6: energy deposition tally.
+    """``F6``: energy deposition tally.
 
     .. versionadded:: 1.6.0b2
     """
@@ -1431,7 +1432,7 @@ class EnergyDepositionTally(CellTally):
 
 
 class FissionEnergyDepositionTally(CellTally):
-    """F7: fission energy deposition tally.
+    """``F7``: fission energy deposition tally.
 
     .. versionadded:: 1.6.0b2
     """
@@ -1441,7 +1442,7 @@ class FissionEnergyDepositionTally(CellTally):
 
 
 class EnergyDetectorPulseTally(CellTally):
-    """F8: energy-detector pulse height tally.
+    """``F8``: energy-detector pulse height tally.
 
     .. versionadded:: 1.6.0b2
     """
