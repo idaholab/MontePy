@@ -769,9 +769,12 @@ class TestReprAndEquality:
         assert li.dimensions == (1, (2, 3))
         assert "LatticeIndex" in repr(li)
 
-    def test_tally_group_contains_not_implemented(self):
-        with pytest.raises(NotImplementedError):
-            1 in TallyGroup()
+    def test_tally_group_is_abstract(self):
+        # Review feedback (PR #1005): TallyGroup's docstring called itself
+        # "Abstract base for..." but didn't inherit ABC, unlike every other
+        # "abstract base" class in the codebase.
+        with pytest.raises(TypeError):
+            TallyGroup()
 
     def test_particle_filter_eq_wrong_type_and_repr(self):
         obj = ParticleFilter([montepy.Particle.NEUTRON])

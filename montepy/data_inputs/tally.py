@@ -1,5 +1,6 @@
 # Copyright 2024-2026, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
+from abc import ABC, abstractmethod
 import copy
 from typing import Generator
 
@@ -66,17 +67,18 @@ class LatticeIndex:
         return f"LatticeIndex({self._dimensions})"
 
 
-class TallyGroup:
+class TallyGroup(ABC):
     """Abstract base for a tally scoring group.
 
     .. versionadded:: 1.6.0b2
     """
 
+    @abstractmethod
     def __contains__(self, item) -> bool:
-        raise NotImplementedError
+        pass
 
 
-class Filter:
+class Filter(ABC):
     """Abstract analog of an OpenMC-style tally filter.
 
     .. versionadded:: 1.6.0b2
