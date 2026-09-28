@@ -8,7 +8,7 @@ from montepy.cells import Cells
 from montepy.data_inputs import tally_multiplier
 from montepy.data_inputs.data_input import DataInputAbstract
 from montepy.data_inputs.tally_type import Score, TallyType, _TallyKey
-from montepy.exceptions import MalformedInputError, NumberConflictError
+from montepy.exceptions import IllegalState, MalformedInputError, NumberConflictError
 from montepy.input_parser import syntax_node
 from montepy.input_parser.tally_parser import TallyParser
 from montepy.mcnp_object import InitInput
@@ -295,6 +295,19 @@ class FlatGroup(TallyGroup):
 
     def _update_node(self):
         numbers = self._current_numbers()
+        if not self._number_nodes and self._cells_or_surfaces:
+            # This group used an MCNP shortcut (e.g. "3i") -- only the
+            # ShortcutNode itself knows how to recompress, so there's
+            # nothing here to live-patch. Fail loudly rather than silently
+            # writing stale text if something inside it was renumbered.
+            if not set(numbers).issubset(self._old_numbers):
+                raise IllegalState(
+                    f"Cannot write group {self._old_numbers}: it used an "
+                    'MCNP shortcut (e.g. "3i"), and one of its cells/'
+                    "surfaces was renumbered. Live-renumbering isn't "
+                    "supported inside a shortcut-written group."
+                )
+            return
         for num_node, num in zip(self._number_nodes, numbers):
             if num_node.value != num:
                 num_node.value = num

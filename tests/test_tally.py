@@ -644,6 +644,27 @@ class TestGroupRoundTrip:
             t.link_to_problem(tally_problem, deepcopy=True)
         spy.assert_called_once_with(t, tally_problem, deepcopy=True)
 
+    def test_renumbering_cell_in_shortcut_group_raises_on_write(self, tally_problem):
+        # Regression test: a group that used an MCNP shortcut (e.g. "3i")
+        # can't be live-patched (only the ShortcutNode itself knows how to
+        # recompress), so renumbering a cell inside one used to silently
+        # write stale text with no error. It should fail loudly instead.
+        t = tally_problem.tallies[44]  # f44:n (1 3i 5) (7 8 9)
+        t.full_parse()  # link cells_or_surfaces before renumbering one
+        assert t.mcnp_str() == "f44:n (1 3i 5) (7 8 9)"
+        tally_problem.cells[5].number = 50
+        with pytest.raises(montepy.exceptions.IllegalState):
+            t.mcnp_str()
+
+    def test_untouched_shortcut_group_still_round_trips(self, tally_problem):
+        t = tally_problem.tallies[44]
+        t.full_parse()
+        assert t.mcnp_str() == "f44:n (1 3i 5) (7 8 9)"
+        # Renumbering a cell that this tally doesn't reference at all must
+        # not be affected by the shortcut-group guard.
+        tally_problem.cells[99].number = 990
+        assert t.mcnp_str() == "f44:n (1 3i 5) (7 8 9)"
+
     def test_remove_cell_reflected_in_mcnp_str(self):
         t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)
         cell = montepy.Cell()
