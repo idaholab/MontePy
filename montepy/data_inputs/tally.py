@@ -5,17 +5,17 @@ from typing import Generator
 
 import montepy
 from montepy.cells import Cells
-from montepy.surface_collection import Surfaces
-from montepy.data_inputs.data_input import DataInputAbstract
 from montepy.data_inputs import tally_multiplier
+from montepy.data_inputs.data_input import DataInputAbstract
 from montepy.data_inputs.tally_type import Score, TallyType, _TallyKey
 from montepy.exceptions import MalformedInputError, NumberConflictError
-from montepy.input_parser.tally_parser import TallyParser
 from montepy.input_parser import syntax_node
+from montepy.input_parser.tally_parser import TallyParser
+from montepy.mcnp_object import InitInput
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
+from montepy.surface_collection import Surfaces
 import montepy.types as ty
 from montepy.utilities import *
-from montepy.mcnp_object import InitInput
 
 _TALLY_TYPE_MODULUS = 10
 _VALID_MODULI = {t.modulo for t in TallyType if t.modulo is not None}

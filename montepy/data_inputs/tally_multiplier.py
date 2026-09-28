@@ -11,12 +11,12 @@ from montepy.data_inputs.tally_multiplier_type import (
     SpecialMultiplier,
 )
 from montepy.exceptions import MalformedInputWarning
-from montepy.input_parser.tally_parser import TallyParser
 from montepy.input_parser import syntax_node
+from montepy.input_parser.tally_parser import TallyParser
+from montepy.mcnp_object import InitInput
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 import montepy.types as ty
 from montepy.utilities import *
-from montepy.mcnp_object import InitInput
 
 _SPECIAL_KIND_MAP = {
     -1: SpecialMultiplier.INVERSE_WEIGHT,
