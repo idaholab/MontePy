@@ -646,7 +646,7 @@ def _link_multiplier_to_tally(self, fm):
         self._problem.tallies.append(fm)
 
 
-class Tally(DataInputAbstract, Numbered_MCNP_Object):
+class Tally(Numbered_MCNP_Object, DataInputAbstract):
     """Base class for MCNP F-card tallies (``F1``, ``F2``, ``F4``, ``F5``,
     ``F6``, ``F7``, ``F8``).
 
@@ -718,7 +718,7 @@ class Tally(DataInputAbstract, Numbered_MCNP_Object):
         *,
         jit_parse: bool = True,
     ):
-        Numbered_MCNP_Object.__init__(self, input, number, jit_parse=jit_parse)
+        super().__init__(input, number, jit_parse=jit_parse)
 
     @staticmethod
     def _class_prefix() -> str:
