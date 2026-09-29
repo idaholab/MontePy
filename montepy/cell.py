@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import copy
 import itertools
+import re
 import sly
 from typing import Annotated, Union
 import collections.abc
@@ -712,6 +713,36 @@ class Cell(Numbered_MCNP_Object):
         return self._surfaces
 
     @property
+    def tallies(self):
+        """Generator of tallies in the parent problem that score this cell.
+
+        Yields
+        ------
+        Tally
+
+        .. versionadded:: 1.6.0b2
+        """
+        if self._problem:
+            numbers = {self.number}
+            if self.old_number is not None:
+                numbers.add(self.old_number)
+            patterns = [re.compile(rf"\b{n}\b") for n in numbers]
+            for t in self._problem.tallies:
+                if hasattr(t, "_not_parsed"):
+                    # Cheap raw-text pre-filter: a still-JIT tally can't
+                    # possibly reference this cell unless its number (in
+                    # either its current or as-originally-read form, in
+                    # case this cell was renumbered since) appears as a
+                    # standalone token in the unparsed text. Avoids forcing
+                    # a full parse of every tally in the problem just to
+                    # check membership in one of them.
+                    if not any(t.search(p) for p in patterns):
+                        continue
+                    t.full_parse()
+                if self in t:
+                    yield t
+
+    @property
     @needs_full_ast
     def parameters(self) -> dict[str, str]:
         """A dictionary of the additional parameters for the object.
@@ -760,8 +791,17 @@ class Cell(Numbered_MCNP_Object):
         collections.abc.Generator[Cell, None, None]
         """
         if self._problem:
+            numbers = {self.number}
+            if self.old_number is not None:
+                numbers.add(self.old_number)
+            patterns = [re.compile(rf"\b{n}\b") for n in numbers]
             for cell in self._problem.cells:
                 if cell != self:
+                    if hasattr(cell, "_not_parsed"):
+                        # See Cell.tallies for why this pre-filter exists.
+                        if not any(cell.search(p) for p in patterns):
+                            continue
+                        cell.full_parse()
                     if self in cell.complements:
                         yield cell
 

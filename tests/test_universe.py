@@ -180,6 +180,26 @@ class TestUniverse:
             filled_cells == expected_cells
         ), f"\nExpected: {expected_cells}\nActual: {filled_cells}"
 
+    def test_cells_skips_full_parse_of_non_referencing_cells(self):
+        # Universe.cells/filled_cells used to scan every cell in the
+        # problem and force a full parse of each one just to check its
+        # universe/fill -- catastrophic for a problem with many still-JIT
+        # cells. They should now pre-filter with a cheap raw-text search
+        # first, and only fully parse cells that could plausibly match.
+        problem = montepy.read_input(
+            os.path.join(
+                self.default_test_input_path, "test_reverse_lookup_prefilter.imcnp"
+            )
+        )
+        c1, c2 = problem.cells[1], problem.cells[2]  # only c1 has u=99
+        assert not c1.fully_parsed and not c2.fully_parsed
+
+        found = {c.number for c in problem.universes[99].cells}
+
+        assert c1.fully_parsed
+        assert not c2.fully_parsed
+        assert found == {1}
+
     def test_detached_universe_returns_generator(self):
         """
         Case 1: Universe with no associated problem

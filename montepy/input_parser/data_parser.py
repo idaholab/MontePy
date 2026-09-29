@@ -1,4 +1,4 @@
-# Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+# Copyright 2024-2026, Battelle Energy Alliance, LLC All Rights Reserved.
 from montepy.exceptions import *
 from montepy.input_parser.tokens import DataLexer
 from montepy.input_parser.parser_base import MCNP_Parser, MetaBuilder
@@ -275,13 +275,13 @@ class JitDataParser:
 
     @staticmethod
     def parse(tokenizer):
+        modifier = None
         for token in tokenizer:
-            if token.type in {
-                "SPACE",
-                "COMMENT",
-                "DOLLAR_COMMENT",
-                "PARTICLE_SPECIAL",
-            }:
+            if token.type in {"SPACE", "COMMENT", "DOLLAR_COMMENT"}:
+                continue
+            elif token.type == "PARTICLE_SPECIAL":
+                if modifier is None:
+                    modifier = token.value
                 continue
             elif token.type in {
                 "TEXT",
@@ -292,6 +292,8 @@ class JitDataParser:
             }:
                 mnemonic = syntax_node.ValueNode(token.value, str)
                 classifier = syntax_node.ClassifierNode()
+                if modifier is not None:
+                    classifier.modifier = syntax_node.ValueNode(modifier, str)
                 classifier.prefix = mnemonic
                 number = None
                 particles = None

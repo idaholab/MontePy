@@ -1,0 +1,8 @@
+Test problem for reverse-lookup search pre-filter
+1 1 20 -1 u=99 imp:n=1
+2 1 20 -1 imp:n=1
+
+1 SO 1
+
+m1 1001.80c 1
+mode n

@@ -60,6 +60,17 @@ def test_transform_in_degrees():
     assert transform.is_in_degrees
 
 
+def test_transform_prefix_modifier_correct_immediately_after_jit_parse():
+    # Regression test: JitDataParser used to unconditionally discard a
+    # leading modifier token instead of capturing it into
+    # classifier.modifier, so prefix_modifier read None until something
+    # else (e.g. is_in_degrees) triggered a full parse. Check it directly,
+    # with no full-parse trigger in between, to catch that regression.
+    in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9
+    transform = Transform(in_str, jit_parse=True)
+    assert transform.prefix_modifier.value == "*"
+
+
 def test_transform_blank_init():
     transform = Transform()
     assert transform.number == -1
