@@ -3,6 +3,7 @@ from __future__ import annotations
 import collections as co
 import copy
 import math
+import re
 from typing import Generator, Any
 import weakref
 
@@ -1366,7 +1367,18 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             an iterator of the Cell objects which use this.
         """
         if self._problem:
+            numbers = {self.number}
+            if self.old_number is not None:
+                numbers.add(self.old_number)
+            patterns = [re.compile(rf"\b{n}\b") for n in numbers]
             for cell in self._problem.cells:
+                if hasattr(cell, "_not_parsed"):
+                    # Cheap raw-text pre-filter -- see Cell.tallies for why
+                    # this exists. Avoids forcing a full parse of every
+                    # cell in the problem just to check its material.
+                    if not any(cell.search(p) for p in patterns):
+                        continue
+                    cell.full_parse()
                 if cell.material == self:
                     yield cell
 

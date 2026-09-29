@@ -505,6 +505,24 @@ Pu-239   (80c) 0.1
             str(big_material)
             repr(big_material)
 
+    def test_cells_skips_full_parse_of_non_referencing_cells(_):
+        # Material.cells used to scan every cell in the problem and force
+        # a full parse of each one just to compare its material --
+        # catastrophic for a problem with many still-JIT cells. It should
+        # now pre-filter with a cheap raw-text search first, and only
+        # fully parse cells that could plausibly match.
+        problem = montepy.read_input(
+            pathlib.Path("tests") / "inputs" / "test_tally.imcnp"
+        )
+        c1, c2 = problem.cells[1], problem.cells[2]
+        assert not c1.fully_parsed and not c2.fully_parsed
+
+        found = {c.number for c in problem.materials[3].cells}
+
+        assert not c1.fully_parsed
+        assert not c2.fully_parsed
+        assert found == {3}
+
     @pytest.mark.parametrize("file", ["test.imcnp", "pin_cell.imcnp"])
     def test_read_and_write(_, file):
         problem = montepy.read_input(pathlib.Path("tests") / "inputs" / file)

@@ -5,6 +5,7 @@ from collections.abc import Callable
 from dataclasses import asdict, dataclass
 import math
 import numpy as np
+import re
 from typing import Union
 from numbers import Real
 import warnings
@@ -595,7 +596,18 @@ class Surface(Numbered_MCNP_Object, metaclass=_SurfaceClassFactory):
         collections.abc.Generator
         """
         if self._problem:
+            numbers = {self.number}
+            if self.old_number is not None:
+                numbers.add(self.old_number)
+            patterns = [re.compile(rf"\b{n}\b") for n in numbers]
             for cell in self._problem.cells:
+                if hasattr(cell, "_not_parsed"):
+                    # Cheap raw-text pre-filter -- see Cell.tallies for why
+                    # this exists. Avoids forcing a full parse of every
+                    # cell in the problem just to check its surfaces.
+                    if not any(cell.search(p) for p in patterns):
+                        continue
+                    cell.full_parse()
                 if self in cell.surfaces:
                     yield cell
 

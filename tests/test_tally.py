@@ -413,6 +413,27 @@ class TestTallyObject:
         t = F4Tally()
         assert t.groups == []
 
+    def test_cell_tallies_skips_full_parse_of_non_referencing_tallies(
+        self, tally_problem
+    ):
+        # Cell.tallies used to scan every tally in the problem and force a
+        # full parse of each one (via `self in t`) just to check
+        # membership -- catastrophic for a problem with many still-JIT
+        # tallies. It should now pre-filter with a cheap raw-text search
+        # first, and only fully parse tallies that could plausibly match.
+        c1 = tally_problem.cells[1]
+        non_referencing = tally_problem.tallies[2]  # f2:p 1005 -- no cell 1
+        referencing = tally_problem.tallies[4]  # f4:n 1 2 3
+        assert not non_referencing.fully_parsed
+        assert not referencing.fully_parsed
+
+        found = {t.number for t in c1.tallies}
+
+        assert not non_referencing.fully_parsed
+        assert referencing.fully_parsed
+        assert 4 in found
+        assert 2 not in found
+
 
 class TestTallyBuilders:
     """Tests for the from-scratch tally-building API: add_surface, add_group,

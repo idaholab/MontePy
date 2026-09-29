@@ -1452,3 +1452,19 @@ def test_find_duplicate_surfaces():
 def test_surface_deprecation(Class):
     with pytest.warns(DeprecationWarning):
         Class(number=5)
+
+
+def test_surface_cells_skips_full_parse_of_non_referencing_cells():
+    # Surface.cells used to scan every cell in the problem and force a
+    # full parse of each one just to check its surfaces -- catastrophic
+    # for a problem with many still-JIT cells. It should now pre-filter
+    # with a cheap raw-text search first, and only fully parse cells that
+    # could plausibly match.
+    problem = montepy.read_input("tests/inputs/test_tally.imcnp")
+    c1 = problem.cells[1]  # -1000 -- doesn't reference surface 1005
+    assert not c1.fully_parsed
+
+    found = {c.number for c in problem.surfaces[1005].cells}
+
+    assert not c1.fully_parsed
+    assert found == {2, 3}
