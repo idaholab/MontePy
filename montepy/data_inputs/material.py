@@ -156,7 +156,7 @@ class _MatCompWrapper:
         self._parent[idx] = new_val
 
 
-class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
+class Material(Numbered_MCNP_Object, data_input.DataInputAbstract):
     """A class to represent an MCNP material.
 
     Examples
@@ -315,7 +315,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         jit_parse: bool = True,
         **kwargs,
     ):
-        Numbered_MCNP_Object.__init__(self, input, number, jit_parse=jit_parse)
+        super().__init__(input, number, jit_parse=jit_parse)
 
     def _init_blank(self):
         self._components = []
