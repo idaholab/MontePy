@@ -465,16 +465,30 @@ class TestTallyBuilders:
         assert pg in f1.groups
         assert len(pg.levels) == 2
 
-        # Re-linking must recurse into the newly added PathGroup too.
+        # Re-linking must resolve the newly added PathGroup too -- but only
+        # its innermost (scored) level; s2 is a containment level (per the
+        # MCNP manual's Si/Ci distinction), never itself "in" .surfaces.
         f1.link_to_problem(tally_problem)
-        assert s1 in f1.surfaces and s2 in f1.surfaces
+        assert s1 in f1.surfaces
+        assert s2 not in f1.surfaces
 
-    def test_link_group_surfaces_skips_missing_surface(self, tally_problem):
+    def test_link_group_surfaces_raises_on_missing_surface(self, tally_problem):
+        # Regression test: update_pointers used to silently skip a number
+        # with no matching surface (continue past the KeyError). It should
+        # now raise a clear BrokenObjectLinkError instead, matching
+        # UnitHalfSpace.update_pointers' error handling.
         f1 = tally_problem.tallies[1]
         _ = f1.surfaces  # force full parse
         f1._groups.append(FlatGroup([99999], is_grouped=False))
-        f1.link_to_problem(tally_problem)
-        assert 99999 not in list(f1.surfaces.numbers)
+        with pytest.raises(montepy.exceptions.BrokenObjectLinkError):
+            f1.link_to_problem(tally_problem)
+
+    def test_link_group_cells_raises_on_missing_cell(self, tally_problem):
+        f34 = tally_problem.tallies[34]
+        _ = f34.cells  # force full parse
+        f34._groups.append(FlatGroup([99999], is_grouped=False))
+        with pytest.raises(montepy.exceptions.BrokenObjectLinkError):
+            f34.link_to_problem(tally_problem)
 
     def test_cell_tally_add_group(self, tally_problem):
         f34 = tally_problem.tallies[34]  # cells 1,2,3,5 -- 99 is new
@@ -838,10 +852,34 @@ class TestReprAndEquality:
         assert fg.universe_spec == 3
         assert "FlatGroup" in repr(fg)
 
+    def test_flat_group_cells_and_surfaces_typed_accessors(self):
+        # Unresolved (raw numbers): neither typed accessor applies yet.
+        unresolved = FlatGroup([1, 2], is_grouped=False)
+        assert unresolved.cells is None
+        assert unresolved.surfaces is None
+
+        # Resolved to Cell objects: .cells returns them, .surfaces is None.
+        c1, c2 = montepy.Cell(), montepy.Cell()
+        c1.number, c2.number = 1, 2
+        cell_group = FlatGroup([c1, c2], is_grouped=False)
+        assert cell_group.cells == [c1, c2]
+        assert cell_group.surfaces is None
+
+        # Resolved to Surface objects: the reverse.
+        s = montepy.SphereAtOrigin(number=1000)
+        surface_group = FlatGroup([s], is_grouped=False)
+        assert surface_group.surfaces == [s]
+        assert surface_group.cells is None
+
     def test_path_group_levels_and_repr(self):
         pg = PathGroup([FlatGroup([1], is_grouped=False)])
         assert len(pg.levels) == 1
         assert "PathGroup" in repr(pg)
+
+    def test_path_group_old_numbers_and_cells_or_surfaces_empty_levels(self):
+        pg = PathGroup([])
+        assert pg.old_numbers == []
+        assert pg.cells_or_surfaces == []
 
     def test_path_group_empty_levels_contains(self):
         assert 1 not in PathGroup([])

@@ -21,6 +21,21 @@ c
 5 0
       #99
       imp:n,p=3 fill=1 (1 0.0 0.0)
+C cells 4, 7, 8, 9 exist only so tallies referencing them (e.g. f44's
+C shortcut-expanded group and its "(7 8 9)" group) resolve to real
+C linked objects instead of silently-tolerated dangling numbers.
+4 0
+      1010
+     imp:n,p=0
+7 0
+      1010
+     imp:n,p=0
+8 0
+      1010
+     imp:n,p=0
+9 0
+      1010
+     imp:n,p=0
 c foo end comment
 
 C surfaces

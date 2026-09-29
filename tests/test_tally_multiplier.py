@@ -30,6 +30,18 @@ def tally_problem():
     return montepy.read_input("tests/inputs/test_tally.imcnp")
 
 
+@pytest.fixture
+def problem_with_cells():
+    """A minimal problem with cells 1-6 defined, but no tallies/multipliers
+    of its own -- for tests that construct a CellTally referencing one or
+    more of those cells and need it to resolve/link correctly (FlatGroup's
+    update_pointers raises BrokenObjectLinkError for a genuinely missing
+    cell), without pulling in the full test_tally.imcnp fixture's own
+    pre-existing tallies/multipliers.
+    """
+    return montepy.read_input("tests/inputs/test_tally_multiplier_cells.imcnp")
+
+
 def verify_export(fm):
     """Format ``fm`` to MCNP text, re-parse it standalone, and confirm the
     result is equivalent. Mirrors the ``verify_export`` convention in
@@ -253,8 +265,8 @@ class TestCompanionCardLinking:
         assert tally.multiplier is fm
         assert fm.parent_tally is tally
 
-    def test_multiplier_setter_registers_in_data_inputs(self):
-        problem = montepy.MCNP_Problem(None)
+    def test_multiplier_setter_registers_in_data_inputs(self, problem_with_cells):
+        problem = problem_with_cells
         tally = parse_data(Input(["f4:n 1 2 3"], BlockType.DATA))
         problem.tallies.append(tally)
         fm = TallyMultiplier(
@@ -456,8 +468,8 @@ class TestDuplicateFmCards:
             del problem.tallies[4]
         assert tally not in problem.data_inputs
 
-    def test_renumbering_tally_syncs_multiplier_number(self):
-        problem = montepy.MCNP_Problem(None)
+    def test_renumbering_tally_syncs_multiplier_number(self, problem_with_cells):
+        problem = problem_with_cells
         tally = parse_data(Input(["f4:n 1 2 3"], BlockType.DATA))
         problem.tallies.append(tally)
         fm = TallyMultiplier(
@@ -491,8 +503,10 @@ class TestDuplicateFmCards:
         assert 4 not in new_problem.tallies.numbers
         assert new_problem.tallies.multipliers == []
 
-    def test_renumbering_tally_syncs_multiplier_across_full_problem_export(self):
-        problem = montepy.MCNP_Problem(None)
+    def test_renumbering_tally_syncs_multiplier_across_full_problem_export(
+        self, problem_with_cells
+    ):
+        problem = problem_with_cells
         problem.title = "test problem"
         tally = parse_data(Input(["f4:n 1 2 3"], BlockType.DATA))
         problem.tallies.append(tally)
@@ -511,8 +525,8 @@ class TestDuplicateFmCards:
 
 
 class TestClone:
-    def test_clone_to_new_tally_registers_and_links(self):
-        problem = montepy.MCNP_Problem(None)
+    def test_clone_to_new_tally_registers_and_links(self, problem_with_cells):
+        problem = problem_with_cells
         tally4 = parse_data(Input(["f4:n 1 2 3"], BlockType.DATA))
         tally14 = parse_data(Input(["f14:n 4 5 6"], BlockType.DATA))
         problem.tallies.append(tally4)
@@ -544,8 +558,8 @@ class TestClone:
         assert clone.parent_tally is None
         assert clone.bins[0].terms[0].material == 26
 
-    def test_clone_to_tally_with_existing_multiplier_warns(self):
-        problem = montepy.MCNP_Problem(None)
+    def test_clone_to_tally_with_existing_multiplier_warns(self, problem_with_cells):
+        problem = problem_with_cells
         tally4 = parse_data(Input(["f4:n 1 2 3"], BlockType.DATA))
         tally14 = parse_data(Input(["f14:n 4 5 6"], BlockType.DATA))
         problem.tallies.append(tally4)
