@@ -1472,7 +1472,7 @@ def _parse_multiplier_bins(tally_numbers_node) -> list[MultiplierBin]:
     return [MultiplierBin.from_items(_group_body(g)) for g in top_groups]
 
 
-class TallyMultiplier(DataInputAbstract, Numbered_MCNP_Object):
+class TallyMultiplier(Numbered_MCNP_Object, DataInputAbstract):
     """An ``FMn`` tally multiplier card.
 
     Multiplies tally ``n``'s flux/current by a cross-section-derived
@@ -1538,7 +1538,7 @@ class TallyMultiplier(DataInputAbstract, Numbered_MCNP_Object):
         *,
         jit_parse: bool = True,
     ):
-        Numbered_MCNP_Object.__init__(self, input, number, jit_parse=jit_parse)
+        super().__init__(input, number, jit_parse=jit_parse)
 
     @staticmethod
     def _class_prefix() -> str:
