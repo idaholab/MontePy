@@ -14,7 +14,7 @@ Versioning
 ----------
 
 Version information is stored in git tags,
-and retrieved using `setuptools scm <https://setuptools-scm.readthedocs.io/en/latest/>`_.
+and retrieved using `setuptools scm <https://setuptools-scm.readthedocs.io/latest/>`_.
 The version tag shall match the regular expression:
 
 ``v\d\.\d+\.\d+(a\d+|\.post\d+)?``.
