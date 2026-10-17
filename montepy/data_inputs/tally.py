@@ -55,6 +55,33 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
     Use :meth:`from_input` as a factory to create the appropriate subclass
     when reading from a file.
 
+    Examples
+    --------
+
+    Checking what a tally scores
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    ``in`` checks whether a cell or surface is scored by a tally:
+
+    .. doctest::
+
+        >>> import montepy
+        >>> tally = montepy.Tally.from_input("F4:n 2 (3 4)")
+        >>> montepy.Cell(number=3) in tally
+        True
+
+    For a repeated-structures path (``<``), only the innermost (leftmost)
+    entry is scored. The outer entries only select which instance of it is
+    meant, so they are not ``in`` the tally:
+
+    .. doctest::
+
+        >>> tally = montepy.Tally.from_input("F4:n (2 < 5)")
+        >>> montepy.Cell(number=2) in tally
+        True
+        >>> montepy.Cell(number=5) in tally
+        False
+
     .. versionadded:: 1.6.0b2
     """
 
