@@ -1286,6 +1286,9 @@ class TestShortcutListIntegration:
             # with the values that left the shortcut glued together.
             ("1 3i 5", {2: 9}, "1 2.0 9.0 4.0 5"),
             ("1 2r 5", {1: 7}, "1 7 1 5"),
+            # An interpolate left ending on an expanded value needs padding.
+            ("1 3i 5", {4: 9}, "1 2i 4.0 9"),
+            ("1 3i 5 6", {4: 9}, "1 2i 4.0 9 6"),
             # Shortcuts that still fit are kept.
             ("1 2r 5", {2: 7}, "1 r 7 5"),
             ("1 2m", {1: 7}, "1 7m"),

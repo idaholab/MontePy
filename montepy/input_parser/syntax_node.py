@@ -1792,6 +1792,33 @@ class ListNode(SyntaxNodeBase):
         for node in self._nodes:
             if isinstance(node, ValueNode) and id(node) in shortcut_values:
                 node.never_pad = False
+        self._pad_shortcut_ends()
+
+    def _pad_shortcut_ends(self):
+        """Give a shortcut that now ends without whitespace an end padding.
+
+        A changed value can leave a shortcut ending on one of its expanded
+        values, which has no padding (e.g. ``1 3i 5`` becoming ``1 2i 4``
+        before a new ``9``), so it would be glued to the next value.
+        """
+        last = None
+        for node, following in zip(self._nodes, self._nodes[1:]):
+            leading = last if isinstance(last, ShortcutNode) else None
+            if (
+                isinstance(node, ShortcutNode)
+                and node.end_padding is None
+                and not isinstance(following, PaddingNode)
+                and not node.format(leading)[-1:].isspace()
+            ):
+                node.end_padding = PaddingNode(" ")
+            last = node
+
+    def _has_changed_values(self) -> bool:
+        """Whether any value in this list differs from what was parsed.
+
+        Jumps (no value) don't count as changed.
+        """
+        return any(v.value is not None and v._value_changed for v in self)
 
     def _dissolve_degenerate_shortcuts(self):
         """Replace any shortcut left encoding no values with its plain values.
