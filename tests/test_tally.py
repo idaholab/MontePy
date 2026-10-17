@@ -26,7 +26,8 @@ from montepy.data_inputs.tally import (
 from montepy.data_inputs.tally_type import Score, TallyType
 from montepy.input_parser.block_type import BlockType
 from montepy.input_parser.mcnp_input import Input
-from montepy.input_parser.tally_parser import TallyParser
+from montepy.input_parser import syntax_node
+from montepy.input_parser.tally_parser import TallyMultiplierParser, TallyParser
 from montepy.input_parser.tokens import TallyLexer
 
 
@@ -46,6 +47,67 @@ class TestTallyParser:
     def test_parsing_tally_groups(_, line):
         data = parse_data(line)
         assert data.prefix == "f"
+
+    @staticmethod
+    def _parse(parser_class, line):
+        tokens = Input([line], BlockType.DATA).tokenize(lexer_class=TallyLexer)
+        return parser_class().parse(tokens)
+
+    @staticmethod
+    def _value_nodes(node):
+        # Every numeric ValueNode, including the values a shortcut expands to.
+        for n in node.nodes:
+            if isinstance(n, syntax_node.ShortcutNode):
+                yield from (v for v in n.nodes if v.value is not None)
+            elif isinstance(n, syntax_node.ValueNode):
+                if isinstance(n.value, (int, float)):
+                    yield n
+            elif isinstance(n, syntax_node.ListNode):
+                yield from TestTallyParser._value_nodes(n)
+
+    @pytest.mark.parametrize(
+        "line",
+        [
+            "f4:n 1 3i 5",
+            "f4:n 1 2r",
+            "f4:n (1 3i 5) (6 7)",
+            "f4:n (1 < 2[-1:1 0:1 0] < 3)",
+            "f104:n ((u=1) < 2[0 0 0] < 5)",
+        ],
+    )
+    def test_f_numbers_are_int(_, line):
+        tree = TestTallyParser._parse(TallyParser, line)
+        values = list(TestTallyParser._value_nodes(tree["data"]["tally"]))
+        assert values
+        for v in values:
+            assert v.type is int
+            # A shortcut's virtual values need int tokens, not "2.0".
+            assert "." not in str(v._token)
+
+    def test_fm_numbers_stay_float(_):
+        tree = TestTallyParser._parse(TallyMultiplierParser, "fm14 (1.0 1 -6)")
+        values = list(TestTallyParser._value_nodes(tree["data"]["tally"]))
+        assert values and all(v.type is float for v in values)
+
+    @pytest.mark.parametrize(
+        "line",
+        [
+            # Multiply and log-interpolate can't produce cell/surface numbers.
+            "f4:n 1 2m",
+            "f4:n 1 2ilog 100",
+            # FM reaction-list operators aren't valid in F groups.
+            "f4:n (1:2)",
+            "f4:n (1 # 2)",
+        ],
+    )
+    def test_f_parser_rejects(_, line):
+        assert TestTallyParser._parse(TallyParser, line) is None
+
+    @pytest.mark.parametrize(
+        "line", ["fm4 (1.0 1 < 2)", "fm4 (1.0 1[0 0 0])", "fm4 (1.0 u=1)"]
+    )
+    def test_fm_parser_rejects_path_syntax(_, line):
+        assert TestTallyParser._parse(TallyMultiplierParser, line) is None
 
     def test_parsing_tally_print(_):
         input = Input(["Fq4 f p e"], BlockType.DATA)

@@ -5,7 +5,11 @@ from montepy.input_parser import syntax_node
 
 
 class TallyParser(DataParser):
-    """A barebone parser for parsing tallies before they are fully implemented.
+    """A parser for ``F`` tally inputs.
+
+    Cell/surface numbers, including the values a shortcut (e.g. ``3i``)
+    expands to, are parsed as ``int``. See :class:`TallyMultiplierParser`
+    for ``FM`` inputs, whose numbers are ``float``.
 
     Returns
     -------
@@ -78,7 +82,7 @@ class TallyParser(DataParser):
             ret.append(item)
         return ret
 
-    @_("number_phrase", "null_phrase", "shortcut_phrase")
+    @_("identifier_phrase", "null_ident_phrase", "tally_shortcut_phrase")
     def tally_flat_item(self, p):
         return p[0]
 
@@ -101,31 +105,70 @@ class TallyParser(DataParser):
         return ret
 
     @_(
-        "number_phrase",
-        "null_phrase",
-        "shortcut_phrase",
+        "identifier_phrase",
+        "null_ident_phrase",
+        "tally_shortcut_phrase",
         "path_sep",
         "lattice_phrase",
         "universe_phrase",
         "tally_group",
-        "reaction_operator",
     )
     def tally_group_item(self, p):
         return p[0]
 
-    @_("PARTICLE_SPECIAL", "PARTICLE_SPECIAL padding")
-    def path_sep(self, p):
-        return self._flush_phrase(p, str)
+    @_("identifier_phrase", "tally_shortcut_phrase")
+    def tally_shortcut_start(self, p):
+        return p[0]
 
-    @_('":"', '":" padding', "COMPLEMENT", "COMPLEMENT padding")
-    def reaction_operator(self, p):
-        """An FM tally-multiplier reaction-list operator: ``:`` (add) or ``#`` (subtract).
+    # Mirrors MCNP_Parser.shortcut_sequence, but with int values like
+    # CellParser's geometry shortcuts. Multiply and log-interpolate are left
+    # out: neither produces valid cell/surface numbers.
+    @_(
+        "tally_shortcut_start NUM_REPEAT",
+        "tally_shortcut_start REPEAT",
+        "tally_shortcut_start NUM_INTERPOLATE padding number_phrase",
+        "tally_shortcut_start INTERPOLATE padding number_phrase",
+        "NUM_JUMP",
+        "JUMP",
+    )
+    def tally_shortcut_sequence(self, p):
+        """A tally shortcut (repeat, interpolate, or jump).
 
         Returns
         -------
-        ValueNode
-            a str ValueNode holding the raw operator symbol.
+        ShortcutNode
+            the parsed shortcut, with ``int`` values.
         """
+        if hasattr(p, "number_phrase"):
+            # ShortcutNode reads the interpolate end point by this name.
+            p.number_phrase.convert_to_int()
+        short_cut = syntax_node.ShortcutNode(p, data_type=int)
+        if isinstance(p[0], syntax_node.ShortcutNode):
+            list_node = syntax_node.ListNode("next_shortcuts")
+            list_node.append(p[0])
+            list_node.append(short_cut)
+            return list_node
+        if isinstance(p[0], syntax_node.ListNode):
+            p[0].append(short_cut)
+            return p[0]
+        return short_cut
+
+    @_("tally_shortcut_sequence", "tally_shortcut_sequence padding")
+    def tally_shortcut_phrase(self, p):
+        """A complete tally shortcut; see :meth:`tally_shortcut_sequence`.
+
+        Returns
+        -------
+        ShortcutNode
+            the parsed shortcut.
+        """
+        sequence = p.tally_shortcut_sequence
+        if len(p) == 2:
+            sequence.end_padding = p.padding
+        return sequence
+
+    @_("PARTICLE_SPECIAL", "PARTICLE_SPECIAL padding")
+    def path_sep(self, p):
         return self._flush_phrase(p, str)
 
     @_('"[" lattice_body "]"', '"[" lattice_body "]" padding')
@@ -163,12 +206,12 @@ class TallyParser(DataParser):
         return ret
 
     @_(
-        "number_phrase",
-        "null_phrase",
-        'number_phrase ":" number_phrase',
-        'null_phrase ":" number_phrase',
-        'number_phrase ":" null_phrase',
-        'null_phrase ":" null_phrase',
+        "identifier_phrase",
+        "null_ident_phrase",
+        'identifier_phrase ":" identifier_phrase',
+        'null_ident_phrase ":" identifier_phrase',
+        'identifier_phrase ":" null_ident_phrase',
+        'null_ident_phrase ":" null_ident_phrase',
     )
     def lattice_item(self, p):
         if len(p) > 1:
@@ -179,11 +222,57 @@ class TallyParser(DataParser):
             return ret
         return p[0]
 
-    @_("KEYWORD equals_sign number_phrase", "PARTICLE equals_sign number_phrase")
+    @_(
+        "KEYWORD equals_sign identifier_phrase",
+        "PARTICLE equals_sign identifier_phrase",
+    )
     def universe_phrase(self, p):
         token_val = p.KEYWORD if hasattr(p, "KEYWORD") else p.PARTICLE
         ret = syntax_node.ListNode("universe phrase")
         ret.append(syntax_node.ValueNode(token_val, str))
         ret.append(p.equals_sign)
-        ret.append(p.number_phrase)
+        ret.append(p.identifier_phrase)
         return ret
+
+
+class TallyMultiplierParser(TallyParser):
+    """A parser for ``FM`` tally multiplier inputs.
+
+    Shares the bin structure of :class:`TallyParser`, but its numbers
+    (constants, material numbers, reactions) are ``float``, and its groups
+    allow the reaction-list operators instead of path/lattice/universe
+    syntax.
+
+    Returns
+    -------
+    SyntaxNode
+        a syntax tree for the data input.
+    """
+
+    start = "tally"
+    dont_copy = {"tally_flat_item", "tally_group_item"}
+
+    @_("number_phrase", "null_phrase", "shortcut_phrase")
+    def tally_flat_item(self, p):
+        return p[0]
+
+    @_(
+        "number_phrase",
+        "null_phrase",
+        "shortcut_phrase",
+        "tally_group",
+        "reaction_operator",
+    )
+    def tally_group_item(self, p):
+        return p[0]
+
+    @_('":"', '":" padding', "COMPLEMENT", "COMPLEMENT padding")
+    def reaction_operator(self, p):
+        """An FM reaction-list operator: ``:`` (add) or ``#`` (subtract).
+
+        Returns
+        -------
+        ValueNode
+            a str ValueNode holding the raw operator symbol.
+        """
+        return self._flush_phrase(p, str)

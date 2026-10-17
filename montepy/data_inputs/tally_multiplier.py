@@ -12,7 +12,7 @@ from montepy.data_inputs.tally_multiplier_type import (
 )
 from montepy.exceptions import MalformedInputWarning
 from montepy.input_parser import syntax_node
-from montepy.input_parser.tally_parser import TallyParser
+from montepy.input_parser.tally_parser import TallyMultiplierParser
 from montepy.mcnp_object import InitInput
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 import montepy.types as ty
@@ -1487,7 +1487,7 @@ class TallyMultiplier(Numbered_MCNP_Object, DataInputAbstract):
 
     @staticmethod
     def _parser():
-        return TallyParser()
+        return TallyMultiplierParser()
 
     def _init_blank(self):
         super()._init_blank()
