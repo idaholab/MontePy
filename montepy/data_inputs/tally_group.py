@@ -599,6 +599,22 @@ class PathGroup(TallyGroup):
         return f"PathGroup(levels={len(self._levels)})"
 
 
+def _is_number_run(node) -> bool:
+    # type() is, not isinstance(): ShortcutNode is a ListNode subclass.
+    return type(node) is syntax_node.ListNode and node.name == "tally number run"
+
+
+def _flatten_runs(nodes) -> list:
+    """Replace each ``"tally number run"`` in ``nodes`` with its children."""
+    ret = []
+    for n in nodes:
+        if _is_number_run(n):
+            ret.extend(n.nodes)
+        else:
+            ret.append(n)
+    return ret
+
+
 def _extract_numbers_with_lattice(nodes):
     """Pair each numeric ValueNode with its immediately following lattice phrase.
 
@@ -615,6 +631,7 @@ def _extract_numbers_with_lattice(nodes):
     to compress back to e.g. ``3i``), so live-renumbering isn't supported for
     a group that used one -- it keeps its original compressed text as-is.
     """
+    nodes = _flatten_runs(nodes)
     numbers = []
     lattice_indices = []
     number_nodes = []
@@ -740,7 +757,13 @@ def _parse_tally_group_node(group_node) -> TallyGroup:
 
 def _parse_tally_numbers(tally_numbers_node) -> list[TallyGroup]:
     groups = []
+    nodes = []
     for node in tally_numbers_node:
+        if _is_number_run(node):
+            nodes.extend(node)
+        else:
+            nodes.append(node)
+    for node in nodes:
         if isinstance(node, syntax_node.ValueNode):
             v = node.value
             if v is None:

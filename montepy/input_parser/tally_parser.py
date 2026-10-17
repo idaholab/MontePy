@@ -73,14 +73,36 @@ class TallyParser(DataParser):
         else:
             ret = syntax_node.ListNode("tally numbers")
             item = p[0]
-        # type() is, not isinstance(): ShortcutNode is a ListNode subclass
-        # and must stay unflattened, same as number_sequence in parser_base.py.
-        if type(item) is syntax_node.ListNode and item.name != "tally group":
-            for node in item.nodes:
-                ret.append(node)
-        else:
-            ret.append(item)
+        self._append_tally_item(ret, item)
         return ret
+
+    @staticmethod
+    def _append_tally_item(parent, item):
+        """Append ``item`` to ``parent``, collecting consecutive numbers into runs.
+
+        Each run is its own ``"tally number run"`` ``ListNode`` holding only
+        numbers and shortcuts, so it can be re-zipped with
+        :meth:`~montepy.input_parser.syntax_node.ListNode.update_with_new_values`
+        without losing the parens, ``<``, lattice, or ``u=`` around it.
+        """
+        # type() is, not isinstance(): ShortcutNode is a ListNode subclass.
+        is_shortcut_chain = (
+            type(item) is syntax_node.ListNode and item.name == "next_shortcuts"
+        )
+        is_number = (
+            isinstance(item, syntax_node.ShortcutNode)
+            or is_shortcut_chain
+            or (isinstance(item, syntax_node.ValueNode) and item.type is int)
+        )
+        if not is_number:
+            parent.append(item)
+            return
+        last = parent.nodes[-1] if parent.nodes else None
+        if not (type(last) is syntax_node.ListNode and last.name == "tally number run"):
+            last = syntax_node.ListNode("tally number run")
+            parent.append(last)
+        for node in item.nodes if is_shortcut_chain else [item]:
+            last.append(node)
 
     @_("identifier_phrase", "null_ident_phrase", "tally_shortcut_phrase")
     def tally_flat_item(self, p):
@@ -101,7 +123,7 @@ class TallyParser(DataParser):
             ret = p.tally_group_body
         else:
             ret = syntax_node.ListNode("tally group body")
-        ret.append(p.tally_group_item)
+        self._append_tally_item(ret, p.tally_group_item)
         return ret
 
     @_(
@@ -253,7 +275,44 @@ class TallyMultiplierParser(TallyParser):
     """
 
     start = "tally"
-    dont_copy = {"tally_flat_item", "tally_group_item"}
+    # FM keeps a flat structure: its numbers aren't re-zipped like F's.
+    dont_copy = {
+        "tally_numbers",
+        "tally_group_body",
+        "tally_flat_item",
+        "tally_group_item",
+    }
+
+    @_(
+        "tally_flat_item",
+        "tally_group",
+        "tally_numbers tally_flat_item",
+        "tally_numbers tally_group",
+    )
+    def tally_numbers(self, p):
+        if hasattr(p, "tally_numbers"):
+            ret = p.tally_numbers
+            item = p.tally_flat_item if hasattr(p, "tally_flat_item") else p.tally_group
+        else:
+            ret = syntax_node.ListNode("tally numbers")
+            item = p[0]
+        # type() is, not isinstance(): ShortcutNode is a ListNode subclass
+        # and must stay unflattened, same as number_sequence in parser_base.py.
+        if type(item) is syntax_node.ListNode and item.name != "tally group":
+            for node in item.nodes:
+                ret.append(node)
+        else:
+            ret.append(item)
+        return ret
+
+    @_("tally_group_item", "tally_group_body tally_group_item")
+    def tally_group_body(self, p):
+        if hasattr(p, "tally_group_body"):
+            ret = p.tally_group_body
+        else:
+            ret = syntax_node.ListNode("tally group body")
+        ret.append(p.tally_group_item)
+        return ret
 
     @_("number_phrase", "null_phrase", "shortcut_phrase")
     def tally_flat_item(self, p):

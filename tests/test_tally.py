@@ -84,6 +84,38 @@ class TestTallyParser:
             # A shortcut's virtual values need int tokens, not "2.0".
             assert "." not in str(v._token)
 
+    @staticmethod
+    def _runs(node):
+        for n in node.nodes:
+            if type(n) is syntax_node.ListNode:
+                if n.name == "tally number run":
+                    yield n
+                else:
+                    yield from TestTallyParser._runs(n)
+
+    @pytest.mark.parametrize(
+        "line, runs",
+        [
+            ("f4:n 1 3i 5 (6 7) 8", [[1, 2, 3, 4, 5], [6, 7], [8]]),
+            ("f4:n (1 < 2 3i 6[0 0 0] < u=3)", [[1], [2, 3, 4, 5, 6]]),
+            ("f4:n 1 2r 3i 5", [[1, 1, 1, 2, 3, 4, 5]]),
+        ],
+    )
+    def test_f_numbers_grouped_into_runs(_, line, runs):
+        # Each run holds only numbers and shortcuts, and owns its shortcuts,
+        # so update_with_new_values can re-zip it without touching the
+        # parens, "<", lattice, or u= around it.
+        tree = TestTallyParser._parse(TallyParser, line)
+        found = list(TestTallyParser._runs(tree["data"]["tally"]))
+        assert [[v.value for v in run] for run in found] == runs
+        for run in found:
+            for n in run.nodes:
+                assert isinstance(n, (syntax_node.ValueNode, syntax_node.ShortcutNode))
+            assert run._shortcuts == [
+                n for n in run.nodes if isinstance(n, syntax_node.ShortcutNode)
+            ]
+        assert tree["data"].format() == line[len("f4:n ") :]
+
     def test_fm_numbers_stay_float(_):
         tree = TestTallyParser._parse(TallyMultiplierParser, "fm14 (1.0 1 -6)")
         values = list(TestTallyParser._value_nodes(tree["data"]["tally"]))
