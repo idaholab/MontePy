@@ -1279,6 +1279,32 @@ class TestShortcutListIntegration:
         assert list(list_node) == values
         assert len(list_node._shortcuts[1].nodes) == 1
 
+    @pytest.mark.parametrize(
+        "in_str, changes, answer",
+        [
+            # A changed value used to leave a degenerate "0i"/"0r" behind,
+            # with the values that left the shortcut glued together.
+            ("1 3i 5", {2: 9}, "1 2.0 9.0 4.0 5"),
+            ("1 2r 5", {1: 7}, "1 7 1 5"),
+            # Shortcuts that still fit are kept.
+            ("1 2r 5", {2: 7}, "1 r 7 5"),
+            ("1 2m", {1: 7}, "1 7m"),
+            ("1 3i 5", {}, "1 3i 5"),
+        ],
+    )
+    def test_shortcut_list_changed_value_dissolves_shortcut(
+        _, parser, in_str, changes, answer
+    ):
+        list_node = parser.parse(Input([in_str], BlockType.DATA).tokenize())
+        values = list(list_node)
+        expected = [v.value for v in values]
+        for i, new in changes.items():
+            values[i].value = new
+            expected[i] = new
+        list_node.update_with_new_values(values)
+        assert [v.value for v in list_node] == pytest.approx(expected)
+        assert list_node.format() == answer
+
     def test_shortcut_list_interpolate(_, parser):
         # try with log interpolate
         input = Input(["1.0 0.01 2ILOG 10"], BlockType.DATA)

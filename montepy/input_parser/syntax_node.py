@@ -1757,6 +1757,9 @@ class ListNode(SyntaxNodeBase):
             self._nodes = []
             return
         new_vals_cache = {id(v): v for v in new_vals}
+        # A shortcut's values are created never_pad; one that ends up on its
+        # own needs normal padding again.
+        shortcut_values = {id(n) for sc in self._shortcuts for n in sc.nodes}
         # bind shortcuts to single site in new values
         for shortcut in self._shortcuts:
             for node in shortcut.nodes:
@@ -1785,6 +1788,31 @@ class ListNode(SyntaxNodeBase):
         ):
             self._nodes.pop()
             self._shortcuts.pop()
+        self._dissolve_degenerate_shortcuts()
+        for node in self._nodes:
+            if isinstance(node, ValueNode) and id(node) in shortcut_values:
+                node.never_pad = False
+
+    def _dissolve_degenerate_shortcuts(self):
+        """Replace any shortcut left encoding no values with its plain values.
+
+        A changed value can leave a shortcut holding too few values to
+        expand, which would otherwise be written as e.g. ``1 0r`` or
+        ``1 0i 2``.
+        """
+        nodes = []
+        last = None
+        for node in self._nodes:
+            leading = last if isinstance(last, ShortcutNode) else None
+            if isinstance(node, ShortcutNode) and node._is_degenerate(leading):
+                self._shortcuts.remove(node)
+                nodes.extend(node.nodes)
+                if node.nodes:
+                    last = node.nodes[-1]
+            else:
+                nodes.append(node)
+                last = node
+        self._nodes = nodes
 
     def _expand_shortcuts(self, new_vals, new_vals_cache):
         """Expands the existing shortcuts, and tries to "zip out" and consume their neighbors.
@@ -2309,6 +2337,42 @@ class ShortcutNode(ListNode):
                 )
             return rounded
         return self._data_type(value)
+
+    def _is_degenerate(self, leading_node=None) -> bool:
+        """Whether this shortcut, as currently filled, encodes no values.
+
+        Mirrors the counts :meth:`format` computes, so ``leading_node`` is
+        the preceding node only when that is also a shortcut, as in
+        :meth:`ListNode.format`.
+
+        Parameters
+        ----------
+        leading_node : ShortcutNode, optional
+            the shortcut immediately before this one, if any.
+
+        Returns
+        -------
+        bool
+            True if this would format as e.g. ``0r``, ``0i``, or a
+            multiply with nothing to multiply.
+        """
+        if len(self.nodes) == 0:
+            return True
+        if self._type == Shortcuts.REPEAT:
+            num_extra = 0 if self._can_use_last_node(leading_node) else 1
+            return len(self.nodes) - num_extra < 1
+        if self._type in {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}:
+            begin = self._begin
+            if self._type == Shortcuts.LOG_INTERPOLATE:
+                begin = 10**begin
+            if self._can_use_last_node(leading_node, begin):
+                num_extra = 2 if hasattr(self, "_has_pseudo_start") else 1
+            else:
+                num_extra = 2
+            return len(self.nodes) - num_extra < 1
+        if self._type == Shortcuts.MULTIPLY:
+            return len(self.nodes) == 1 and leading_node is None
+        return False
 
     def _can_consume_node(self, node, direction, last_edge_shortcut=False):
         """If it's possible to consume this node.
