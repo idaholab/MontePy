@@ -444,6 +444,35 @@ class TestTallyBuilders:
     """Tests for the from-scratch tally-building API: add_surface, add_group,
     add_path_group, and PathGroup.inside chaining."""
 
+    @pytest.mark.parametrize("hundreds", [0, 10, 123])
+    @pytest.mark.parametrize(
+        "cls",
+        [
+            montepy.SurfaceCurrentTally,
+            montepy.SurfaceFluxTally,
+            montepy.CellFluxTally,
+            montepy.EnergyDepositionTally,
+            montepy.FissionEnergyDepositionTally,
+            montepy.EnergyDetectorPulseTally,
+            montepy.data_inputs.tally.CollisionHeatingTally,
+            montepy.data_inputs.tally.ChargeDepositionTally,
+        ],
+    )
+    def test_from_scratch_classifier_formatting(self, cls, hundreds):
+        # The default number placeholder must not leave stray padding once
+        # a real number of any width is assigned.
+        tally_type = cls._TALLY_TYPE
+        number = hundreds * 10 + tally_type.modulo
+        t = cls()
+        t.number = number
+        if issubclass(cls, montepy.data_inputs.tally.CellTally):
+            t.add_cell(montepy.Cell(number=5))
+        else:
+            surf = montepy.surfaces.Surface()
+            surf.number = 5
+            t.add_surface(surf)
+        assert t.mcnp_str().startswith(f"{tally_type.modifier or ''}F{number} 5")
+
     def test_surface_tally_add_surface_and_group(self, tally_problem):
         f1 = tally_problem.tallies[1]  # f1:n,p 1000 -- only surface 1000 so far
         s = tally_problem.surfaces[1005]

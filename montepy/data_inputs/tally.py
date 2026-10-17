@@ -80,31 +80,23 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         self._parse_tally_body()
 
     def _generate_default_tree(self, **kwargs):
-        ret = {}
-        ret["start_pad"] = syntax_node.PaddingNode()
-        ret["classifier"] = syntax_node.ClassifierNode()
+        super()._generate_default_tree()
+        classifier = self._tree["classifier"]
+        # The base's -1 placeholder leaves stray padding once a 3+ digit
+        # number is assigned (Material has the same bug, e.g. "M104  1001.80c").
+        classifier.number = self._generate_default_node(int, 1)
         tally_type = getattr(type(self), "_TALLY_TYPE", None)
         if tally_type is not None and tally_type.modifier:
-            ret["classifier"].modifier = syntax_node.ValueNode(
+            classifier.modifier = syntax_node.ValueNode(
                 tally_type.modifier, str, padding=None
             )
-        ret["classifier"].prefix = syntax_node.ValueNode(
-            self._class_prefix().upper(), str, padding=None, never_pad=True
+        self._tree.nodes["data"] = syntax_node.SyntaxNode(
+            "tally list",
+            {
+                "tally": syntax_node.ListNode("tally numbers"),
+                "end": syntax_node.ValueNode(None, str),
+            },
         )
-        # A positive placeholder (tally numbers start at 1, there's no T0):
-        # ValueNode._reverse_engineer_formatting reserves a leading sign
-        # column for any token starting with "-", which would otherwise
-        # permanently corrupt this node's formatting once a real number is
-        # assigned to it.
-        ret["classifier"].number = self._generate_default_node(int, 1)
-        ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
-        tally_numbers = syntax_node.ListNode("tally numbers")
-        end_node = syntax_node.ValueNode(None, str)
-        ret["data"] = syntax_node.SyntaxNode(
-            "tally list", {"tally": tally_numbers, "end": end_node}
-        )
-        ret["parameters"] = syntax_node.ParametersNode()
-        self._tree = syntax_node.SyntaxNode("blank data tree", ret)
 
     @args_checked
     def __init__(
