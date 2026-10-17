@@ -657,6 +657,25 @@ class TestGroupRoundTrip:
         assert "99" not in text.replace("199", "")
         verify_export(t)
 
+    @pytest.mark.parametrize(
+        "collection, old, new, tally_number, expected",
+        [
+            ("cells", 3, 300, 4, "f4:n 1 2 300"),
+            ("cells", 3, 300, 8, "f8:p 300"),
+            ("surfaces", 1005, 1500, 2, "f2:p 1500"),
+        ],
+    )
+    def test_renumber_reaches_still_jit_tally(
+        self, tally_problem, collection, old, new, tally_number, expected
+    ):
+        # Regression test: a still-JIT tally writes its raw input lines, so
+        # renumbering a cell/surface it references must force it to fully
+        # parse first (via _parent_collections), or it writes the old number.
+        t = tally_problem.tallies[tally_number]
+        assert not t.fully_parsed
+        getattr(tally_problem, collection)[old].number = new
+        assert t.mcnp_str() == expected
+
     def test_include_total_settable(self):
         t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)
         assert not t.include_total

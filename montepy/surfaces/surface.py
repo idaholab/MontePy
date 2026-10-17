@@ -241,7 +241,11 @@ class Surface(Numbered_MCNP_Object, metaclass=_SurfaceClassFactory):
 
     @staticmethod
     def _parent_collections():
-        return (("cells", "surfaces", True), ("surfaces", "periodic_surface", False))
+        return (
+            ("cells", "surfaces", True),
+            ("surfaces", "periodic_surface", False),
+            ("tallies", "groups", True),
+        )
 
     @args_checked
     def __init__(

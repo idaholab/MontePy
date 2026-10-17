@@ -149,7 +149,7 @@ class Cell(Numbered_MCNP_Object):
 
     @staticmethod
     def _parent_collections():
-        return (("cells", "complements", True),)
+        return (("cells", "complements", True), ("tallies", "groups", True))
 
     _parser = CellParser
     _JitParser = JitCellParser
