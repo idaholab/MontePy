@@ -307,6 +307,11 @@ def tally_problem():
     return montepy.read_input("tests/inputs/test_tally.imcnp")
 
 
+@pytest.fixture
+def shortcut_problem():
+    return montepy.read_input("tests/inputs/test_tally_shortcuts.imcnp")
+
+
 class TestTallyObject:
     """Tests for the Tally object model: clone, clone_as, scores, filters."""
 
@@ -899,26 +904,110 @@ class TestGroupRoundTrip:
             t.link_to_problem(tally_problem, deepcopy=True)
         spy.assert_called_once_with(t, tally_problem, deepcopy=True)
 
-    def test_renumbering_cell_in_shortcut_group_raises_on_write(self, tally_problem):
-        # Regression test: a group that used an MCNP shortcut (e.g. "3i")
-        # can't be live-patched (only the ShortcutNode itself knows how to
-        # recompress), so renumbering a cell inside one used to silently
-        # write stale text with no error. It should fail loudly instead.
+    def test_renumbering_cell_in_shortcut_group(self, tally_problem):
+        # Renumbering a cell inside a shortcut used to raise IllegalState;
+        # the shortcut is now re-zipped around the new value.
         t = tally_problem.tallies[44]  # f44:n (1 3i 5) (7 8 9)
-        t.full_parse()  # link cells_or_surfaces before renumbering one
+        t.full_parse()
         assert t.mcnp_str() == "f44:n (1 3i 5) (7 8 9)"
         tally_problem.cells[5].number = 50
-        with pytest.raises(montepy.exceptions.IllegalState):
-            t.mcnp_str()
+        assert t.mcnp_str() == "f44:n (1 2i 4 50) (7 8 9)"
 
     def test_untouched_shortcut_group_still_round_trips(self, tally_problem):
         t = tally_problem.tallies[44]
         t.full_parse()
         assert t.mcnp_str() == "f44:n (1 3i 5) (7 8 9)"
-        # Renumbering a cell that this tally doesn't reference at all must
-        # not be affected by the shortcut-group guard.
+        # Renumbering a cell that this tally doesn't reference leaves it alone.
         tally_problem.cells[99].number = 990
         assert t.mcnp_str() == "f44:n (1 3i 5) (7 8 9)"
+
+    @pytest.mark.parametrize(
+        "number, line",
+        [
+            (4, "f4:n 1 3i 5"),
+            (14, "f14:n 1 2r"),
+            (24, "f24:n (1 3i 5) (6 7)"),
+            (34, "f34:n (1 2r 5)"),
+        ],
+    )
+    def test_untouched_shortcut_round_trips(self, shortcut_problem, number, line):
+        t = shortcut_problem.tallies[number]
+        t.full_parse()
+        assert t.mcnp_str() == line
+        shortcut_problem.cells[8].number = 80
+        assert t.mcnp_str() == line
+
+    @pytest.mark.parametrize(
+        "line",
+        [
+            # Re-zipping an unchanged run would absorb the 6 ("1 4i 6").
+            "f4:n 1 3i 5 6",
+            "f4:n (1 3i 5 6)",
+            "f4:n 1 2r 3i 5",
+            "f4:n 1 J 3",
+        ],
+    )
+    def test_unchanged_run_keeps_its_text(self, line):
+        assert Tally.from_input(line, jit_parse=False).mcnp_str() == line
+
+    @pytest.mark.parametrize(
+        "old, new, number, expected",
+        [
+            (3, 30, 4, "f4:n 1 2 30 4 5"),
+            (3, 30, 24, "f24:n (1 2 30 4 5) (6 7)"),
+            (5, 50, 4, "f4:n 1 2i 4 50"),
+            (1, 100, 14, "f14:n 100 2r"),
+            (1, 100, 34, "f34:n (100 2r 5)"),
+            # Only the part of the shortcut that no longer fits changes.
+            (5, 50, 34, "f34:n (1 2r 50)"),
+        ],
+    )
+    def test_renumber_inside_shortcut(
+        self, shortcut_problem, old, new, number, expected
+    ):
+        t = shortcut_problem.tallies[number]
+        shortcut_problem.cells[old].number = new
+        assert t.mcnp_str() == expected
+
+    def test_renumber_inside_shortcut_twice(self, shortcut_problem):
+        t = shortcut_problem.tallies[24]
+        shortcut_problem.cells[3].number = 30
+        assert t.mcnp_str() == "f24:n (1 2 30 4 5) (6 7)"
+        shortcut_problem.cells[30].number = 300
+        assert t.mcnp_str() == "f24:n (1 2 300 4 5) (6 7)"
+
+    def test_add_cell_after_top_level_shortcut_rezips(self, shortcut_problem):
+        t = shortcut_problem.tallies[4]
+        t.add_cell(shortcut_problem.cells[6])
+        assert t.mcnp_str().rstrip() == "f4:n 1 4i 6"
+
+    def test_add_cell_keeps_grouped_shortcut(self, shortcut_problem):
+        t = shortcut_problem.tallies[24]
+        t.add_cell(shortcut_problem.cells[8])
+        assert t.mcnp_str().startswith("f24:n (1 3i 5) (6 7)")
+
+    def test_remove_from_top_level_shortcut_rezips(self, shortcut_problem):
+        t = shortcut_problem.tallies[4]
+        t.full_parse()
+        t.remove_group(t.groups[-1])
+        assert t.mcnp_str() == "f4:n 1 2i 4"
+
+    def test_remove_group_leaves_other_run_alone(self):
+        t = Tally.from_input("f4:n 1 3i 5 6 (7 8)", jit_parse=False)
+        t.remove_group(t.groups[-1])
+        assert t.mcnp_str().rstrip() == "f4:n 1 3i 5 6"
+
+    def test_lattice_after_shortcut_attaches_to_its_last_value(self):
+        # Regression test: a lattice index right after a shortcut was dropped.
+        t = Tally.from_input("f4:n (1 < 2 3i 6[0 0 0] < 7)", jit_parse=False)
+        indices = t.groups[0].levels[1].lattice_indices
+        assert [None if i is None else i.dimensions for i in indices] == [
+            None,
+            None,
+            None,
+            None,
+            (0, 0, 0),
+        ]
 
     def test_remove_cell_reflected_in_mcnp_str(self):
         t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)

@@ -9,6 +9,15 @@ def _is_run(node) -> bool:
     return type(node) is syntax_node.ListNode and node.name == "tally number run"
 
 
+def _iter_runs(node: syntax_node.SyntaxNode):
+    """Every ``"tally number run"`` under ``node``, groups included."""
+    for child in node.nodes.values():
+        if _is_run(child):
+            yield child
+        elif isinstance(child, syntax_node.SyntaxNode):
+            yield from _iter_runs(child)
+
+
 def _next_key(parent: syntax_node.SyntaxNode, kind: str) -> tuple[str, int]:
     """The next ``(kind, n)`` key for a child of ``parent``.
 

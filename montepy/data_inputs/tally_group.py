@@ -255,10 +255,8 @@ class FlatGroup(TallyGroup):
         self._items = list(items)
         # A frozen snapshot of the numbers as given here -- deliberately
         # never updated even after update_pointers() resolves an entry, or
-        # after a resolved object is later renumbered. Needed so a renumber
-        # can be detected (the shortcut-group staleness check in
-        # _update_node) and so old_numbers keeps meaning "as originally
-        # read/added", not "as of right now".
+        # after a resolved object is later renumbered, so old_numbers keeps
+        # meaning "as originally read/added", not "as of right now".
         self._old_numbers = [self._number_of(item) for item in self._items]
         self._lattice_indices = lattice_indices or [None] * len(self._items)
         self._is_grouped = is_grouped
@@ -414,19 +412,6 @@ class FlatGroup(TallyGroup):
 
     def _update_node(self):
         numbers = self._current_numbers()
-        if not self._number_nodes and self.cells_or_surfaces:
-            # This group used an MCNP shortcut (e.g. "3i") -- only the
-            # ShortcutNode itself knows how to recompress, so there's
-            # nothing here to live-patch. Fail loudly rather than silently
-            # writing stale text if something inside it was renumbered.
-            if not set(numbers).issubset(self._old_numbers):
-                raise montepy.exceptions.IllegalState(
-                    f"Cannot write group {self._old_numbers}: it used an "
-                    'MCNP shortcut (e.g. "3i"), and one of its cells/'
-                    "surfaces was renumbered. Live-renumbering isn't "
-                    "supported inside a shortcut-written group."
-                )
-            return
         for num_node, num in zip(self._number_nodes, numbers):
             if num_node.value != num:
                 num_node.value = num
@@ -618,57 +603,35 @@ def _flatten_runs(nodes) -> list:
 
 
 def _extract_numbers_with_lattice(nodes):
-    """Pair each numeric ValueNode with its immediately following lattice phrase.
+    """Pair each number with the lattice phrase that follows it, if any.
 
     Returns ``(numbers, lattice_indices, number_nodes)`` where
     ``lattice_indices[i]`` is a :class:`LatticeIndex` or ``None``, and
-    ``number_nodes[i]`` is the real, original :class:`~montepy.input_parser.syntax_node.ValueNode`
-    parsed for that number (kept so it can be patched in place later instead
-    of rebuilt, preserving the original formatting/whitespace).
-
-    If an MCNP shortcut (e.g. ``3i``) is present, ``number_nodes`` is left
-    empty for the whole group: a shortcut's "virtual" expanded value nodes
-    aren't meant to be formatted/patched individually (only the
-    :class:`~montepy.input_parser.syntax_node.ShortcutNode` itself knows how
-    to compress back to e.g. ``3i``), so live-renumbering isn't supported for
-    a group that used one -- it keeps its original compressed text as-is.
+    ``number_nodes[i]`` is the :class:`~montepy.input_parser.syntax_node.ValueNode`
+    holding that number, patched in place on write. For a shortcut (e.g.
+    ``3i``) that's one of its expanded values;
+    :meth:`~montepy.data_inputs.tally.Tally._update_values` then re-zips the
+    shortcut around the patched values.
     """
-    nodes = _flatten_runs(nodes)
     numbers = []
     lattice_indices = []
     number_nodes = []
-    has_shortcut = False
-    i = 0
-    while i < len(nodes):
-        n = nodes[i]
+    for n in _flatten_runs(nodes):
         if isinstance(n, syntax_node.ShortcutNode):
-            has_shortcut = True
-            for inner in n.nodes:
-                if isinstance(inner.value, (int, float)) and not isinstance(
-                    inner.value, bool
-                ):
-                    numbers.append(int(inner.value))
-                    lattice_indices.append(None)
-        elif (
-            isinstance(n, syntax_node.ValueNode)
-            and isinstance(n.value, (int, float))
-            and not isinstance(n.value, bool)
-        ):
-            numbers.append(int(n.value))
-            number_nodes.append(n)
-            if (
-                i + 1 < len(nodes)
-                and isinstance(nodes[i + 1], syntax_node.ListNode)
-                and nodes[i + 1].name == "lattice phrase"
-            ):
-                lattice_indices.append(LatticeIndex.parse_input_node(nodes[i + 1]))
-                i += 2
-                continue
-            else:
-                lattice_indices.append(None)
-        i += 1
-    if has_shortcut:
-        number_nodes = []
+            values = [v for v in n.nodes if v.value is not None]
+        elif isinstance(n, syntax_node.ValueNode) and n.type is int:
+            values = [n]
+        elif isinstance(n, syntax_node.ListNode) and n.name == "lattice phrase":
+            # Applies to the number just before it, even a shortcut's last.
+            if numbers:
+                lattice_indices[-1] = LatticeIndex.parse_input_node(n)
+            continue
+        else:
+            continue
+        for v in values:
+            numbers.append(v.value)
+            lattice_indices.append(None)
+            number_nodes.append(v)
     return numbers, lattice_indices, number_nodes
 
 

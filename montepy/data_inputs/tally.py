@@ -20,7 +20,13 @@ from montepy.data_inputs.tally_group import (
 from montepy.data_inputs.tally_type import Score, TallyType, _TallyKey
 from montepy.exceptions import IllegalState, MalformedInputError, NumberConflictError
 from montepy.input_parser import syntax_node
-from montepy.input_parser.tally_parser import TallyParser, _append_tally_item
+from montepy.input_parser.tally_parser import (
+    TallyParser,
+    _append_tally_item,
+    _is_run,
+    _iter_runs,
+    _next_key,
+)
 from montepy.mcnp_object import InitInput
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 from montepy.surface_collection import Surfaces
@@ -64,6 +70,9 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         super()._init_blank()
         self._old_number = self._generate_default_node(int, -1)
         self._groups = []
+        # The groups currently written in the tree, to tell when the bins
+        # need rebuilding.
+        self._groups_in_tree = []
         self._include_total = False
         self._parsed_include_total = False
         self._multiplier = None
@@ -141,6 +150,7 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         )
         self._parsed_include_total = self._include_total
         self._groups = _parse_tally_numbers(tally_list["tally"])
+        self._groups_in_tree = list(self._groups)
 
     def _number_validator(self, number):
         # Unlike _parse_tally_body's check, this is specific to *this*
@@ -325,14 +335,18 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             else ""
         )
         bins = self._tree["data"]["tally"]
-        bins.nodes.clear()
-        for group in self._groups:
-            node = group.node
-            if isinstance(node, syntax_node.ListNode):
-                for n in node.nodes:
-                    _append_tally_item(bins, n)
-            else:
-                _append_tally_item(bins, node)
+        # Patches each group's value nodes, including a shortcut's values.
+        group_nodes = [group.node for group in self._groups]
+        if len(self._groups) != len(self._groups_in_tree) or any(
+            a is not b for a, b in zip(self._groups, self._groups_in_tree)
+        ):
+            self._rebuild_bins(bins, group_nodes)
+        # Re-zip a run's shortcuts around its patched values. An unchanged run
+        # is left alone, since re-zipping can also absorb neighboring values
+        # (e.g. "1 3i 5 6" -> "1 4i 6"), changing the user's text.
+        for run in _iter_runs(bins):
+            if run._has_changed_values():
+                run.update_with_new_values(list(run))
         end_node = self._tree["data"]["end"]
         if self._include_total != self._parsed_include_total:
             # Only rewrite when this actually changed -- preserves the
@@ -340,6 +354,48 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             # untouched for a tally whose include_total was never set.
             end_node.value = "T" if self._include_total else None
             self._parsed_include_total = self._include_total
+
+    def _rebuild_bins(self, bins, group_nodes):
+        """Rewrite ``bins`` after groups were added or removed.
+
+        A top-level bin's value goes back into the run it was parsed in, so
+        that run keeps its shortcuts and re-zips around the remaining values.
+        """
+        old_run_of = {
+            id(v): run for run in bins.nodes.values() if _is_run(run) for v in run
+        }
+        entries = []  # [run, values] for a run of numbers, else a node
+        used_runs = set()
+        for node in group_nodes:
+            if isinstance(node, syntax_node.SyntaxNode):
+                entries.append(node)
+                continue
+            for value in node.nodes:
+                if not (isinstance(value, syntax_node.ValueNode) and value.type is int):
+                    entries.append(value)
+                    continue
+                run = old_run_of.get(id(value))
+                last = entries[-1] if entries else None
+                if isinstance(last, list) and (run is None or last[0] is run):
+                    last[1].append(value)
+                    continue
+                if run is None or id(run) in used_runs:
+                    run = syntax_node.ListNode("tally number run")
+                used_runs.add(id(run))
+                entries.append([run, [value]])
+        bins.nodes.clear()
+        for entry in entries:
+            if isinstance(entry, list):
+                run, values = entry
+                current = list(run)
+                if len(values) != len(current) or any(
+                    a is not b for a, b in zip(values, current)
+                ):
+                    run.update_with_new_values(values)
+                bins.nodes[_next_key(bins, "run")] = run
+            else:
+                _append_tally_item(bins, entry)
+        self._groups_in_tree = list(self._groups)
 
     @staticmethod
     def _align_to_type(tally_type: TallyType, start: ty.Integral) -> ty.Integral:
