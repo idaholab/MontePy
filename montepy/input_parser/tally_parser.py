@@ -121,18 +121,21 @@ class TallyParser(DataParser):
         return p[0]
 
     # Mirrors MCNP_Parser.shortcut_sequence, but with int values like
-    # CellParser's geometry shortcuts. Multiply and log-interpolate are left
-    # out: neither produces valid cell/surface numbers.
+    # CellParser's geometry shortcuts.
     @_(
         "tally_shortcut_start NUM_REPEAT",
         "tally_shortcut_start REPEAT",
+        "tally_shortcut_start NUM_MULTIPLY",
+        "tally_shortcut_start MULTIPLY",
         "tally_shortcut_start NUM_INTERPOLATE padding number_phrase",
         "tally_shortcut_start INTERPOLATE padding number_phrase",
+        "tally_shortcut_start NUM_LOG_INTERPOLATE padding number_phrase",
+        "tally_shortcut_start LOG_INTERPOLATE padding number_phrase",
         "NUM_JUMP",
         "JUMP",
     )
     def tally_shortcut_sequence(self, p):
-        """A tally shortcut (repeat, interpolate, or jump).
+        """A tally shortcut (repeat, multiply, interpolate, or jump).
 
         Returns
         -------

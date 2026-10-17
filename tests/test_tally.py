@@ -90,11 +90,27 @@ class TestTallyParser:
         assert values and all(v.type is float for v in values)
 
     @pytest.mark.parametrize(
+        "line, numbers",
+        [
+            ("f4:n 1 2m", [1, 2]),
+            ("f4:n 1 1ilog 100", [1, 10, 100]),
+            ("f4:n 1 2ilog 1000", [1, 10, 100, 1000]),
+            ("f4:n 1 3i 5", [1, 2, 3, 4, 5]),
+        ],
+    )
+    def test_f_shortcuts_with_integral_values(_, line, numbers):
+        t = Tally.from_input(line, jit_parse=False)
+        assert [g.old_numbers[0] for g in t.groups] == numbers
+        assert t.mcnp_str() == line
+
+    @pytest.mark.parametrize("line", ["f4:n 1 2i 5", "f4:n 1 2ilog 10"])
+    def test_f_shortcut_with_non_integral_values_raises(_, line):
+        with pytest.raises(montepy.exceptions.MalformedInputError, match="non-integer"):
+            Tally.from_input(line, jit_parse=False)
+
+    @pytest.mark.parametrize(
         "line",
         [
-            # Multiply and log-interpolate can't produce cell/surface numbers.
-            "f4:n 1 2m",
-            "f4:n 1 2ilog 100",
             # FM reaction-list operators aren't valid in F groups.
             "f4:n (1:2)",
             "f4:n (1 # 2)",
