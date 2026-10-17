@@ -300,33 +300,24 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             An instance of the correct subclass for the tally type digit.
         """
         try:
-            bare_tree = Tally._peek_light_parse(input)
-            classifier = bare_tree.nodes["classifier"]
-            number_node = classifier.number
-            if number_node is None:
+            classifier = Tally._peek_light_parse(input).nodes["classifier"]
+            if classifier.number is None:
                 raise ValueError("Tally classifier has no number.")
-            modifier_node = classifier.modifier
-            modifier = modifier_node.value if modifier_node is not None else None
-            mnemonic = classifier.prefix.value.upper()
-            subclass = Tally._dispatch_class(
-                input, number_node.value, modifier, mnemonic
-            )
-        except (AttributeError, KeyError, ValueError, AssertionError):
-            # The JIT light parser isn't fully robust and can fail on valid
-            # syntax. Fall back to building a real Tally: its own
-            # JIT-with-fallback-to-full-parse handling in _parse_input will
-            # reliably determine the number instead of guessing, and gives
-            # proper file/line context on error. A MalformedInputError from
-            # _dispatch_class itself (e.g. an invalid digit/modifier
-            # combination) is a real, deliberate validation failure, not a
-            # light-parser robustness issue -- let it propagate directly.
-            base = Tally(input, jit_parse=True)
-            modifier_node = base._classifier.modifier
-            modifier = modifier_node.value if modifier_node is not None else None
-            mnemonic = base._classifier.prefix.value.upper()
-            subclass = Tally._dispatch_class(
-                input, base._number.value, modifier, mnemonic
-            )
+        except (AttributeError, KeyError, ValueError, AssertionError) as e:
+            # The light parser reports a malformed classifier with a bare
+            # exception and no context. Fully parse only to raise a
+            # ParsingError pointing at the offending token.
+            Tally(input, jit_parse=False)
+            # The full parser is more lenient (e.g. it accepts "f4:n:p" by
+            # dropping the "n"), so don't trust a classifier it recovers.
+            raise MalformedInputError(
+                input, f"Could not read the tally classifier of: {input}"
+            ) from e
+        modifier_node = classifier.modifier
+        modifier = modifier_node.value if modifier_node is not None else None
+        subclass = Tally._dispatch_class(
+            input, classifier.number.value, modifier, classifier.prefix.value.upper()
+        )
 
         return subclass(input, jit_parse=jit_parse)
 

@@ -272,14 +272,19 @@ class TestTallyObject:
         t = F4Tally(Input(["f4:n (5 (u=2) 7)"], BlockType.DATA))
         assert t.groups[0].universe_spec == 2
 
-    def test_from_input_bare_prefix_no_number(self):
-        # A tally card with no number at all: the light JIT parser succeeds
-        # (it doesn't validate structure), so from_input's own "has no
-        # number" check and except-Exception fallback both have to run,
-        # and the fallback's real full construction is what actually
-        # surfaces the parsing error.
+    @pytest.mark.parametrize("line", ["f", "f4:n( 1", "f4:n,1 1"])
+    def test_from_input_malformed_classifier_raises_parsing_error(self, line):
+        # The light parser fails on these with a bare exception (or, for
+        # "f", returns no number); from_input must surface the full
+        # parser's ParsingError instead.
         with pytest.raises(montepy.exceptions.ParsingError):
-            parse_data(Input(["f"], BlockType.DATA))
+            parse_data(Input([line], BlockType.DATA))
+
+    def test_from_input_rejects_classifier_only_full_parser_accepts(self):
+        # The full parser accepts "f4:n:p" by silently dropping the "n";
+        # from_input must not dispatch on that recovered classifier.
+        with pytest.raises(montepy.exceptions.MalformedInputError):
+            parse_data(Input(["f4:n:p 1"], BlockType.DATA))
 
     def test_clone_as_non_tally_type_raises_type_error(self, tally_problem):
         f34 = tally_problem.tallies[34]
