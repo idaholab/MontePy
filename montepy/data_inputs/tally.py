@@ -330,9 +330,6 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
 
         return subclass(input, jit_parse=jit_parse)
 
-    def link_to_problem(self, problem, *, deepcopy=False):
-        super().link_to_problem(problem, deepcopy=deepcopy)
-
     def _update_values(self):
         if self._classifier.modifier is None:
             self._classifier.modifier = self._generate_default_node(

@@ -707,7 +707,7 @@ class TestGroupRoundTrip:
 
     @pytest.mark.parametrize("number", [1, 4])
     def test_link_to_problem_forwards_deepcopy(self, tally_problem, number):
-        # Regression test: Tally/SurfaceTally/CellTally's link_to_problem
+        # Regression test: SurfaceTally/CellTally's link_to_problem
         # overrides accepted a deepcopy kwarg but never forwarded it to
         # super().link_to_problem(), silently dropping it. Every concrete
         # Tally eventually bottoms out at MCNP_Object.link_to_problem
