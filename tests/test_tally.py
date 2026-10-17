@@ -242,11 +242,6 @@ def tally_problem():
     return montepy.read_input("tests/inputs/test_tally.imcnp")
 
 
-@pytest.fixture
-def shortcut_problem():
-    return montepy.read_input("tests/inputs/test_tally_shortcuts.imcnp")
-
-
 class TestTallyObject:
     """Tests for the Tally object model: clone, clone_as, scores, filters."""
 
@@ -839,62 +834,26 @@ class TestGroupRoundTrip:
             t.link_to_problem(tally_problem, deepcopy=True)
         spy.assert_called_once_with(t, tally_problem, deepcopy=True)
 
-    @pytest.mark.parametrize(
-        "number, line",
-        [
-            (4, "f4:n 1 3i 5"),
-            (14, "f14:n 1 2r"),
-            (24, "f24:n (1 3i 5) (6 7)"),
-            (34, "f34:n (1 2r 5)"),
-        ],
-    )
-    def test_untouched_shortcut_round_trips(self, shortcut_problem, number, line):
-        # Regression test: a top-level shortcut used to be rebuilt from its
-        # expanded values on every write ("1 3i 5" -> "1 2.03.04.05").
-        t = shortcut_problem.tallies[number]
+    def test_renumbering_cell_in_shortcut_group_raises_on_write(self, tally_problem):
+        # Regression test: a group that used an MCNP shortcut (e.g. "3i")
+        # can't be live-patched (only the ShortcutNode itself knows how to
+        # recompress), so renumbering a cell inside one used to silently
+        # write stale text with no error. It should fail loudly instead.
+        t = tally_problem.tallies[44]  # f44:n (1 3i 5) (7 8 9)
+        t.full_parse()  # link cells_or_surfaces before renumbering one
+        assert t.mcnp_str() == "f44:n (1 3i 5) (7 8 9)"
+        tally_problem.cells[5].number = 50
+        with pytest.raises(montepy.exceptions.IllegalState):
+            t.mcnp_str()
+
+    def test_untouched_shortcut_group_still_round_trips(self, tally_problem):
+        t = tally_problem.tallies[44]
         t.full_parse()
-        assert t.mcnp_str() == line
-        # Renumbering a cell this tally doesn't reference leaves it alone.
-        shortcut_problem.cells[8].number = 80
-        assert t.mcnp_str() == line
-
-    @pytest.mark.parametrize(
-        "old, new, number, expected",
-        [
-            (3, 30, 4, "f4:n 1 2 30 4 5"),
-            (3, 30, 24, "f24:n (1 2 30 4 5) (6 7)"),
-            (1, 100, 14, "f14:n 100 100 100"),
-            (1, 100, 34, "f34:n (100 100 100 5)"),
-            # Only the stale shortcut is written out; "2r" still holds.
-            (5, 50, 34, "f34:n (1 2r 50)"),
-        ],
-    )
-    def test_renumber_inside_shortcut(
-        self, shortcut_problem, old, new, number, expected
-    ):
-        t = shortcut_problem.tallies[number]
-        shortcut_problem.cells[old].number = new
-        assert t.mcnp_str() == expected
-
-    def test_renumber_inside_shortcut_twice(self, shortcut_problem):
-        t = shortcut_problem.tallies[24]
-        shortcut_problem.cells[3].number = 30
-        assert t.mcnp_str() == "f24:n (1 2 30 4 5) (6 7)"
-        shortcut_problem.cells[30].number = 300
-        assert t.mcnp_str() == "f24:n (1 2 300 4 5) (6 7)"
-
-    def test_add_cell_to_tally_with_top_level_shortcut(self, shortcut_problem):
-        # Adding a bin rebuilds the top-level list, so its shortcut is
-        # written out explicitly rather than lost.
-        t = shortcut_problem.tallies[4]
-        t.add_cell(shortcut_problem.cells[6])
-        assert t.mcnp_str().split() == ["f4:n", "1", "2", "3", "4", "5", "6"]
-
-    def test_add_cell_keeps_grouped_shortcut(self, shortcut_problem):
-        # A grouped shortcut is re-added as a whole node, so it survives.
-        t = shortcut_problem.tallies[24]
-        t.add_cell(shortcut_problem.cells[8])
-        assert t.mcnp_str().startswith("f24:n (1 3i 5) (6 7)")
+        assert t.mcnp_str() == "f44:n (1 3i 5) (7 8 9)"
+        # Renumbering a cell that this tally doesn't reference at all must
+        # not be affected by the shortcut-group guard.
+        tally_problem.cells[99].number = 990
+        assert t.mcnp_str() == "f44:n (1 3i 5) (7 8 9)"
 
     def test_remove_cell_reflected_in_mcnp_str(self):
         t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)
