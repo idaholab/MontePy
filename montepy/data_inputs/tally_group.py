@@ -14,6 +14,7 @@ from abc import ABC, abstractmethod
 import montepy
 from montepy.exceptions import BrokenObjectLinkError
 from montepy.input_parser import syntax_node
+from montepy.input_parser.shortcuts import Shortcuts
 import montepy.types as ty
 from montepy.utilities import *
 
@@ -114,6 +115,10 @@ class TallyGroup(ABC):
 
     .. versionadded:: 1.6.0b2
     """
+
+    @abstractmethod
+    def _replace_nodes(self, mapping: dict) -> None:
+        """Swap value nodes per ``{id(old): new}``, after a shortcut is expanded."""
 
     @abstractmethod
     def __contains__(self, item) -> bool:
@@ -254,10 +259,8 @@ class FlatGroup(TallyGroup):
         self._items = list(items)
         # A frozen snapshot of the numbers as given here -- deliberately
         # never updated even after update_pointers() resolves an entry, or
-        # after a resolved object is later renumbered. Needed so a renumber
-        # can be detected (the shortcut-group staleness check in
-        # _update_node) and so old_numbers keeps meaning "as originally
-        # read/added", not "as of right now".
+        # after a resolved object is later renumbered, so old_numbers keeps
+        # meaning "as originally read/added", not "as of right now".
         self._old_numbers = [self._number_of(item) for item in self._items]
         self._lattice_indices = lattice_indices or [None] * len(self._items)
         self._is_grouped = is_grouped
@@ -417,22 +420,17 @@ class FlatGroup(TallyGroup):
 
     def _update_node(self):
         numbers = self._current_numbers()
-        if not self._number_nodes and self.cells_or_surfaces:
-            # This group used an MCNP shortcut (e.g. "3i") -- only the
-            # ShortcutNode itself knows how to recompress, so there's
-            # nothing here to live-patch. Fail loudly rather than silently
-            # writing stale text if something inside it was renumbered.
-            if not set(numbers).issubset(self._old_numbers):
-                raise montepy.exceptions.IllegalState(
-                    f"Cannot write group {self._old_numbers}: it used an "
-                    'MCNP shortcut (e.g. "3i"), and one of its cells/'
-                    "surfaces was renumbered. Live-renumbering isn't "
-                    "supported inside a shortcut-written group."
-                )
-            return
         for num_node, num in zip(self._number_nodes, numbers):
             if num_node.value != num:
                 num_node.value = num
+
+    def _replace_nodes(self, mapping):
+        self._number_nodes = [mapping.get(id(n), n) for n in self._number_nodes]
+        # A wrapper node built at parse time isn't itself in the tree, so
+        # the expansion that updated the tree didn't reach it.
+        if isinstance(self._node, syntax_node.ListNode):
+            nodes = self._node.nodes
+            nodes[:] = [mapping.get(id(n), n) for n in nodes]
 
     def __contains__(self, item) -> bool:
         objs = self.cells_or_surfaces
@@ -554,6 +552,10 @@ class PathGroup(TallyGroup):
         for level in self._levels:
             level._update_node()
 
+    def _replace_nodes(self, mapping):
+        for level in self._levels:
+            level._replace_nodes(mapping)
+
     @args_checked
     def inside(
         self,
@@ -608,28 +610,24 @@ def _extract_numbers_with_lattice(nodes):
     parsed for that number (kept so it can be patched in place later instead
     of rebuilt, preserving the original formatting/whitespace).
 
-    If an MCNP shortcut (e.g. ``3i``) is present, ``number_nodes`` is left
-    empty for the whole group: a shortcut's "virtual" expanded value nodes
-    aren't meant to be formatted/patched individually (only the
-    :class:`~montepy.input_parser.syntax_node.ShortcutNode` itself knows how
-    to compress back to e.g. ``3i``), so live-renumbering isn't supported for
-    a group that used one -- it keeps its original compressed text as-is.
+    A shortcut's (e.g. ``3i``) expanded values are included too. Patching
+    one makes that shortcut stale; :func:`_expand_stale_shortcuts` then
+    writes it out explicitly.
     """
     numbers = []
     lattice_indices = []
     number_nodes = []
-    has_shortcut = False
     i = 0
     while i < len(nodes):
         n = nodes[i]
         if isinstance(n, syntax_node.ShortcutNode):
-            has_shortcut = True
             for inner in n.nodes:
                 if isinstance(inner.value, (int, float)) and not isinstance(
                     inner.value, bool
                 ):
                     numbers.append(int(inner.value))
                     lattice_indices.append(None)
+                    number_nodes.append(inner)
         elif (
             isinstance(n, syntax_node.ValueNode)
             and isinstance(n.value, (int, float))
@@ -648,9 +646,68 @@ def _extract_numbers_with_lattice(nodes):
             else:
                 lattice_indices.append(None)
         i += 1
-    if has_shortcut:
-        number_nodes = []
     return numbers, lattice_indices, number_nodes
+
+
+def _snapshot_shortcuts(node) -> list:
+    """``(shortcut, values)`` for every shortcut under ``node``, as parsed.
+
+    Pairs rather than an ``id()``-keyed dict so a deepcopy (e.g.
+    :meth:`~montepy.data_inputs.tally.Tally.clone`) stays consistent.
+    """
+    ret = []
+    for child in node.nodes:
+        if isinstance(child, syntax_node.ShortcutNode):
+            ret.append((child, [n.value for n in child.nodes]))
+        elif isinstance(child, syntax_node.ListNode):
+            ret.extend(_snapshot_shortcuts(child))
+    return ret
+
+
+def _expand_shortcut(parent: syntax_node.ListNode, shortcut) -> dict:
+    """Replace ``shortcut`` in ``parent`` with its values written explicitly.
+
+    Returns ``{id(old value node): new value node}`` so any
+    :class:`TallyGroup` holding the old nodes can be updated with
+    :meth:`TallyGroup._replace_nodes`.
+    """
+    old_nodes = list(shortcut.nodes)
+    mapping = {}
+    for i, old in enumerate(old_nodes):
+        if i < len(old_nodes) - 1:
+            padding = old.padding or syntax_node.PaddingNode(" ")
+        elif shortcut.end_padding is not None:
+            padding = shortcut.end_padding
+        else:
+            # An interpolate's last value is the real parsed end point; a
+            # repeat's is a copy of its first value, padding included.
+            interpolates = {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}
+            padding = old.padding if shortcut.type in interpolates else None
+        mapping[id(old)] = syntax_node.ValueNode(
+            str(int(old.value)), int, padding=padding
+        )
+    i = next(i for i, n in enumerate(parent.nodes) if n is shortcut)
+    parent.nodes[i : i + 1] = [mapping[id(old)] for old in old_nodes]
+    if shortcut in parent._shortcuts:
+        parent._shortcuts.remove(shortcut)
+    return mapping
+
+
+def _expand_shortcuts_where(node, predicate) -> dict:
+    """Expand every shortcut under ``node`` matching ``predicate``; see :func:`_expand_shortcut`."""
+    mapping = {}
+    for child in list(node.nodes):
+        if isinstance(child, syntax_node.ShortcutNode):
+            if predicate(child):
+                mapping.update(_expand_shortcut(node, child))
+        elif isinstance(child, syntax_node.ListNode):
+            mapping.update(_expand_shortcuts_where(child, predicate))
+    return mapping
+
+
+def _stale_shortcuts(snapshots: list) -> set:
+    """``id()`` of each shortcut whose values no longer match its parsed snapshot."""
+    return {id(sc) for sc, values in snapshots if [n.value for n in sc.nodes] != values}
 
 
 def _extract_universe_spec_from_nodes(nodes):

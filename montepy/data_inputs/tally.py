@@ -15,7 +15,10 @@ from montepy.data_inputs.tally_group import (
     PathGroup,
     SpatialFilter,
     TallyGroup,
+    _expand_shortcuts_where,
     _parse_tally_numbers,
+    _snapshot_shortcuts,
+    _stale_shortcuts,
 )
 from montepy.data_inputs.tally_type import Score, TallyType, _TallyKey
 from montepy.exceptions import IllegalState, MalformedInputError, NumberConflictError
@@ -64,6 +67,10 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         super()._init_blank()
         self._old_number = self._generate_default_node(int, -1)
         self._groups = []
+        # The groups as currently written in the tree, to tell whether the
+        # tally-numbers list must be rebuilt, which loses its shortcuts.
+        self._groups_in_tree = []
+        self._shortcut_values = []
         self._include_total = False
         self._parsed_include_total = False
         self._multiplier = None
@@ -141,6 +148,8 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         )
         self._parsed_include_total = self._include_total
         self._groups = _parse_tally_numbers(tally_list["tally"])
+        self._groups_in_tree = list(self._groups)
+        self._shortcut_values = _snapshot_shortcuts(tally_list["tally"])
 
     def _number_validator(self, number):
         # Unlike _parse_tally_body's check, this is specific to *this*
@@ -325,14 +334,44 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             else ""
         )
         tally_numbers_node = self._tree["data"]["tally"]
-        tally_numbers_node.nodes.clear()
         for group in self._groups:
-            node = group.node
-            if isinstance(node, syntax_node.ListNode) and node.name != "tally group":
-                for n in node.nodes:
-                    tally_numbers_node.nodes.append(n)
-            else:
-                tally_numbers_node.nodes.append(node)
+            group._update_node()
+        groups_changed = len(self._groups) != len(self._groups_in_tree) or any(
+            a is not b for a, b in zip(self._groups, self._groups_in_tree)
+        )
+        stale = _stale_shortcuts(self._shortcut_values)
+        if groups_changed:
+            # Rebuilding drops the top-level shortcuts, whose values are the
+            # groups' own nodes, so write those out explicitly too.
+            stale |= {
+                id(n)
+                for n in tally_numbers_node.nodes
+                if isinstance(n, syntax_node.ShortcutNode)
+            }
+        if stale:
+            mapping = _expand_shortcuts_where(
+                tally_numbers_node, lambda sc: id(sc) in stale
+            )
+            for group in self._groups:
+                group._replace_nodes(mapping)
+            self._shortcut_values = [
+                (sc, values)
+                for sc, values in self._shortcut_values
+                if id(sc) not in stale
+            ]
+        if groups_changed:
+            tally_numbers_node.nodes.clear()
+            for group in self._groups:
+                node = group.node
+                if (
+                    isinstance(node, syntax_node.ListNode)
+                    and node.name != "tally group"
+                ):
+                    for n in node.nodes:
+                        tally_numbers_node.nodes.append(n)
+                else:
+                    tally_numbers_node.nodes.append(node)
+            self._groups_in_tree = list(self._groups)
         end_node = self._tree["data"]["end"]
         if self._include_total != self._parsed_include_total:
             # Only rewrite when this actually changed -- preserves the
