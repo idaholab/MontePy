@@ -20,7 +20,7 @@ from montepy.data_inputs.tally_group import (
 from montepy.data_inputs.tally_type import Score, TallyType, _TallyKey
 from montepy.exceptions import IllegalState, MalformedInputError, NumberConflictError
 from montepy.input_parser import syntax_node
-from montepy.input_parser.tally_parser import TallyParser
+from montepy.input_parser.tally_parser import TallyParser, _append_tally_item
 from montepy.mcnp_object import InitInput
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 from montepy.surface_collection import Surfaces
@@ -93,7 +93,7 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         self._tree.nodes["data"] = syntax_node.SyntaxNode(
             "tally list",
             {
-                "tally": syntax_node.ListNode("tally numbers"),
+                "tally": syntax_node.SyntaxNode("tally bins", {}),
                 "end": syntax_node.ValueNode(None, str),
             },
         )
@@ -324,15 +324,15 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             if tally_type is not None and tally_type.modifier
             else ""
         )
-        tally_numbers_node = self._tree["data"]["tally"]
-        tally_numbers_node.nodes.clear()
+        bins = self._tree["data"]["tally"]
+        bins.nodes.clear()
         for group in self._groups:
             node = group.node
-            if isinstance(node, syntax_node.ListNode) and node.name != "tally group":
+            if isinstance(node, syntax_node.ListNode):
                 for n in node.nodes:
-                    tally_numbers_node.nodes.append(n)
+                    _append_tally_item(bins, n)
             else:
-                tally_numbers_node.nodes.append(node)
+                _append_tally_item(bins, node)
         end_node = self._tree["data"]["end"]
         if self._include_total != self._parsed_include_total:
             # Only rewrite when this actually changed -- preserves the

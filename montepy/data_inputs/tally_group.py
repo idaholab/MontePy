@@ -14,6 +14,7 @@ from abc import ABC, abstractmethod
 import montepy
 from montepy.exceptions import BrokenObjectLinkError
 from montepy.input_parser import syntax_node
+from montepy.input_parser.tally_parser import _append_tally_item, _is_run
 import montepy.types as ty
 from montepy.utilities import *
 
@@ -392,10 +393,11 @@ class FlatGroup(TallyGroup):
             return
         body = syntax_node.ListNode("flat group body")
         if self._universe_spec is not None:
-            body.append(_make_value_node(str, "u", padding=None))
-            body.append(syntax_node.PaddingNode("="))
-            spec_node = _make_value_node(int, self._universe_spec, padding=None)
-            body.append(spec_node)
+            universe = syntax_node.ListNode("universe phrase")
+            universe.append(_make_value_node(str, "u", padding=None))
+            universe.append(syntax_node.PaddingNode("="))
+            universe.append(_make_value_node(int, self._universe_spec, padding=None))
+            body.append(universe)
         numbers = self._current_numbers()
         self._number_nodes = []
         for i, num in enumerate(numbers):
@@ -406,12 +408,7 @@ class FlatGroup(TallyGroup):
             if idx is not None:
                 body.append(idx.node)
         if self._is_grouped:
-            wrapped = syntax_node.ListNode("tally group")
-            wrapped.append(syntax_node.PaddingNode("("))
-            for n in body.nodes:
-                wrapped.append(n)
-            wrapped.append(syntax_node.PaddingNode(")"))
-            self._node = wrapped
+            self._node = _make_group_node(body.nodes)
         else:
             self._node = body
 
@@ -536,19 +533,14 @@ class PathGroup(TallyGroup):
         for i, level in enumerate(self._levels):
             level._ensure_has_node()
             level._update_node()
-            if isinstance(level.node, syntax_node.ListNode):
+            if _is_group_node(level.node):
+                body.append(level.node)
+            else:
                 for n in level.node.nodes:
                     body.append(n)
-            else:
-                body.append(level.node)
             if i != len(self._levels) - 1:
                 body.append(_make_value_node(str, "<", padding=" "))
-        wrapped = syntax_node.ListNode("tally group")
-        wrapped.append(syntax_node.PaddingNode("("))
-        for n in body.nodes:
-            wrapped.append(n)
-        wrapped.append(syntax_node.PaddingNode(")"))
-        self._node = wrapped
+        self._node = _make_group_node(body.nodes)
 
     def _update_node(self):
         for level in self._levels:
@@ -599,16 +591,26 @@ class PathGroup(TallyGroup):
         return f"PathGroup(levels={len(self._levels)})"
 
 
-def _is_number_run(node) -> bool:
-    # type() is, not isinstance(): ShortcutNode is a ListNode subclass.
-    return type(node) is syntax_node.ListNode and node.name == "tally number run"
+def _is_group_node(node) -> bool:
+    return isinstance(node, syntax_node.SyntaxNode) and node.name == "tally group"
+
+
+def _make_group_node(items) -> syntax_node.SyntaxNode:
+    """Build a parenthesized ``"tally group"`` node, as the parser does."""
+    node = syntax_node.SyntaxNode(
+        "tally group", {"start_pad": syntax_node.PaddingNode("(")}
+    )
+    for item in items:
+        _append_tally_item(node, item)
+    node.nodes["end_pad"] = syntax_node.PaddingNode(")")
+    return node
 
 
 def _flatten_runs(nodes) -> list:
     """Replace each ``"tally number run"`` in ``nodes`` with its children."""
     ret = []
     for n in nodes:
-        if _is_number_run(n):
+        if _is_run(n):
             ret.extend(n.nodes)
         else:
             ret.append(n)
@@ -679,8 +681,8 @@ def _extract_universe_spec_from_nodes(nodes):
                     m.value, (int, float)
                 ):
                     return int(m.value)
-        elif isinstance(n, syntax_node.ListNode) and n.name == "tally group":
-            inner = list(n.nodes)[1:-1]
+        elif _is_group_node(n):
+            inner = list(n.nodes.values())[1:-1]
             result = _extract_universe_spec_from_nodes(inner)
             if result is not None:
                 return result
@@ -708,18 +710,14 @@ def _parse_body_segment(nodes, *, is_grouped, node=None) -> FlatGroup:
 def _parse_segment_as_level(seg) -> FlatGroup:
     """Parse a path segment (between ``<`` separators) into a :class:`FlatGroup` level."""
     non_pad = [n for n in seg if not isinstance(n, syntax_node.PaddingNode)]
-    if (
-        len(non_pad) == 1
-        and isinstance(non_pad[0], syntax_node.ListNode)
-        and non_pad[0].name == "tally group"
-    ):
-        inner_body = list(non_pad[0].nodes)[1:-1]
+    if len(non_pad) == 1 and _is_group_node(non_pad[0]):
+        inner_body = list(non_pad[0].nodes.values())[1:-1]
         return _parse_body_segment(inner_body, is_grouped=True, node=non_pad[0])
     return _parse_body_segment(seg, is_grouped=False)
 
 
 def _parse_tally_group_node(group_node) -> TallyGroup:
-    nodes = list(group_node.nodes)
+    nodes = list(group_node.nodes.values())
     for i, n in enumerate(nodes):
         if (
             isinstance(n, syntax_node.ValueNode)
@@ -758,8 +756,8 @@ def _parse_tally_group_node(group_node) -> TallyGroup:
 def _parse_tally_numbers(tally_numbers_node) -> list[TallyGroup]:
     groups = []
     nodes = []
-    for node in tally_numbers_node:
-        if _is_number_run(node):
+    for node in tally_numbers_node.nodes.values():
+        if _is_run(node):
             nodes.extend(node)
         else:
             nodes.append(node)
@@ -776,6 +774,6 @@ def _parse_tally_numbers(tally_numbers_node) -> list[TallyGroup]:
                         [int(v)], is_grouped=False, node=wrapper, number_nodes=[node]
                     )
                 )
-        elif isinstance(node, syntax_node.ListNode) and node.name == "tally group":
+        elif _is_group_node(node):
             groups.append(_parse_tally_group_node(node))
     return groups

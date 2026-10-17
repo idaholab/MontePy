@@ -54,15 +54,21 @@ class TestTallyParser:
         return parser_class().parse(tokens)
 
     @staticmethod
+    def _children(node):
+        if isinstance(node, syntax_node.SyntaxNode):
+            return list(node.nodes.values())
+        return list(node.nodes)
+
+    @staticmethod
     def _value_nodes(node):
         # Every numeric ValueNode, including the values a shortcut expands to.
-        for n in node.nodes:
+        for n in TestTallyParser._children(node):
             if isinstance(n, syntax_node.ShortcutNode):
                 yield from (v for v in n.nodes if v.value is not None)
             elif isinstance(n, syntax_node.ValueNode):
                 if isinstance(n.value, (int, float)):
                     yield n
-            elif isinstance(n, syntax_node.ListNode):
+            elif isinstance(n, (syntax_node.ListNode, syntax_node.SyntaxNode)):
                 yield from TestTallyParser._value_nodes(n)
 
     @pytest.mark.parametrize(
@@ -86,12 +92,11 @@ class TestTallyParser:
 
     @staticmethod
     def _runs(node):
-        for n in node.nodes:
-            if type(n) is syntax_node.ListNode:
-                if n.name == "tally number run":
-                    yield n
-                else:
-                    yield from TestTallyParser._runs(n)
+        for n in TestTallyParser._children(node):
+            if type(n) is syntax_node.ListNode and n.name == "tally number run":
+                yield n
+            elif isinstance(n, syntax_node.SyntaxNode):
+                yield from TestTallyParser._runs(n)
 
     @pytest.mark.parametrize(
         "line, runs",
@@ -115,6 +120,34 @@ class TestTallyParser:
                 n for n in run.nodes if isinstance(n, syntax_node.ShortcutNode)
             ]
         assert tree["data"].format() == line[len("f4:n ") :]
+
+    def test_f_bins_and_groups_are_keyed_syntax_nodes(_):
+        # ListNodes only at the leaves; structure is keyed SyntaxNodes.
+        tree = TestTallyParser._parse(TallyParser, "f4:n 1 3i 5 (6 < 7[0 0 0]) 8")
+        bins = tree["data"]["tally"]
+        assert isinstance(bins, syntax_node.SyntaxNode)
+        assert list(bins.nodes) == [("run", 0), ("group", 0), ("run", 1)]
+        group = bins[("group", 0)]
+        assert isinstance(group, syntax_node.SyntaxNode)
+        assert list(group.nodes) == [
+            "start_pad",
+            ("run", 0),
+            ("sep", 0),
+            ("run", 1),
+            ("lattice", 0),
+            "end_pad",
+        ]
+
+    def test_next_key_never_reuses_a_number(_):
+        from montepy.input_parser.tally_parser import _next_key
+
+        parent = syntax_node.SyntaxNode("tally bins", {})
+        for _i in range(3):
+            parent.nodes[_next_key(parent, "run")] = syntax_node.ListNode("r")
+        del parent.nodes[("run", 0)]
+        # One past the highest in use, not the count of children.
+        assert _next_key(parent, "run") == ("run", 3)
+        assert _next_key(parent, "group") == ("group", 0)
 
     def test_fm_numbers_stay_float(_):
         tree = TestTallyParser._parse(TallyMultiplierParser, "fm14 (1.0 1 -6)")

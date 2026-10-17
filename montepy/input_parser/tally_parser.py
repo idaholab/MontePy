@@ -4,6 +4,61 @@ from montepy.input_parser.tokens import TallyLexer
 from montepy.input_parser import syntax_node
 
 
+def _is_run(node) -> bool:
+    # type() is, not isinstance(): ShortcutNode is a ListNode subclass.
+    return type(node) is syntax_node.ListNode and node.name == "tally number run"
+
+
+def _next_key(parent: syntax_node.SyntaxNode, kind: str) -> tuple[str, int]:
+    """The next ``(kind, n)`` key for a child of ``parent``.
+
+    .. warning::
+
+        ``n`` only makes the key unique within ``parent``; it is *not* the
+        child's position, or its position among children of the same kind.
+        The order of ``parent.nodes`` is the order. ``n`` is one more than
+        the highest in use, so a removed child's number is never reused
+        while a later one exists.
+    """
+    used = [k[1] for k in parent.nodes if isinstance(k, tuple) and k[0] == kind]
+    return (kind, max(used, default=-1) + 1)
+
+
+def _item_kind(item) -> str:
+    if isinstance(item, syntax_node.SyntaxNode) and item.name == "tally group":
+        return "group"
+    if isinstance(item, syntax_node.ListNode) and item.name == "lattice phrase":
+        return "lattice"
+    if isinstance(item, syntax_node.ListNode) and item.name == "universe phrase":
+        return "universe"
+    if isinstance(item, syntax_node.ValueNode) and item.type is str:
+        return "sep"
+    return "run"
+
+
+def _append_tally_item(parent: syntax_node.SyntaxNode, item) -> None:
+    """Add ``item`` as the last child of ``parent``, collecting numbers into runs.
+
+    Each run is a ``"tally number run"`` ``ListNode`` holding only numbers
+    and shortcuts, which it owns, so it can be re-zipped with
+    :meth:`~montepy.input_parser.syntax_node.ListNode.update_with_new_values`
+    without touching the parens, ``<``, lattice, or ``u=`` around it.
+    Everything else is keyed by its kind; see :func:`_next_key`.
+    """
+    kind = _item_kind(item)
+    if kind != "run":
+        parent.nodes[_next_key(parent, kind)] = item
+        return
+    last = next(reversed(parent.nodes.values()), None)
+    if not _is_run(last):
+        last = syntax_node.ListNode("tally number run")
+        parent.nodes[_next_key(parent, "run")] = last
+    # A chain of shortcuts (e.g. "1 2r 3i 5") arrives as one ListNode.
+    is_chain = type(item) is syntax_node.ListNode and item.name == "next_shortcuts"
+    for node in item.nodes if is_chain else [item]:
+        last.append(node)
+
+
 class TallyParser(DataParser):
     """A parser for ``F`` tally inputs.
 
@@ -71,38 +126,10 @@ class TallyParser(DataParser):
             ret = p.tally_numbers
             item = p.tally_flat_item if hasattr(p, "tally_flat_item") else p.tally_group
         else:
-            ret = syntax_node.ListNode("tally numbers")
+            ret = syntax_node.SyntaxNode("tally bins", {})
             item = p[0]
-        self._append_tally_item(ret, item)
+        _append_tally_item(ret, item)
         return ret
-
-    @staticmethod
-    def _append_tally_item(parent, item):
-        """Append ``item`` to ``parent``, collecting consecutive numbers into runs.
-
-        Each run is its own ``"tally number run"`` ``ListNode`` holding only
-        numbers and shortcuts, so it can be re-zipped with
-        :meth:`~montepy.input_parser.syntax_node.ListNode.update_with_new_values`
-        without losing the parens, ``<``, lattice, or ``u=`` around it.
-        """
-        # type() is, not isinstance(): ShortcutNode is a ListNode subclass.
-        is_shortcut_chain = (
-            type(item) is syntax_node.ListNode and item.name == "next_shortcuts"
-        )
-        is_number = (
-            isinstance(item, syntax_node.ShortcutNode)
-            or is_shortcut_chain
-            or (isinstance(item, syntax_node.ValueNode) and item.type is int)
-        )
-        if not is_number:
-            parent.append(item)
-            return
-        last = parent.nodes[-1] if parent.nodes else None
-        if not (type(last) is syntax_node.ListNode and last.name == "tally number run"):
-            last = syntax_node.ListNode("tally number run")
-            parent.append(last)
-        for node in item.nodes if is_shortcut_chain else [item]:
-            last.append(node)
 
     @_("identifier_phrase", "null_ident_phrase", "tally_shortcut_phrase")
     def tally_flat_item(self, p):
@@ -110,20 +137,18 @@ class TallyParser(DataParser):
 
     @_("lparen_phrase tally_group_body rparen_phrase")
     def tally_group(self, p):
-        ret = syntax_node.ListNode("tally group")
-        ret.append(p.lparen_phrase)
-        for node in p.tally_group_body.nodes:
-            ret.append(node)
-        ret.append(p.rparen_phrase)
-        return ret
+        nodes = {"start_pad": p.lparen_phrase}
+        nodes.update(p.tally_group_body.nodes)
+        nodes["end_pad"] = p.rparen_phrase
+        return syntax_node.SyntaxNode("tally group", nodes)
 
     @_("tally_group_item", "tally_group_body tally_group_item")
     def tally_group_body(self, p):
         if hasattr(p, "tally_group_body"):
             ret = p.tally_group_body
         else:
-            ret = syntax_node.ListNode("tally group body")
-        self._append_tally_item(ret, p.tally_group_item)
+            ret = syntax_node.SyntaxNode("tally group body", {})
+        _append_tally_item(ret, p.tally_group_item)
         return ret
 
     @_(
@@ -278,6 +303,7 @@ class TallyMultiplierParser(TallyParser):
     # FM keeps a flat structure: its numbers aren't re-zipped like F's.
     dont_copy = {
         "tally_numbers",
+        "tally_group",
         "tally_group_body",
         "tally_flat_item",
         "tally_group_item",
@@ -312,6 +338,15 @@ class TallyMultiplierParser(TallyParser):
         else:
             ret = syntax_node.ListNode("tally group body")
         ret.append(p.tally_group_item)
+        return ret
+
+    @_("lparen_phrase tally_group_body rparen_phrase")
+    def tally_group(self, p):
+        ret = syntax_node.ListNode("tally group")
+        ret.append(p.lparen_phrase)
+        for node in p.tally_group_body.nodes:
+            ret.append(node)
+        ret.append(p.rparen_phrase)
         return ret
 
     @_("number_phrase", "null_phrase", "shortcut_phrase")
