@@ -2224,7 +2224,7 @@ class ShortcutNode(ListNode):
         if last_val.value is None:
             raise ValueError(f"Multiply cannot follow a jump. Given: {list(p)}")
         self._nodes.append(copy.deepcopy(last_val))
-        self.nodes[-1].value *= mult_val
+        self.nodes[-1].value = self._to_data_type(self.nodes[-1].value * mult_val)
 
     def _expand_jump(self, p):
         try:
@@ -2276,13 +2276,39 @@ class ShortcutNode(ListNode):
                 new_val = begin + spacing * (i + 1)
             self.append(
                 ValueNode(
-                    str(self._data_type(new_val)), self._data_type, never_pad=True
+                    str(self._to_data_type(new_val)), self._data_type, never_pad=True
                 )
             )
         self._begin = begin
         self._end = end
         self._spacing = spacing
         self.append(p.number_phrase)
+
+    def _to_data_type(self, value):
+        """Convert an expanded value to this shortcut's data type.
+
+        For ``int``, the value is rounded rather than truncated, so floating
+        point error (e.g. ``1 2ilog 1000`` giving 99.99...) can't silently
+        produce the wrong integer, and a non-integral value is an error.
+
+        Parameters
+        ----------
+        value : float
+            the expanded value.
+
+        Returns
+        -------
+        int | float
+        """
+        if self._data_type is int:
+            rounded = round(value)
+            if not math.isclose(value, rounded, rel_tol=rel_tol, abs_tol=abs_tol):
+                raise ValueError(
+                    f"Shortcut expands to non-integer value {value}, but integers "
+                    "are required here."
+                )
+            return rounded
+        return self._data_type(value)
 
     def _can_consume_node(self, node, direction, last_edge_shortcut=False):
         """If it's possible to consume this node.

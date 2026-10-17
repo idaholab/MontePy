@@ -1055,6 +1055,8 @@ def test_shortcut_expansion_invalid(test):
         ("1 1 2i 4:5 6 ", [1, 1, 2, 3, 4, 5, 6], "1 1 2I 4 :5 6"),
         ("1 ilog 100 ", [1, 10, 100], "1 1ILOG 100"),
         ("1 1r ilog 100 ", [1, 1, 10, 100], "1 1R 1ILOG 100"),
+        # Floating point error gives 9.99..., which must round, not truncate.
+        ("1 2ilog 1000 ", [1, 10, 100, 1000], None),
         # secretly test iterator
         ("#1", [1], None),
         ("#(1 2 3)", [1, 2, 3], None),
@@ -1073,6 +1075,14 @@ def test_shortcut_geometry_expansion(test, answer, form_ans):
         assert parsed.format().rstrip() == form_ans
     else:
         assert parsed.format().rstrip() == test.upper().rstrip()
+
+
+@pytest.mark.parametrize("test", ["1 2i 5 ", "1 2ilog 10 "])
+def test_shortcut_geometry_non_integral_raises(test):
+    # Geometry numbers are int, so these can't expand validly.
+    parser = ShortcutGeometryTestFixture()
+    with pytest.raises(ValueError, match="non-integer"):
+        parser.parse(Input([test], BlockType.CELL).tokenize())
 
 
 @pytest.mark.parametrize(
