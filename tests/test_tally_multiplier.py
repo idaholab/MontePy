@@ -365,6 +365,38 @@ class TestScoresIntegration:
         clone = f2.clone()
         assert clone.multiplier is None
 
+    def test_clone_can_skip_multiplier(self, tally_problem):
+        # Review feedback (PR #1005): carrying the multiplier over should be
+        # controlled by a flag.
+        f4 = tally_problem.tallies[4]
+        original_multiplier = f4.multiplier
+        n_multipliers = len(list(tally_problem.tallies.multipliers))
+        clone = f4.clone(clone_multiplier=False)
+        assert clone.multiplier is None
+        assert len(list(tally_problem.tallies.multipliers)) == n_multipliers
+        assert f4.multiplier is original_multiplier
+
+    def test_clone_as_can_carry_multiplier(self, tally_problem):
+        from montepy.data_inputs.tally import F6Tally
+
+        f4 = tally_problem.tallies[4]
+        original_multiplier = f4.multiplier
+        new = f4.clone_as(F6Tally, clone_multiplier=True)
+        assert new.multiplier is not None
+        assert new.multiplier is not original_multiplier
+        assert new.multiplier.number == new.number
+        assert new.multiplier.parent_tally is new
+        assert new.multiplier in tally_problem.tallies.multipliers
+        assert f4.multiplier is original_multiplier
+
+    @pytest.mark.parametrize("clone_multiplier", [False, True])
+    def test_clone_as_same_type_follows_flag(self, tally_problem, clone_multiplier):
+        # clone_as to the same type delegates to clone, but must keep
+        # clone_as's own default of not carrying the multiplier over.
+        f4 = tally_problem.tallies[4]
+        new = f4.clone_as(type(f4), clone_multiplier=clone_multiplier)
+        assert (new.multiplier is not None) is clone_multiplier
+
     def test_clone_carries_over_multiplier_when_unlinked(self):
         t = parse_data(Input(["f4:n 1 2 3"], BlockType.DATA))
         fm = TallyMultiplier(

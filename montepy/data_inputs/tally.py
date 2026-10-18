@@ -485,15 +485,29 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         self,
         starting_number: ty.PositiveInt = None,
         step: ty.PositiveInt = None,
+        *,
+        clone_multiplier: bool = True,
     ) -> Tally:
-        """Clone this tally with a new number.
-
-        If this tally has a linked ``FM`` multiplier (see :attr:`multiplier`),
-        it's cloned too and linked to the new tally's number -- unlike
-        :meth:`clone_as`, ``clone`` is like-for-like (same tally type), so
-        the multiplier's scoring relationship still applies.
+        """Clone this tally with a new number of the same tally type.
 
         See :meth:`~montepy.numbered_mcnp_object.Numbered_MCNP_Object.clone`.
+
+        Parameters
+        ----------
+        starting_number : Integral, optional
+            The starting number to request for the new object's number.
+        step : Integral, optional
+            The step size to use to find a new valid number.
+        clone_multiplier : bool
+            Whether to also clone this tally's linked ``FM`` multiplier (see
+            :attr:`multiplier`) and link it to the new tally. Since ``clone``
+            keeps the tally type, the multiplier still applies, so this
+            defaults to ``True``.
+
+        Returns
+        -------
+        Tally
+            A new tally of the same type, with the same scoring groups.
         """
         multiplier = self.multiplier
         ret = copy.deepcopy(self)
@@ -505,7 +519,7 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             self._problem.tallies.append(ret)
         else:
             ret.number = new_number
-        if multiplier is not None:
+        if clone_multiplier and multiplier is not None:
             multiplier.clone(ret)
         return ret
 
@@ -516,6 +530,8 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         new_type: TallyType | type[Tally],
         starting_number: ty.PositiveInt = None,
         step: ty.PositiveInt = None,
+        *,
+        clone_multiplier: bool = False,
     ) -> Tally:
         """Clone this tally as a different tally type, keeping the same scoring geometry.
 
@@ -534,13 +550,6 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         cell/surface geometry to carry over and can't be converted to or
         from.
 
-        Note
-        ----
-        The clone does **not** carry over a linked ``FM`` multiplier (see
-        :attr:`multiplier`) -- a multiplier is a companion card tied to this
-        exact tally number, not something that meaningfully transfers to a
-        retyped/renumbered copy.
-
         Parameters
         ----------
         new_type : TallyType | type[Tally]
@@ -550,6 +559,12 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             The starting number to request for the new object's number.
         step : Integral, optional
             The step size to use to find a new valid number.
+        clone_multiplier : bool
+            Whether to also clone this tally's linked ``FM`` multiplier (see
+            :attr:`multiplier`) and link it to the new tally. This defaults
+            to ``False``, since a multiplier written for one tally type
+            often doesn't make sense for another; e.g. MCNP doesn't allow an
+            ``FM`` card on an ``F8`` tally.
 
         Returns
         -------
@@ -576,8 +591,9 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             )
 
         if target_cls is type(self):
-            return self.clone(starting_number, step)
+            return self.clone(starting_number, step, clone_multiplier=clone_multiplier)
 
+        multiplier = self.multiplier
         ret = copy.deepcopy(self)
         ret.__class__ = target_cls
         ret._multiplier = None
@@ -590,6 +606,8 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             self._problem.tallies.append(ret)
         else:
             ret.number = new_number
+        if clone_multiplier and multiplier is not None:
+            multiplier.clone(ret)
         return ret
 
     def __str__(self):

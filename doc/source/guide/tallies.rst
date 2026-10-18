@@ -416,6 +416,10 @@ Because that link is the whole point of an ``FMn`` card, MontePy keeps it
 consistent for you: deleting a tally that has a linked multiplier removes the
 now-orphaned ``FM`` card from the problem too (with a warning), and renumbering a
 tally renumbers its linked multiplier to match.
+Cloning a tally with :func:`~montepy.Tally.clone` clones its multiplier too,
+unless you pass ``clone_multiplier=False``.
+:func:`~montepy.Tally.clone_as` does the opposite: since a multiplier written for one
+tally type often doesn't fit another, it only clones it with ``clone_multiplier=True``.
 
 Since a ``TallyMultiplier``'s number always tracks its parent tally's rather than
 being independently assignable, it has its own
