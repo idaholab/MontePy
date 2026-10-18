@@ -350,7 +350,9 @@ class FlatGroup(TallyGroup):
         for item, number, index in zip(
             self._items, self._old_numbers, self._lattice_indices
         ):
-            if isinstance(item, FlatGroup):
+            # A nested union has no number. Checked this way rather than with
+            # isinstance, which is slow for an ABC and this is called often.
+            if number is None:
                 yield from item._leaves()
             else:
                 yield item, number, index

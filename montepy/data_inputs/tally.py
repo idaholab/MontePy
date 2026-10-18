@@ -363,11 +363,15 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         object_ids = set()
         numbers = set()
         for group in self._groups:
-            objs = group.cells_or_surfaces
-            if objs:
-                object_ids.update(id(obj) for obj in objs)
-            else:
-                numbers.update(group.old_numbers)
+            scored = group.levels[0] if isinstance(group, PathGroup) else group
+            for entry, number, _ in scored._leaves():
+                # An unresolved entry is its own number (see
+                # FlatGroup._number_of), so this avoids a slow isinstance
+                # check against the Integral ABC.
+                if entry is number:
+                    numbers.add(number)
+                else:
+                    object_ids.add(id(entry))
         return object_ids, numbers
 
     @staticmethod
