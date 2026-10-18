@@ -711,6 +711,15 @@ You can also build a path group from scratch with
    [1]
    [2]
 
+``inside`` works on a path read from an input too, adding a new outermost level:
+
+.. doctest::
+
+   >>> path_tally.groups[0].inside(problem.cells[3])
+   PathGroup(...)
+   >>> path_tally.mcnp_str()
+   'f114:n (u=1 < 2[0 0 0] < 5 < 3 )'
+
 References
 ----------
 

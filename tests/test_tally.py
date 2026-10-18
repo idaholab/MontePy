@@ -1708,3 +1708,38 @@ class TestNestedUnions:
         t = montepy.SurfaceFluxTally()
         with pytest.raises(TypeError):
             t.add_group(self._cells(1))
+
+
+class TestInsideParsedPath:
+    """PathGroup.inside on a path read from an input. It used to add the level
+    to the object, but not to the written text."""
+
+    @pytest.mark.parametrize(
+        "line, numbers, lattice, expected_levels",
+        [
+            ("f4:n (1 < 2)", [9], None, [[1], [2], [9]]),
+            ("f4:n (1<2)", [9], None, [[1], [2], [9]]),
+            ("f4:n (1 < 2) 3", [9, 8], None, [[1], [2], [9, 8]]),
+            ("f4:n ((1 2) < (3 4))", [9], [0, 0, 0], [[1, 2], [3, 4], [9]]),
+            ("f4:n (1 < 2[0 0 0])", [9], None, [[1], [2], [9]]),
+            ("f4:n (1 < u=2)", [9], None, [[1], [], [9]]),
+        ],
+    )
+    def test_inside_is_written(self, line, numbers, lattice, expected_levels):
+        t = Tally.from_input(line, jit_parse=False)
+        t.groups[0].inside(*[montepy.Cell(number=n) for n in numbers], lattice=lattice)
+        reread = Tally.from_input(t.mcnp_str())
+        assert [
+            level.old_numbers for level in reread.groups[0].levels
+        ] == expected_levels
+        if lattice is not None:
+            index = reread.groups[0].levels[-1].lattice_indices[0]
+            assert index.elements == (tuple(lattice),)
+        # The rest of the input is unchanged.
+        assert t.mcnp_str().startswith(line.split(")")[0])
+
+    def test_inside_on_path_then_remove(self):
+        t = Tally.from_input("f4:n (1 < 2)", jit_parse=False)
+        t.groups[0].inside(montepy.Cell(number=9))
+        t.remove_cell(montepy.Cell(number=1))
+        assert t.groups == []

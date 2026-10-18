@@ -756,23 +756,41 @@ class PathGroup(TallyGroup):
             "tally group", {"start_pad": syntax_node.PaddingNode("(")}
         )
         for i, level in enumerate(self._levels):
-            level._ensure_has_node()
-            level._update_node()
             if i != 0:
                 node.nodes[_next_key(node, "sep")] = _make_value_node(
                     str, "<", padding=" "
                 )
-            level_node = syntax_node.SyntaxNode("tally level", {})
-            if _is_group_node(level._node):
-                _append_tally_item(level_node, level._node)
-            else:
-                for entry in level._node.nodes:
-                    _append_tally_item(level_node, entry)
-                # The level now edits its entries where they are in this path.
-                level._node = level_node
-            node.nodes[_next_key(node, "level")] = level_node
+            node.nodes[_next_key(node, "level")] = self._level_node(level)
         node.nodes["end_pad"] = syntax_node.PaddingNode(")")
         self._node = node
+
+    @staticmethod
+    def _level_node(level: FlatGroup) -> syntax_node.SyntaxNode:
+        """Build the ``"tally level"`` node for a level made from scratch."""
+        level._ensure_has_node()
+        level._update_node()
+        level_node = syntax_node.SyntaxNode("tally level", {})
+        if _is_group_node(level._node):
+            _append_tally_item(level_node, level._node)
+        else:
+            for entry in level._node.nodes:
+                _append_tally_item(level_node, entry)
+            # The level now edits its entries where they are in this path.
+            level._node = level_node
+        return level_node
+
+    def _append_level_node(self, level: FlatGroup) -> None:
+        """Add a new outermost level to this path's existing tree."""
+        nodes = self._node.nodes
+        end_pad = nodes.pop("end_pad")
+        last_level = nodes[[key for key in nodes if key != "start_pad"][-1]]
+        last_entry = list(last_level.nodes.values())[-1]
+        if not last_level.format()[-1:].isspace():
+            # Keep the new "<" from being glued to the old outermost level.
+            _set_trailing_padding(last_entry, syntax_node.PaddingNode(" "))
+        nodes[_next_key(self._node, "sep")] = _make_value_node(str, "<", padding=" ")
+        nodes[_next_key(self._node, "level")] = self._level_node(level)
+        nodes["end_pad"] = end_pad
 
     def _update_node(self):
         for level in self._levels:
@@ -805,6 +823,8 @@ class PathGroup(TallyGroup):
         is_grouped = len(cells_or_surfaces) > 1
         level = FlatGroup(list(cells_or_surfaces), indices, is_grouped=is_grouped)
         self._levels.append(level)
+        if self._node is not None:
+            self._append_level_node(level)
         return self
 
     def __contains__(self, item) -> bool:
@@ -842,6 +862,8 @@ def _set_trailing_padding(node, padding) -> None:
             del lattice.nodes[-1]
         if padding is not None:
             lattice.append(padding)
+    elif isinstance(node, syntax_node.ListNode) and node.name == "universe phrase":
+        node.nodes[-1].padding = padding
     elif _is_group_node(node):
         end = syntax_node.PaddingNode(")")
         if padding is not None:
