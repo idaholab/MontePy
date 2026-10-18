@@ -31,11 +31,15 @@ from montepy.data_inputs.tally import (
     SurfaceTally,
     CellTally,
     SurfaceCurrentTally,
+    SurfaceEnergyCurrentTally,
     SurfaceFluxTally,
+    SurfaceEnergyFluxTally,
     CellFluxTally,
+    CellEnergyFluxTally,
     EnergyDepositionTally,
     FissionEnergyDepositionTally,
     EnergyDetectorPulseTally,
+    DetectorEnergyDepositionTally,
     CollisionHeatingTally,
     ChargeDepositionTally,
     F1Tally,
@@ -55,7 +59,7 @@ from montepy.data_inputs.tally_multiplier import (
     AttenuatorSet,
     SpecialMultiplierSet,
 )
-from montepy.data_inputs.tally_type import TallyType, Score
+from montepy.data_inputs.tally_type import TallyType, TallyUnits, Score
 from montepy.data_inputs.tally_multiplier_type import SpecialMultiplier
 
 # geometry

@@ -204,14 +204,19 @@ Tally Objects
    montepy.SurfaceTally
    montepy.CellTally
    montepy.SurfaceCurrentTally
+   montepy.SurfaceEnergyCurrentTally
    montepy.SurfaceFluxTally
+   montepy.SurfaceEnergyFluxTally
    montepy.CellFluxTally
+   montepy.CellEnergyFluxTally
    montepy.EnergyDepositionTally
    montepy.FissionEnergyDepositionTally
    montepy.EnergyDetectorPulseTally
+   montepy.DetectorEnergyDepositionTally
    montepy.CollisionHeatingTally
    montepy.ChargeDepositionTally
    montepy.TallyType
+   montepy.TallyUnits
    montepy.Score
 
 Scoring Groups and Filters

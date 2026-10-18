@@ -18,7 +18,7 @@ from montepy.data_inputs.tally_group import (
     TallyGroup,
     _parse_tally_numbers,
 )
-from montepy.data_inputs.tally_type import Score, TallyType, _TallyKey
+from montepy.data_inputs.tally_type import Score, TallyType, TallyUnits, _TallyKey
 from montepy.exceptions import (
     IllegalState,
     MalformedInputError,
@@ -118,6 +118,10 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
 
     _POINTER_ATTRS = set()
     _DEFAULT_SCORES = ()
+    _TALLY_TYPE = None
+    # Every TallyType this class is used for, in addition to _TALLY_TYPE (its
+    # default). E.g. F6 and *F6 only differ in units, so both are F6Tally.
+    _OTHER_TALLY_TYPES = ()
     _KEYS_TO_PRESERVE = {"_multiplier"}
 
     @staticmethod
@@ -134,6 +138,7 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         self._include_total = False
         self._parsed_include_total = False
         self._multiplier = None
+        self._tally_type = type(self)._TALLY_TYPE
 
     def _jit_light_init(self, input):
         super()._jit_light_init(input)
@@ -201,6 +206,7 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         digit = _digit_of(num)
         if digit not in _VALID_MODULI:
             raise MalformedInputError(self._input, f"Invalid tally type digit: {digit}")
+        self._parse_tally_type()
         tally_list = self._tree["data"]
         end_node = tally_list["end"]
         self._include_total = (
@@ -209,6 +215,21 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         self._parsed_include_total = self._include_total
         self._groups = _parse_tally_numbers(tally_list["tally"])
         self._groups_in_tree = list(self._groups)
+
+    def _parse_tally_type(self):
+        """Pick which of this class's tally types the classifier's modifier is."""
+        if self._TALLY_TYPE is None:
+            return
+        modifier_node = self._classifier.modifier
+        modifier = modifier_node.value if modifier_node is not None else None
+        for tally_type in (self._TALLY_TYPE, *self._OTHER_TALLY_TYPES):
+            if (tally_type.modifier or "") == (modifier or ""):
+                self._tally_type = tally_type
+                return
+        raise MalformedInputError(
+            self._input,
+            f"Modifier {modifier!r} is not valid for a {type(self).__name__}.",
+        )
 
     def _number_validator(self, number):
         # Unlike _parse_tally_body's check, this is specific to *this*
@@ -233,7 +254,38 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
     @needs_full_ast
     def tally_type(self) -> TallyType | None:
         """The MCNP tally type (e.g. ``TallyType.CELL_FLUX`` for ``F4``)."""
-        return getattr(type(self), "_TALLY_TYPE", None)
+        return self._tally_type
+
+    @property
+    @needs_full_ast
+    def tally_units(self) -> TallyUnits | None:
+        """The units of this tally's result, e.g. ``TallyUnits.MEV_PER_G`` for ``F6``.
+
+        Only settable for a tally type that MCNP allows in more than one
+        unit: ``F6`` and ``F7`` can be in MeV/g or, as ``*F6``/``*F7``, in
+        jerks/g. A different quantity, such as the energy flux of ``*F4``,
+        is a different class instead (:class:`~montepy.CellEnergyFluxTally`).
+
+        .. versionadded:: 1.6.0b4
+
+        Raises
+        ------
+        ValueError
+            If this tally type can't be in the given units.
+        """
+        if self._tally_type is None:
+            return None
+        return self._tally_type.units
+
+    @tally_units.setter
+    @args_checked
+    @needs_full_cst
+    def tally_units(self, units: TallyUnits):
+        for tally_type in (self._TALLY_TYPE, *self._OTHER_TALLY_TYPES):
+            if tally_type is not None and tally_type.units is units:
+                self._tally_type = tally_type
+                return
+        raise ValueError(f"A {type(self).__name__} can't be in {units.value}.")
 
     @property
     @needs_full_ast
@@ -463,12 +515,16 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             self._classifier.modifier = self._generate_default_node(
                 str, "", padding=None
             )
-        tally_type = getattr(type(self), "_TALLY_TYPE", None)
-        self._classifier.modifier.value = (
+        tally_type = self._tally_type
+        modifier = self._classifier.modifier
+        modifier.value = (
             tally_type.modifier
             if tally_type is not None and tally_type.modifier
             else ""
         )
+        # Otherwise a removed modifier (e.g. "+F6" cloned as an F6) is padded
+        # to its old width, leaving " F6".
+        modifier.never_pad = modifier.value == ""
         bins = self._tree["data"]["tally"]
         # Patches each group's value nodes, including a shortcut's values.
         group_nodes = [group.node for group in self._groups]
@@ -707,6 +763,7 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         multiplier = self.multiplier
         ret = copy.deepcopy(self)
         ret.__class__ = target_cls
+        ret._tally_type = target_cls._TALLY_TYPE
         ret._multiplier = None
         new_number = self._next_number_for_type(
             target_cls._TALLY_TYPE, starting_number, step
@@ -729,7 +786,7 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
 
     def __repr__(self):
         try:
-            ttype = getattr(type(self), "_TALLY_TYPE", None)
+            ttype = getattr(self, "_tally_type", None)
             ngroups = len(getattr(self, "_groups", []))
             return f"TALLY: {self.number}, type: {ttype}, groups: {ngroups}"
         except Exception:
@@ -1037,6 +1094,16 @@ class SurfaceCurrentTally(SurfaceTally):
     _DEFAULT_SCORES = (Score.CURRENT,)
 
 
+class SurfaceEnergyCurrentTally(SurfaceTally):
+    """``*F1``: surface energy current tally, in MeV.
+
+    .. versionadded:: 1.6.0b4
+    """
+
+    _TALLY_TYPE = TallyType.ENERGY_CURRENT
+    _DEFAULT_SCORES = (Score.ENERGY_CURRENT,)
+
+
 class SurfaceFluxTally(SurfaceTally):
     """``F2``: average surface flux tally.
 
@@ -1045,6 +1112,16 @@ class SurfaceFluxTally(SurfaceTally):
 
     _TALLY_TYPE = TallyType.SURFACE_FLUX
     _DEFAULT_SCORES = (Score.FLUX,)
+
+
+class SurfaceEnergyFluxTally(SurfaceTally):
+    """``*F2``: average surface energy flux tally, in MeV/cm2.
+
+    .. versionadded:: 1.6.0b4
+    """
+
+    _TALLY_TYPE = TallyType.SURFACE_ENERGY_FLUX
+    _DEFAULT_SCORES = (Score.ENERGY_FLUX,)
 
 
 class CellFluxTally(CellTally):
@@ -1057,23 +1134,41 @@ class CellFluxTally(CellTally):
     _DEFAULT_SCORES = (Score.FLUX,)
 
 
+class CellEnergyFluxTally(CellTally):
+    """``*F4``: cell energy flux tally, in MeV/cm2.
+
+    .. versionadded:: 1.6.0b4
+    """
+
+    _TALLY_TYPE = TallyType.CELL_ENERGY_FLUX
+    _DEFAULT_SCORES = (Score.ENERGY_FLUX,)
+
+
 class EnergyDepositionTally(CellTally):
     """``F6``: energy deposition tally.
+
+    Also ``*F6``, the same tally in jerks/g instead of MeV/g; see
+    :attr:`~montepy.Tally.tally_units`.
 
     .. versionadded:: 1.6.0b2
     """
 
     _TALLY_TYPE = TallyType.ENERGY_DEPOSITION
+    _OTHER_TALLY_TYPES = (TallyType.ENERGY_DEPOSITION_JERKS,)
     _DEFAULT_SCORES = (Score.ENERGY_DEPOSITION,)
 
 
 class FissionEnergyDepositionTally(CellTally):
     """``F7``: fission energy deposition tally.
 
+    Also ``*F7``, the same tally in jerks/g instead of MeV/g; see
+    :attr:`~montepy.Tally.tally_units`.
+
     .. versionadded:: 1.6.0b2
     """
 
     _TALLY_TYPE = TallyType.FISSION_ENERGY_DEPOSITION
+    _OTHER_TALLY_TYPES = (TallyType.FISSION_ENERGY_DEPOSITION_JERKS,)
     _DEFAULT_SCORES = (Score.FISSION_ENERGY_DEPOSITION,)
 
 
@@ -1085,6 +1180,17 @@ class EnergyDetectorPulseTally(CellTally):
 
     _TALLY_TYPE = TallyType.ENERGY_DETECTOR_PULSE
     _DEFAULT_SCORES = (Score.PULSE_HEIGHT,)
+
+
+class DetectorEnergyDepositionTally(CellTally):
+    """``*F8``: energy deposition in a detector, in MeV, rather than the pulse
+    height of the plain F8 tally.
+
+    .. versionadded:: 1.6.0b4
+    """
+
+    _TALLY_TYPE = TallyType.DETECTOR_ENERGY_DEPOSITION
+    _DEFAULT_SCORES = (Score.ENERGY_DEPOSITION,)
 
 
 class CollisionHeatingTally(CellTally):
@@ -1111,12 +1217,18 @@ class ChargeDepositionTally(CellTally):
 
 _TALLY_TYPE_MAP: dict[TallyType, type[Tally]] = {
     TallyType.CURRENT: SurfaceCurrentTally,
+    TallyType.ENERGY_CURRENT: SurfaceEnergyCurrentTally,
     TallyType.SURFACE_FLUX: SurfaceFluxTally,
+    TallyType.SURFACE_ENERGY_FLUX: SurfaceEnergyFluxTally,
     TallyType.CELL_FLUX: CellFluxTally,
+    TallyType.CELL_ENERGY_FLUX: CellEnergyFluxTally,
     TallyType.ENERGY_DEPOSITION: EnergyDepositionTally,
+    TallyType.ENERGY_DEPOSITION_JERKS: EnergyDepositionTally,
     TallyType.COLLISION_HEATING: CollisionHeatingTally,
     TallyType.FISSION_ENERGY_DEPOSITION: FissionEnergyDepositionTally,
+    TallyType.FISSION_ENERGY_DEPOSITION_JERKS: FissionEnergyDepositionTally,
     TallyType.ENERGY_DETECTOR_PULSE: EnergyDetectorPulseTally,
+    TallyType.DETECTOR_ENERGY_DEPOSITION: DetectorEnergyDepositionTally,
     TallyType.CHARGE_DEPOSITION: ChargeDepositionTally,
 }
 

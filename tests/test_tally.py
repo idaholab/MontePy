@@ -282,6 +282,9 @@ class TestTallyTypeShape:
             (TallyType.COLLISION_HEATING, "F", 6, "+"),
             (TallyType.ENERGY_DETECTOR_PULSE, "F", 8, None),
             (TallyType.CHARGE_DEPOSITION, "F", 8, "+"),
+            (TallyType.CELL_ENERGY_FLUX, "F", 4, "*"),
+            (TallyType.ENERGY_DEPOSITION_JERKS, "F", 6, "*"),
+            (TallyType.DETECTOR_ENERGY_DEPOSITION, "F", 8, "*"),
         ],
     )
     def test_mnemonic_modulo_modifier(self, member, mnemonic, modulo, modifier):
@@ -648,6 +651,10 @@ class TestTallyBuilders:
             montepy.EnergyDetectorPulseTally,
             montepy.data_inputs.tally.CollisionHeatingTally,
             montepy.data_inputs.tally.ChargeDepositionTally,
+            montepy.SurfaceEnergyCurrentTally,
+            montepy.SurfaceEnergyFluxTally,
+            montepy.CellEnergyFluxTally,
+            montepy.DetectorEnergyDepositionTally,
         ],
     )
     def test_from_scratch_classifier_formatting(self, cls, hundreds):
@@ -1429,3 +1436,129 @@ class TestRemoveScored:
         assert cells[0] not in t.cells
         assert cells[1] in t.cells
         assert cells[2] in t.cells
+
+
+class TestStarModifier:
+    """The ``*`` tally modifier (review feedback, PR #1005). Where it changes
+    the quantity tallied (``*F1``, ``*F2``, ``*F4``, ``*F8``) it is its own
+    class; for ``*F6``/``*F7`` it only changes the units, set by
+    ``tally_units``."""
+
+    @pytest.mark.parametrize(
+        "line, cls, tally_type, units",
+        [
+            (
+                "*f1:n 1",
+                montepy.SurfaceEnergyCurrentTally,
+                TallyType.ENERGY_CURRENT,
+                "MEV",
+            ),
+            (
+                "*f2:n 1",
+                montepy.SurfaceEnergyFluxTally,
+                TallyType.SURFACE_ENERGY_FLUX,
+                "MEV_PER_CM2",
+            ),
+            (
+                "*f4:n 1",
+                montepy.CellEnergyFluxTally,
+                TallyType.CELL_ENERGY_FLUX,
+                "MEV_PER_CM2",
+            ),
+            (
+                "*f6:n 1",
+                montepy.EnergyDepositionTally,
+                TallyType.ENERGY_DEPOSITION_JERKS,
+                "JERKS_PER_G",
+            ),
+            (
+                "*f7:n 1",
+                montepy.FissionEnergyDepositionTally,
+                TallyType.FISSION_ENERGY_DEPOSITION_JERKS,
+                "JERKS_PER_G",
+            ),
+            (
+                "*f8:p 1",
+                montepy.DetectorEnergyDepositionTally,
+                TallyType.DETECTOR_ENERGY_DEPOSITION,
+                "MEV",
+            ),
+            (
+                "f6:n 1",
+                montepy.EnergyDepositionTally,
+                TallyType.ENERGY_DEPOSITION,
+                "MEV_PER_G",
+            ),
+            (
+                "f8:p 1",
+                montepy.EnergyDetectorPulseTally,
+                TallyType.ENERGY_DETECTOR_PULSE,
+                "PULSES",
+            ),
+        ],
+    )
+    def test_dispatch(self, line, cls, tally_type, units):
+        t = Tally.from_input(line)
+        assert type(t) is cls
+        assert t.tally_type is tally_type
+        assert t.tally_units is montepy.TallyUnits[units]
+        assert t.mcnp_str() == line
+
+    def test_every_tally_type_has_a_class_and_units(self):
+        from montepy.data_inputs.tally import _TALLY_TYPE_MAP
+
+        for tally_type in TallyType:
+            cls = _TALLY_TYPE_MAP[tally_type]
+            assert tally_type in (cls._TALLY_TYPE, *cls._OTHER_TALLY_TYPES)
+            assert isinstance(tally_type.units, montepy.TallyUnits)
+
+    @pytest.mark.parametrize("line", ["f6:n 1", "f7:n 1"])
+    def test_set_units_switches_star(self, line):
+        t = Tally.from_input(line)
+        t.tally_units = montepy.TallyUnits.JERKS_PER_G
+        assert t.mcnp_str() == "*" + line
+        assert (
+            Tally.from_input(t.mcnp_str()).tally_units is montepy.TallyUnits.JERKS_PER_G
+        )
+        t.tally_units = montepy.TallyUnits.MEV_PER_G
+        assert t.mcnp_str() == line
+
+    def test_set_units_from_scratch(self):
+        t = montepy.EnergyDepositionTally(number=16)
+        t.tally_units = montepy.TallyUnits.JERKS_PER_G
+        t.add_cell(montepy.Cell(number=1))
+        assert t.mcnp_str().startswith("*F16 1")
+
+    @pytest.mark.parametrize(
+        "line, units",
+        [("f4:n 1", "MEV_PER_CM2"), ("f6:n 1", "MEV"), ("*f8:p 1", "PULSES")],
+    )
+    def test_set_units_rejects_other_quantities(self, line, units):
+        t = Tally.from_input(line)
+        with pytest.raises(ValueError):
+            t.tally_units = montepy.TallyUnits[units]
+
+    def test_star_with_plus_is_invalid(self):
+        with pytest.raises(montepy.exceptions.MalformedInputError):
+            Tally.from_input("*+f8:e 1")
+
+    def test_wrong_modifier_for_class_is_invalid(self):
+        with pytest.raises(montepy.exceptions.MalformedInputError):
+            montepy.CellFluxTally(Input(["*f4:n 1"], BlockType.DATA), jit_parse=False)
+
+    def test_clone_as_uses_target_default_units(self):
+        t = Tally.from_input("*f6:n 1")
+        new = t.clone_as(montepy.FissionEnergyDepositionTally)
+        assert new.tally_units is montepy.TallyUnits.MEV_PER_G
+        assert new.mcnp_str().startswith("f7:n")
+
+    @pytest.mark.parametrize(
+        "line, target",
+        [("+f6:n 1", "EnergyDepositionTally"), ("*f6:n 1", "CellFluxTally")],
+    )
+    def test_removed_modifier_leaves_no_space(self, line, target):
+        # Regression test: removing a modifier padded the classifier to the
+        # modifier's old width, writing " f16:n 1".
+        t = Tally.from_input(line)
+        new = t.clone_as(getattr(montepy.data_inputs.tally, target))
+        assert new.mcnp_str()[0] == "f"

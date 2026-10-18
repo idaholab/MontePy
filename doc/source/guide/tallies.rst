@@ -49,26 +49,42 @@ type:
      - ``F1``
      - :class:`~montepy.SurfaceCurrentTally`
      - ``montepy.F1Tally``
+   * - Surface energy current
+     - ``*F1``
+     - :class:`~montepy.SurfaceEnergyCurrentTally`
+     -
    * - Average surface flux
      - ``F2``
      - :class:`~montepy.SurfaceFluxTally`
      - ``montepy.F2Tally``
+   * - Average surface energy flux
+     - ``*F2``
+     - :class:`~montepy.SurfaceEnergyFluxTally`
+     -
    * - Cell flux
      - ``F4``
      - :class:`~montepy.CellFluxTally`
      - ``montepy.F4Tally``
+   * - Cell energy flux
+     - ``*F4``
+     - :class:`~montepy.CellEnergyFluxTally`
+     -
    * - Energy deposition
-     - ``F6``
+     - ``F6``, ``*F6``
      - :class:`~montepy.EnergyDepositionTally`
      - ``montepy.F6Tally``
    * - Fission energy deposition
-     - ``F7``
+     - ``F7``, ``*F7``
      - :class:`~montepy.FissionEnergyDepositionTally`
      - ``montepy.F7Tally``
-   * - Pulse height (energy deposition in a detector)
+   * - Pulse height in a detector
      - ``F8``
      - :class:`~montepy.EnergyDetectorPulseTally`
      - ``montepy.F8Tally``
+   * - Energy deposition in a detector
+     - ``*F8``
+     - :class:`~montepy.DetectorEnergyDepositionTally`
+     -
    * - Collision heating
      - ``+F6``
      - :class:`~montepy.CollisionHeatingTally`
@@ -90,6 +106,23 @@ a typo of the plain card: ``+F6`` (collision heating) and ``+F8`` (charge
 deposition) score a different physical quantity than plain ``F6``/``F8``, so
 MontePy treats them as distinct classes even though they share the same type
 digit.
+The same goes for a leading ``*`` on ``*F1``, ``*F2``, ``*F4``, and ``*F8``, which
+tally energy instead of particles (or, for ``*F8``, energy deposition instead of
+pulses).
+
+On ``F6`` and ``F7``, though, ``*`` only changes the units, from MeV/g to jerks/g,
+so ``*F6`` and ``*F7`` are the same classes as ``F6`` and ``F7``.
+Every tally has :attr:`~montepy.Tally.tally_units`, and on these two you can set
+it to switch between them:
+
+.. doctest::
+
+   >>> deposition = montepy.Tally.from_input("F16:n 1")
+   >>> deposition.tally_units
+   <TallyUnits.MEV_PER_G: 'MeV/g'>
+   >>> deposition.tally_units = montepy.TallyUnits.JERKS_PER_G
+   >>> deposition.mcnp_str()
+   '*F16:n 1'
 
 Underneath these, there are two intermediate classes worth knowing about:
 :class:`~montepy.SurfaceTally` for tallies that score on surfaces
