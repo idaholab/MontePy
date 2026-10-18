@@ -1088,8 +1088,8 @@ class NumberedObjectCollection(ABC):
 
         Parameters
         ----------
-        others : Self
-            the other collections to compare to.
+        other : Self
+            the other collection to compare to.
 
         Returns
         -------
@@ -1106,8 +1106,8 @@ class NumberedObjectCollection(ABC):
 
         Parameters
         ----------
-        others : Self
-            the other collections to compare to.
+        other : Self
+            the other collection to compare to.
         """
         self ^= other
         return self
