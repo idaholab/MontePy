@@ -1,132 +1,136 @@
 .. meta::
    :description lang=en:
-        How MontePy's tally (F) and tally multiplier (FM) inputs are dispatched, parsed into a syntax tree, modeled, edited, and written back.
+        How to add a new tally type to MontePy: the TallyType member, the Tally subclass, and what to register and implement.
 
 Tallies: :class:`~montepy.Tally`
 ================================
 
-A tally (``F``) input is a :class:`~montepy.Tally`, defined in ``montepy/data_inputs/tally.py``.
-Its scoring bins are :class:`~montepy.data_inputs.tally.TallyGroup` objects, defined in
-``montepy/data_inputs/tally_group.py``, and its ``FM`` input is a
-:class:`~montepy.TallyMultiplier`, defined in ``montepy/data_inputs/tally_multiplier.py``.
-The grammars for both are in ``montepy/input_parser/tally_parser.py``.
+Every kind of MCNP tally is a :class:`~montepy.TallyType`, identified by its mnemonic, the last digit
+of its number, and its modifier (``+``, ``*``, or none), e.g. ``*F4``.
+Each kind of tally that scores a different quantity is its own subclass of
+:class:`~montepy.Tally`, e.g. :class:`~montepy.CellEnergyFluxTally` for ``*F4``.
+Kinds that only differ in units share a class: ``F6`` and ``*F6`` (MeV/g or jerks/g) are both an
+:class:`~montepy.EnergyDepositionTally`.
 
-Tally Types and Dispatch
-------------------------
+How much work a new tally type is depends on its syntax:
 
-Each kind of tally is a :class:`~montepy.TallyType`, keyed by its mnemonic, the last digit of its
-number (modulo 10), and its modifier (``+``, ``*``, or none).
-``TallyType`` has a member for every valid combination, even when two use the same class.
+* one that scores over cells or surfaces like the existing ``F`` tallies only needs a
+  ``TallyType``, a class, and registering it;
+* one with its own syntax, such as detector (``F5``) or mesh tallies, also needs a parser and its
+  own implementations of parsing and writing its data.
 
-Each concrete :class:`~montepy.Tally` subclass has:
+Adding a Cell or Surface Tally Type
+------------------------------------
 
-* ``_TALLY_TYPE``: its default ``TallyType``;
-* ``_OTHER_TALLY_TYPES``: any other ``TallyType`` it is used for. ``F6`` and ``*F6`` only differ in
-  units (MeV/g or jerks/g), so both are an :class:`~montepy.EnergyDepositionTally`, and
-  :attr:`~montepy.Tally.tally_units` switches between them.
-  A different quantity, such as ``*F4``'s energy flux, is a different class instead;
-* ``_DEFAULT_SCORES``: the :class:`~montepy.Score` it reports without a multiplier.
+#. **Add the** :class:`~montepy.TallyType` **member** in ``montepy/data_inputs/tally_type.py``,
+   with its units in ``_UNITS``. Every member must have units; a test checks this.
 
-``_TALLY_TYPE_MAP`` maps every ``TallyType`` to its class, and
-:meth:`~montepy.Tally.from_input` uses it (through ``Tally._dispatch_class``) to pick the
-class from the classifier, after a light parse of it.
-A tally's ``tally_type`` is set per instance from its classifier's modifier
-(``Tally._parse_tally_type``).
+   .. code-block:: python
 
-Detector (``F5``) tallies aren't supported yet.
-:func:`~montepy.data_inputs.data_parser.parse_data` reads them, and ``FM`` inputs for them, as plain
-data inputs (see ``tally._is_detector_input``), and ``Tally.from_input`` raises
-:class:`~montepy.exceptions.UnsupportedFeature` for them.
+       CELL_ENERGY_FLUX = _TallyKey("F", 4, "*")
+       """.. versionadded:: 1.6.0b4"""
 
-The Syntax Tree
----------------
+#. **Add a** :class:`~montepy.Score` **member**, if it reports a quantity no existing score
+   describes. This is what :attr:`~montepy.Tally.scores` reports when there is no multiplier.
 
-The grammar gives a tally's bins their structure: Python code doesn't need to split or pair up
-nodes after parsing.
-The bins are a ``"tally bins"`` :class:`~montepy.input_parser.syntax_node.SyntaxNode`, whose
-children are keyed by their kind and a counter, e.g. ``("run", 0)`` or ``("group", 1)``
-(see ``tally_parser._next_key``):
+#. **Subclass** :class:`~montepy.CellTally` **or** :class:`~montepy.SurfaceTally`, and set its class
+   attributes:
 
-* a ``"tally number run"`` :class:`~montepy.input_parser.syntax_node.ListNode` holds consecutive
-  numbers and shortcuts (e.g. ``1 3i 5``), and nothing else, so it can be re-zipped with
-  :meth:`~montepy.input_parser.syntax_node.ListNode.update_with_new_values` after a number
-  changes or is removed;
-* a ``"tally group"`` node is a parenthesized group. A union's entries are its children
-  directly, while a ``<`` path's children are ``("level", n)`` ``"tally level"`` nodes,
-  separated by ``("sep", n)`` ``<`` nodes;
-* a ``"lattice cell"`` node holds the ``("run", 0)`` of a cell (or shortcut) and the ``"lattice"``
-  phrase that follows it, e.g. ``2[0 0 0]``;
-* a ``u=`` universe designator is a ``"universe phrase"``.
+   .. code-block:: python
 
-``tally_parser._append_tally_item`` adds an item to a node, collecting numbers into runs.
-For example:
+       class CellEnergyFluxTally(CellTally):
+           """``*F4``: cell energy flux tally, in MeV/cm2.
 
-.. doctest::
+           .. versionadded:: 1.6.0b4
+           """
 
-    >>> from montepy.input_parser.tally_parser import TallyParser
-    >>> from montepy.input_parser.tokens import TallyLexer
-    >>> tree = TallyParser().parse(TallyLexer().tokenize("f4:n 1 3i 5 (6 < 7[0 0 0])"))
-    >>> bins = tree["data"]["tally"]
-    >>> list(bins.nodes)
-    [('run', 0), ('group', 0)]
-    >>> list(bins[("group", 0)].nodes)
-    ['start_pad', ('level', 0), ('sep', 0), ('level', 1), 'end_pad']
-    >>> list(bins[("group", 0)][("level", 1)].nodes)
-    [('cell', 0)]
+           _TALLY_TYPE = TallyType.CELL_ENERGY_FLUX
+           _DEFAULT_SCORES = (Score.ENERGY_FLUX,)
 
-The ``FM`` grammar, :class:`~montepy.input_parser.tally_parser.TallyMultiplierParser`,
-overrides all of these rules: its bins have no paths or lattices, and their numbers are ``float``.
+   ``_TALLY_TYPE`` is the type the class is created as from scratch.
+   If the new type only differs from an existing class in its units, don't make a new class:
+   add the type to that class's ``_OTHER_TALLY_TYPES`` instead, and
+   :attr:`~montepy.Tally.tally_units` will switch between them.
 
-The Object Model
-----------------
+   The parent class provides everything else: parsing and writing the scoring bins, the
+   ``add_*``/``remove_*`` builders, :attr:`~montepy.CellTally.cells` or
+   :attr:`~montepy.SurfaceTally.surfaces`, linking to the problem and to an ``FM`` input, and
+   :meth:`~montepy.Tally.clone_as` conversions to other tallies of the same parent class.
 
-``tally_group._parse_tally_numbers`` maps the bins to groups:
+#. **Register the type in** ``_TALLY_TYPE_MAP`` at the bottom of ``montepy/data_inputs/tally.py``.
+   :meth:`~montepy.Tally.from_input` uses it to pick the class for an input.
+   A test checks that every ``TallyType`` is mapped to a class that lists it.
 
-* :class:`~montepy.data_inputs.tally.FlatGroup` is a union (``is_grouped``) or a set of separate
-  bins, e.g. a single top-level number, or one level of a path. Its members are numbers,
-  :class:`~montepy.Cell`/:class:`~montepy.Surface` objects once linked, or nested union
-  ``FlatGroup`` objects, e.g. the ``(2 3)`` in ``(1 (2 3) < 5)``.
-  ``_items``, ``_old_numbers`` (``None`` for a nested union), ``_lattice_indices``, and
-  ``_number_nodes`` (the :class:`~montepy.input_parser.syntax_node.ValueNode` of each number)
-  are parallel lists, and ``_leaves`` walks every scored entry, including nested ones.
-  A ``FlatGroup`` keeps the node it was parsed from, and edits it in place.
-* :class:`~montepy.data_inputs.tally.PathGroup` is a ``<`` path, whose
-  :attr:`~montepy.data_inputs.tally.PathGroup.levels` are ``FlatGroup`` objects, innermost first.
-  Only the innermost level is scored, so only it is ``in`` the tally, linked to the problem, or
-  in :attr:`~montepy.CellTally.cells`; the outer levels only say which instance of it is meant.
-* :class:`~montepy.data_inputs.tally.LatticeIndex` holds a lattice phrase's elements.
+#. **Export and document the class**:
 
-:attr:`~montepy.CellTally.cells` and :attr:`~montepy.SurfaceTally.surfaces` are kept in step with
-the groups: adding a group adds its scored objects, and removing one only checks its own entries
-against what the other groups still score (``Tally._prune_unreferenced``).
+   * import it in ``montepy/__init__.py``;
+   * add it to the Tallies ``autosummary`` in ``doc/source/api/modules.rst``;
+   * add a row for it to the table of tally types in ``doc/source/guide/tallies.rst``.
 
-Writing Back
-------------
+   The shorthand aliases (e.g. ``montepy.F4Tally``) are only for the plain and ``+`` types; don't
+   add one for others.
 
-``Tally._update_values`` brings the tree up to date:
+#. **Add tests** to ``tests/test_tally.py``: that its input dispatches to the class with the right
+   ``tally_type``, ``tally_units``, and ``scores``, and is written back unchanged; and add the class
+   to the parametrized list in ``TestTallyBuilders.test_from_scratch_classifier_formatting``.
 
-#. Each group's ``node`` is updated with its current numbers, e.g. after a cell is renumbered.
-   A group built from scratch builds its node the first time.
-#. If groups were added or removed, the bins are rebuilt (``Tally._rebuild_bins``), putting each
-   remaining top-level number back into the run it was parsed in.
-#. Each run with a changed value is re-zipped, so a shortcut stays a shortcut.
-#. The ``T`` total flag is written only if it changed, keeping its original case, by
-   ``tally_parser._set_end_flag``, which :class:`~montepy.TallyMultiplier` also uses for its
-   ``T``/``C`` flag.
+Adding a Tally with Its Own Syntax
+-----------------------------------
 
-Editing a parsed group edits its tree directly. ``FlatGroup._remove_item`` removes a number's
-node, re-zipping its shortcut and dropping a lattice index that followed it, and the entry before
-a removed last entry takes over its trailing padding.
-``PathGroup.inside`` adds a new outermost level to a parsed path's tree.
+A tally that doesn't score over a list of cells or surfaces, such as a detector (``F5``),
+radiography (``FIP``/``FIR``/``FIC``), or mesh (``FMESH``/``TMESH``) tally, needs more.
+The steps above still apply, except that the class subclasses :class:`~montepy.Tally` directly.
 
-Linking and Multipliers
------------------------
+Parsing
+^^^^^^^
 
-A tally's groups are linked to the problem's cells or surfaces by number in ``link_to_problem``
-(``TallyGroup.update_pointers``).
-:class:`~montepy.Cell` and :class:`~montepy.Surface` list ``("tallies", "groups", True)`` in their
-``_parent_collections``, so renumbering one fully parses any tally that may refer to it first.
+:class:`~montepy.input_parser.tally_parser.TallyParser` only parses scoring bins.
+Write a parser for the new syntax in ``montepy/input_parser/``, and return it from the class's
+``_parser()`` static method.
+Its tree should keep the ``"data"`` node layout of a tally (``tree["data"]["tally"]`` and
+``tree["data"]["end"]``) if the base class's total flag handling is to be reused.
 
-An ``FM`` input is linked to its tally by number in :class:`~montepy.tallies.Tallies`, in
-whichever order the two are added: one added before its tally waits in ``Tallies._fm_queue``.
-Renumbering a tally renumbers its multiplier, and deleting it deletes its multiplier.
+Dispatch
+^^^^^^^^
+
+:func:`~montepy.data_inputs.data_parser.parse_data` sends every input with the ``F`` prefix to
+:meth:`~montepy.Tally.from_input`, which picks the class from ``_TALLY_TYPE_MAP``.
+
+* ``F5`` inputs are currently kept out of this: ``parse_data`` reads them, and ``FM`` inputs for
+  them, as plain data inputs (``tally._is_detector_input``), and ``Tally._dispatch_class`` raises
+  :class:`~montepy.exceptions.UnsupportedFeature` for them. Remove both when adding ``F5``.
+* A tally with another mnemonic has another prefix. Override ``_class_prefix()``, and add the class
+  to ``DATA_CLASSES`` in ``montepy/data_inputs/data_parser.py`` (and remove the prefix from
+  ``VERBOTEN``, as for ``fmesh``).
+
+Since it is a :class:`~montepy.Tally`, the problem adds it to :attr:`~montepy.MCNP_Problem.tallies`,
+and links an ``FM`` input with the same number to it.
+
+Methods to Implement
+^^^^^^^^^^^^^^^^^^^^
+
+The base class assumes a tally's data is its list of scoring bins
+(:attr:`~montepy.Tally.groups`). Override these for the new data:
+
+``_init_blank``
+    Call ``super()._init_blank()``, then set the default values of the new data.
+``_parse_tally_body``
+    Parse the new data from ``self._tree``. The base implementation parses the scoring bins and the
+    total flag.
+``_update_values``
+    Write the new data back into ``self._tree`` before it is formatted. The base implementation
+    writes the classifier's modifier, the scoring bins, and the total flag.
+``_generate_default_tree``
+    If a new tally's default tree should have a different ``"data"`` node.
+``__contains__``
+    What ``in`` means for the new tally, if anything.
+``link_to_problem``
+    If the new data refers to other objects in the problem, such as cells or materials. Call
+    ``super().link_to_problem(problem, deepcopy=deepcopy)`` first.
+``_tally_category``
+    :meth:`~montepy.Tally.clone_as` only converts between tallies of the same category: the
+    classes listed in ``Tally._tally_category``. Add the new base class there if its subclasses
+    should convert among each other.
+
+Properties for the new data should follow the usual patterns (see :ref:`jit-parsing`), e.g.
+``@needs_full_ast`` getters.
