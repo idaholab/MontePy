@@ -142,7 +142,9 @@ class Cells(NumberedObjectCollection):
         for attr, _ in inputs_to_property.values():
             getattr(self, attr).link_to_problem(problem, deepcopy=deepcopy)
 
-    def grab_input(self, input: MCNP_Object, problem, check_input: bool = False):
+    def grab_input(
+        self, input: montepy.mcnp_object.MCNP_Object, problem, check_input: bool = False
+    ):
         """
         Grab a data block CellModifier input and link it to this problem.
         """
