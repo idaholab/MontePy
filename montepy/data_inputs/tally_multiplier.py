@@ -1496,6 +1496,8 @@ class TallyMultiplier(Numbered_MCNP_Object, DataInputAbstract):
         self._parsed_bins = []
         self._include_total = False
         self._cumulative = False
+        # The end flag ("T", "C", or None) as written in the tree.
+        self._parsed_flag = None
         self._parent_tally = None
 
     def _jit_light_init(self, input):
@@ -1564,6 +1566,7 @@ class TallyMultiplier(Numbered_MCNP_Object, DataInputAbstract):
         end_val = str(end_node.value).upper() if end_node.value is not None else None
         self._include_total = end_val == "T"
         self._cumulative = end_val == "C"
+        self._parsed_flag = self._flag
         self._bins = _parse_multiplier_bins(tally_list["tally"])
         self._parsed_bins = list(self._bins)
 
@@ -1701,13 +1704,20 @@ class TallyMultiplier(Numbered_MCNP_Object, DataInputAbstract):
             for bin_ in self._bins:
                 if bin_._node is not None:
                     bin_.node
+        # Only rewrite the flag when it changed, so an untouched lowercase
+        # "t" or "c" is kept as written.
+        if self._flag != self._parsed_flag:
+            _set_end_flag(self._tree["data"], self._flag)
+            self._parsed_flag = self._flag
+
+    @property
+    def _flag(self) -> str | None:
+        """The end flag for the current settings: ``"T"``, ``"C"``, or ``None``."""
         if self._include_total:
-            flag = "T"
-        elif self._cumulative:
-            flag = "C"
-        else:
-            flag = None
-        _set_end_flag(self._tree["data"], flag)
+            return "T"
+        if self._cumulative:
+            return "C"
+        return None
 
     def __str__(self):
         try:

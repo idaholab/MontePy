@@ -456,6 +456,23 @@ class TestFlags:
         assert fm.mcnp_str().rstrip().endswith("(1 2 3)   $ hi")
         assert not TallyMultiplier(fm.mcnp_str()).include_total
 
+    @pytest.mark.parametrize(
+        "line", ["fm4 (1 2 3) t", "fm4 (1 2 3) c", "fm4 (1 2 3) t $ hi"]
+    )
+    def test_untouched_lowercase_flag_round_trips_exactly(self, line):
+        # Regression test: _update_values rewrote the flag on every write,
+        # so an untouched lowercase "t" or "c" came out uppercase.
+        fm = TallyMultiplier(Input([line], BlockType.DATA), jit_parse=False)
+        assert fm.mcnp_str() == line
+        fm.include_total = fm.include_total
+        fm.cumulative = fm.cumulative
+        assert fm.mcnp_str() == line
+
+    def test_changed_flag_writes_uppercase(self):
+        fm = TallyMultiplier(Input(["fm4 (1 2 3) t"], BlockType.DATA), jit_parse=False)
+        fm.cumulative = True
+        assert fm.mcnp_str().rstrip() == "fm4 (1 2 3) C"
+
     def test_include_total_and_cumulative_are_mutually_exclusive(self):
         fm = TallyMultiplier(
             Input(["fm4 (1.0 26 16)"], BlockType.DATA), jit_parse=False
