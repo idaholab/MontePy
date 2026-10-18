@@ -210,17 +210,11 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         """The list of :class:`~montepy.data_inputs.tally.TallyGroup` objects defining what is scored."""
         return list(self._groups)
 
-    @property
+    @make_prop_pointer("_include_total", bool)
     @needs_full_ast
     def include_total(self) -> bool:
         """``True`` if a total bin (T) is appended."""
-        return self._include_total
-
-    @include_total.setter
-    @args_checked
-    @needs_full_cst
-    def include_total(self, value: bool):
-        self._include_total = value
+        pass
 
     @make_prop_pointer(
         "_multiplier",

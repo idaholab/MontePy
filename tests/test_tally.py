@@ -868,6 +868,18 @@ class TestGroupRoundTrip:
         assert not t.include_total
         assert not t.mcnp_str().strip().endswith("T")
 
+    def test_include_total_parses_lazily(self):
+        # include_total's backing attribute is set before parsing, so the
+        # getter must still force a full parse rather than return it as is.
+        t = CellFluxTally(Input(["f4:n 1 2 t"], BlockType.DATA))
+        assert not t.fully_parsed
+        assert t.include_total is True
+
+    def test_include_total_rejects_non_bool(self):
+        t = CellFluxTally(Input(["f4:n 1 2"], BlockType.DATA))
+        with pytest.raises(TypeError):
+            t.include_total = 1
+
     def test_untouched_lowercase_total_flag_round_trips_exactly(self):
         # Regression test: _update_values used to unconditionally rewrite
         # the total-bin flag as uppercase "T" on every write, silently
