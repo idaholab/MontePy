@@ -1001,12 +1001,12 @@ class TestGroupRoundTrip:
         # Regression test: a lattice index right after a shortcut was dropped.
         t = Tally.from_input("f4:n (1 < 2 3i 6[0 0 0] < 7)", jit_parse=False)
         indices = t.groups[0].levels[1].lattice_indices
-        assert [None if i is None else i.dimensions for i in indices] == [
+        assert [None if i is None else i.elements for i in indices] == [
             None,
             None,
             None,
             None,
-            (0, 0, 0),
+            ((0, 0, 0),),
         ]
 
     def test_remove_cell_reflected_in_mcnp_str(self):
@@ -1109,9 +1109,31 @@ class TestReprAndEquality:
     branches need explicit exercising."""
 
     def test_lattice_index(self):
-        li = LatticeIndex([1, (2, 3)])
-        assert li.dimensions == (1, (2, 3))
+        li = LatticeIndex([[1, (2, 3)]])
+        assert li.elements == ((1, (2, 3)),)
         assert "LatticeIndex" in repr(li)
+
+    @pytest.mark.parametrize(
+        "lattice, elements",
+        [
+            ("[0 0 0]", ((0, 0, 0),)),
+            ("[5]", ((5,),)),
+            ("[-1:1 0:1 0]", (((-1, 1), (0, 1), 0),)),
+            ("[0 0 0, 0 1 0]", ((0, 0, 0), (0, 1, 0))),
+            ("[0 0 0,0 1 0]", ((0, 0, 0), (0, 1, 0))),
+            ("[0:1 0 0, 2 0:1 0]", (((0, 1), 0, 0), (2, (0, 1), 0))),
+        ],
+    )
+    def test_lattice_index_elements(self, lattice, elements):
+        t = Tally.from_input(f"F4:n (1 < 2{lattice} < 3)")
+        li = t.groups[0].levels[1].lattice_indices[0]
+        assert li.elements == elements
+        # Rebuilding from the data model must give back the same elements.
+        assert LatticeIndex.parse_input_node(li.node).elements == elements
+
+    def test_lattice_index_node_writes_commas(self):
+        li = LatticeIndex([[0, 0, 0], [(0, 1), 1, 0]])
+        assert li.node.format() == "[0 0 0, 0:1 1 0]"
 
     def test_tally_group_is_abstract(self):
         # Review feedback (PR #1005): TallyGroup's docstring called itself

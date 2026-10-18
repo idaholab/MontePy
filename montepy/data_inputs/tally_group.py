@@ -47,22 +47,17 @@ class LatticeIndex:
       every element in that range, e.g. ``[-1:1 0:1 0]``.
     * ``[i1 j1 k1, i2 j2 k2]``: a comma-separated list of individual elements.
 
-    :attr:`dimensions` holds the bracket's entries in order: an ``int`` for a
-    single index, or an ``(i1, i2)`` tuple for a range.
+    :attr:`elements` holds one tuple per comma-separated element. Each entry
+    in it is an ``int`` for a single index, or an ``(i1, i2)`` tuple for a
+    range.
 
     .. versionadded:: 1.6.0b2
 
-    .. note::
-
-        The comma-separated list form is not yet modeled: its entries are
-        flattened into :attr:`dimensions`, so ``[0 0 0, 0 1 0]`` gives
-        ``(0, 0, 0, 0, 1, 0)``. The tally is still written out unchanged.
-
     Parameters
     ----------
-    dimensions : list[Integral | tuple[Integral, Integral]]
-        Each entry is either a single lattice index, or a ``(start, stop)``
-        range (``i1:i2``).
+    elements : list[list[Integral | tuple[Integral, Integral]]]
+        One list per comma-separated element. Each entry is either a single
+        lattice index, or a ``(start, stop)`` range (``i1:i2``).
 
     Examples
     --------
@@ -75,66 +70,78 @@ class LatticeIndex:
 
         >>> import montepy
         >>> tally = montepy.Tally.from_input("F4:n (1 < 2[0 0 0] < 3)")
-        >>> tally.groups[0].levels[1].lattice_indices[0].dimensions
-        (0, 0, 0)
+        >>> tally.groups[0].levels[1].lattice_indices[0].elements
+        ((0, 0, 0),)
 
     A range becomes a ``(start, stop)`` tuple:
 
     .. doctest::
 
         >>> tally = montepy.Tally.from_input("F4:n (1 < 2[-1:1 0:1 0] < 3)")
-        >>> tally.groups[0].levels[1].lattice_indices[0].dimensions
-        ((-1, 1), (0, 1), 0)
+        >>> tally.groups[0].levels[1].lattice_indices[0].elements
+        (((-1, 1), (0, 1), 0),)
 
     A single number is the element's position in the ``FILL`` array:
 
     .. doctest::
 
         >>> tally = montepy.Tally.from_input("F4:n (1 < 2[5] < 3)")
-        >>> tally.groups[0].levels[1].lattice_indices[0].dimensions
-        (5,)
+        >>> tally.groups[0].levels[1].lattice_indices[0].elements
+        ((5,),)
+
+    A comma-separated list gives one tuple per element:
+
+    .. doctest::
+
+        >>> tally = montepy.Tally.from_input("F4:n (1 < 2[0 0 0, 0 1 0] < 3)")
+        >>> tally.groups[0].levels[1].lattice_indices[0].elements
+        ((0, 0, 0), (0, 1, 0))
 
     To build a path with a lattice index, pass the indices as ``lattice`` to
     :meth:`~montepy.data_inputs.tally.PathGroup.inside`.
     """
 
-    __slots__ = ("_dimensions",)
+    __slots__ = ("_elements",)
 
     @args_checked
-    def __init__(self, dimensions: list[ty.Integral | tuple[ty.Integral, ty.Integral]]):
-        self._dimensions = tuple(dimensions)
+    def __init__(
+        self, elements: list[list[ty.Integral | tuple[ty.Integral, ty.Integral]]]
+    ):
+        self._elements = tuple(tuple(element) for element in elements)
 
     @property
-    def dimensions(self):
-        """The indices or (start, end) ranges."""
-        return self._dimensions
+    def elements(self) -> tuple[tuple[int | tuple[int, int], ...], ...]:
+        """The lattice elements, each a tuple of indices or (start, end) ranges.
+
+        .. versionadded:: 1.6.0b4
+        """
+        return self._elements
 
     @property
     def node(self) -> syntax_node.ListNode:
-        """Build a fresh ``ListNode("lattice phrase")`` from these dimensions.
+        """Build a fresh ``ListNode("lattice phrase")`` from these elements.
 
-        Inverse of :meth:`parse_input_node`. Freshly-built dimensions are
-        always space-separated (the common ``[i j k]`` single-element-index
-        form); the data model doesn't distinguish that from a comma-separated
-        list once parsed, so there's no lossless "original style" to
-        preserve here anyway.
+        Inverse of :meth:`parse_input_node`. Indices within an element are
+        space-separated, and elements are separated by ``", "``.
 
         .. versionadded:: 1.6.0b4
         """
         node = syntax_node.ListNode("lattice phrase")
         node.append(syntax_node.PaddingNode("["))
-        dims = self._dimensions
-        for i, dim in enumerate(dims):
-            if isinstance(dim, tuple):
-                item = syntax_node.ListNode("lattice range")
-                item.append(_make_value_node(int, dim[0], padding=None))
-                item.append(syntax_node.PaddingNode(":"))
-                item.append(_make_value_node(int, dim[1], padding=None))
-                node.append(item)
-            else:
-                node.append(_make_value_node(int, dim, padding=None))
-            if i != len(dims) - 1:
-                node.append(syntax_node.PaddingNode(" "))
+        for i, element in enumerate(self._elements):
+            if i != 0:
+                node.append(syntax_node.PaddingNode(", "))
+            for j, dim in enumerate(element):
+                if j != 0:
+                    node.append(syntax_node.PaddingNode(" "))
+                if isinstance(dim, tuple):
+                    item = syntax_node.ListNode("lattice range")
+                    item.append(_make_value_node(int, dim[0], padding=None))
+                    item.append(syntax_node.PaddingNode(":"))
+                    item.append(_make_value_node(int, dim[1], padding=None))
+                    node.append(item)
+                else:
+                    node.append(_make_value_node(int, dim, padding=None))
         node.append(syntax_node.PaddingNode("]"))
         return node
 
@@ -144,24 +151,26 @@ class LatticeIndex:
 
         .. versionadded:: 1.6.0b4
         """
-        dimensions = []
+        elements = [[]]
         for n in lattice_node.nodes:
             if isinstance(n, syntax_node.PaddingNode):
+                if n.format().strip() == ",":
+                    elements.append([])
                 continue
             if isinstance(n, syntax_node.ListNode) and n.name == "lattice range":
                 vals = [
                     m.value for m in n.nodes if isinstance(m, syntax_node.ValueNode)
                 ]
                 if len(vals) >= 2:
-                    dimensions.append((int(vals[0]), int(vals[1])))
+                    elements[-1].append((int(vals[0]), int(vals[1])))
             elif isinstance(n, syntax_node.ValueNode) and isinstance(
                 n.value, (int, float)
             ):
-                dimensions.append(int(n.value))
-        return LatticeIndex(dimensions)
+                elements[-1].append(int(n.value))
+        return LatticeIndex(elements)
 
     def __repr__(self):
-        return f"LatticeIndex({self._dimensions})"
+        return f"LatticeIndex({self._elements})"
 
 
 class TallyGroup(ABC):
@@ -589,7 +598,7 @@ class PathGroup(TallyGroup):
     def inside(
         self,
         *cells_or_surfaces: montepy.Cell | montepy.Surface,
-        lattice: list[ty.Integral] | None = None,
+        lattice: list[ty.Integral | tuple[ty.Integral, ty.Integral]] | None = None,
     ) -> PathGroup:
         """Append an outer level and return self for chaining.
 
@@ -597,8 +606,9 @@ class PathGroup(TallyGroup):
         ----------
         cells_or_surfaces : Cell | Surface
             Objects at this level.
-        lattice : list[Integral], optional
-            Lattice index dimensions for the first element.
+        lattice : list[Integral | tuple[Integral, Integral]], optional
+            The indices of one lattice element (e.g. ``[0, 0, 0]``) for the
+            first object at this level.
 
         Returns
         -------
@@ -607,7 +617,7 @@ class PathGroup(TallyGroup):
         """
         indices = [None] * len(cells_or_surfaces)
         if lattice is not None and cells_or_surfaces:
-            indices[0] = LatticeIndex(lattice)
+            indices[0] = LatticeIndex([lattice])
         is_grouped = len(cells_or_surfaces) > 1
         level = FlatGroup(list(cells_or_surfaces), indices, is_grouped=is_grouped)
         self._levels.append(level)
