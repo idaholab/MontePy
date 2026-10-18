@@ -2,6 +2,7 @@
 from __future__ import annotations
 import copy
 from typing import Generator
+import warnings
 
 import montepy
 from montepy.cells import Cells
@@ -22,6 +23,8 @@ from montepy.exceptions import (
     IllegalState,
     MalformedInputError,
     NumberConflictError,
+    OnlyInPathError,
+    PathContainmentWarning,
     UnsupportedFeature,
 )
 from montepy.input_parser import syntax_node
@@ -314,6 +317,57 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             else:
                 numbers.update(group.old_numbers)
         return object_ids, numbers
+
+    @staticmethod
+    def _is_same(entry, item) -> bool:
+        """Whether a group entry (an object or a number) is ``item``."""
+        if isinstance(entry, ty.Integral):
+            return entry in (item.number, item.old_number)
+        return entry is item
+
+    def _remove_scored(self, item, noun: str) -> None:
+        """Remove every scored occurrence of ``item``, for ``remove_cell``/``remove_surface``.
+
+        ``item`` is removed from each bin, union, and innermost path level it
+        is in, so it is no longer ``in`` this tally. A bin, union, or path
+        left with nothing to score is removed.
+        """
+        found = False
+        for group in list(self._groups):
+            scored = group.levels[0] if isinstance(group, PathGroup) else group
+            indices = [
+                i for i, entry in enumerate(scored._items) if self._is_same(entry, item)
+            ]
+            if not indices:
+                continue
+            found = True
+            if len(indices) == len(scored._items):
+                self._groups.remove(group)
+            else:
+                for i in reversed(indices):
+                    scored._remove_item(i)
+        in_path = any(
+            self._is_same(entry, item)
+            for group in self._groups
+            if isinstance(group, PathGroup)
+            for level in group.levels[1:]
+            for entry in level._items
+        )
+        if not found:
+            if in_path:
+                raise OnlyInPathError(
+                    f"{noun.capitalize()} {item.number} is only a containment level "
+                    f"of a path in {self}, not a scored {noun}, so it can't be "
+                    "removed."
+                )
+            raise ValueError(f"{noun.capitalize()} {item.number} is not in {self}.")
+        if in_path:
+            warnings.warn(
+                f"{noun.capitalize()} {item.number} was removed from {self}, but is "
+                "still a containment level of one of its paths.",
+                PathContainmentWarning,
+            )
+        self._prune_unreferenced()
 
     @staticmethod
     def _dispatch_class(
@@ -728,24 +782,33 @@ class SurfaceTally(Tally):
     @args_checked
     @needs_full_cst
     def remove_surface(self, surface: montepy.Surface) -> None:
-        """Remove the single-surface scoring bin added via :meth:`add_surface`.
+        """Remove a surface from everywhere this tally scores it.
+
+        After this, ``surface in tally`` is ``False``. The surface is removed
+        from its own bins, from unions (``(1 2)`` becomes ``(2)``), and from
+        the innermost level of ``<`` paths. A union or path left with nothing
+        to score is removed.
 
         Parameters
         ----------
         surface : Surface
             The surface to remove.
+
+        Raises
+        ------
+        OnlyInPathError
+            If the surface is only a containment (outer) level of a path,
+            which isn't scored, and so can't be removed.
+        ValueError
+            If the surface isn't in this tally at all.
+
+        Warns
+        -----
+        PathContainmentWarning
+            If the surface is still a containment level of a path after it
+            was removed from where it was scored.
         """
-        for group in self._groups:
-            if (
-                isinstance(group, FlatGroup)
-                and not group.is_grouped
-                and group.cells_or_surfaces == [surface]
-            ):
-                self.remove_group(group)
-                return
-        raise ValueError(
-            f"No single-surface scoring group found for surface {surface.number}."
-        )
+        self._remove_scored(surface, "surface")
 
     @args_checked
     @needs_full_cst
@@ -761,6 +824,10 @@ class SurfaceTally(Tally):
             The group to remove.
         """
         self._groups.remove(group)
+        self._prune_unreferenced()
+
+    def _prune_unreferenced(self):
+        """Drop surfaces no remaining group references from :attr:`surfaces`."""
         referenced_objects, referenced_numbers = self._referenced_objects_and_numbers()
         for surface in list(self._surfaces):
             if (
@@ -862,22 +929,33 @@ class CellTally(Tally):
     @args_checked
     @needs_full_cst
     def remove_cell(self, cell: montepy.Cell) -> None:
-        """Remove the single-cell scoring bin added via :meth:`add_cell`.
+        """Remove a cell from everywhere this tally scores it.
+
+        After this, ``cell in tally`` is ``False``. The cell is removed from
+        its own bins, from unions (``(1 2)`` becomes ``(2)``), and from the
+        innermost level of ``<`` paths. A union or path left with nothing to
+        score is removed.
 
         Parameters
         ----------
         cell : Cell
             The cell to remove.
+
+        Raises
+        ------
+        OnlyInPathError
+            If the cell is only a containment (outer) level of a path, which
+            isn't scored, and so can't be removed.
+        ValueError
+            If the cell isn't in this tally at all.
+
+        Warns
+        -----
+        PathContainmentWarning
+            If the cell is still a containment level of a path after it was
+            removed from where it was scored.
         """
-        for group in self._groups:
-            if (
-                isinstance(group, FlatGroup)
-                and not group.is_grouped
-                and group.cells_or_surfaces == [cell]
-            ):
-                self.remove_group(group)
-                return
-        raise ValueError(f"No single-cell scoring group found for cell {cell.number}.")
+        self._remove_scored(cell, "cell")
 
     @args_checked
     @needs_full_cst
@@ -893,6 +971,10 @@ class CellTally(Tally):
             The group to remove.
         """
         self._groups.remove(group)
+        self._prune_unreferenced()
+
+    def _prune_unreferenced(self):
+        """Drop cells no remaining group references from :attr:`cells`."""
         referenced_objects, referenced_numbers = self._referenced_objects_and_numbers()
         for cell in list(self._cells):
             if (

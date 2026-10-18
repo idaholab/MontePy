@@ -265,13 +265,12 @@ If you want a group of cells averaged into a single bin instead, use
 :func:`~montepy.SurfaceTally.add_surface` and
 :func:`~montepy.SurfaceTally.add_group`.
 
-Each of these has a matching removal method:
-:func:`~montepy.CellTally.remove_cell`/:func:`~montepy.SurfaceTally.remove_surface`
-removes the single-item bin that ``add_cell``/``add_surface`` would have created, and
+Each of these has a matching removal method.
 :func:`~montepy.CellTally.remove_group` removes any group outright, whether it came
 from ``add_cell``, ``add_group``, or ``add_path_group``.
-A cell or surface only drops out of :attr:`~montepy.CellTally.cells`/
-:attr:`~montepy.SurfaceTally.surfaces` once no remaining group references it.
+:func:`~montepy.CellTally.remove_cell`/:func:`~montepy.SurfaceTally.remove_surface`
+remove a cell or surface from everywhere the tally scores it, so that afterwards it is
+no longer ``in`` the tally:
 
 .. doctest::
 
@@ -282,6 +281,23 @@ A cell or surface only drops out of :attr:`~montepy.CellTally.cells`/
    [1, 3] True
    >>> problem.cells[2] in new_tally.cells
    False
+
+That includes unions, which keep their remaining members (even just one), and the
+innermost level of ``<`` paths. A bin, union, or path left with nothing to score is
+removed:
+
+.. doctest::
+
+   >>> new_tally.remove_cell(problem.cells[1])
+   >>> for group in new_tally.groups:
+   ...     print(group.old_numbers, group.is_grouped)
+   [3] True
+
+A cell or surface that is only a containment (outer) level of a path isn't scored,
+so it isn't ``in`` the tally, and removing it raises
+:class:`~montepy.exceptions.OnlyInPathError`.
+If it is scored somewhere else too, it is removed from there, with a
+:class:`~montepy.exceptions.PathContainmentWarning` that the path still uses it.
 
 Scores and Filters
 --------------------

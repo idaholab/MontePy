@@ -327,6 +327,53 @@ class FlatGroup(TallyGroup):
         self._node = node
         self._number_nodes = list(number_nodes) if number_nodes else []
 
+    def _remove_item(self, index: int) -> None:
+        """Remove the item at ``index``, with its lattice index, from this group and its tree.
+
+        A shortcut it was part of is re-zipped around the remaining values.
+
+        .. versionadded:: 1.6.0b4
+        """
+        del self._items[index]
+        del self._old_numbers[index]
+        del self._lattice_indices[index]
+        if not self._number_nodes:
+            return
+        num_node = self._number_nodes.pop(index)
+        keys = list(self._node.nodes)
+        for i, key in enumerate(keys):
+            run = self._node.nodes[key]
+            if not _is_run(run):
+                continue
+            values = list(run)
+            if not any(v is num_node for v in values):
+                continue
+            # The padding after the removed item: its own, or, if a lattice
+            # index follows it, the lattice's. A lattice index always ends its
+            # run, so it can only follow the run's last value.
+            trailing = num_node.padding
+            following = keys[i + 1] if i + 1 < len(keys) else None
+            if (
+                values[-1] is num_node
+                and isinstance(following, tuple)
+                and following[0] == "lattice"
+            ):
+                lattice = self._node.nodes.pop(following)
+                tail = lattice.nodes[-2:]
+                trailing = tail[-1] if tail[0].format() == "]" else None
+            remaining = [v for v in values if v is not num_node]
+            if remaining:
+                if values[-1] is num_node and any(
+                    n is remaining[-1] for n in run.nodes
+                ):
+                    # The new last value takes over the trailing padding, so
+                    # "(1 2 3)" becomes "(1 2)", not "(1 2 )".
+                    remaining[-1].padding = trailing
+                run.update_with_new_values(remaining)
+            else:
+                del self._node.nodes[key]
+            return
+
     @staticmethod
     def _number_of(item: ty.Integral | montepy.Cell | montepy.Surface) -> ty.Integral:
         return item if isinstance(item, ty.Integral) else item.number

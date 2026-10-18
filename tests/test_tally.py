@@ -1128,7 +1128,10 @@ class TestGroupRoundTrip:
         assert "99" not in t.mcnp_str()
         assert cell not in t.cells
 
-    def test_remove_cell_keeps_cell_if_referenced_elsewhere(self):
+    def test_remove_cell_removes_it_from_unions_too(self):
+        # Review feedback (PR #1005): remove_cell used to only remove a
+        # single-cell bin, leaving the cell in unions, so "cell in tally"
+        # was still True afterwards.
         t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)
         cell = montepy.Cell()
         cell.number = 99
@@ -1137,10 +1140,18 @@ class TestGroupRoundTrip:
         t.add_cell(cell)
         t.add_group([cell, other])
         t.remove_cell(cell)
-        assert cell in t.cells
-        assert "99" in t.mcnp_str()
+        assert cell not in t
+        assert cell not in t.cells
+        assert other in t.cells
+        reread = Tally.from_input(t.mcnp_str())
+        assert [(g.old_numbers, g.is_grouped) for g in reread.groups] == [
+            ([1], False),
+            ([2], False),
+            ([3], False),
+            ([98], True),
+        ]
 
-    def test_remove_cell_raises_if_not_a_single_cell_group(self):
+    def test_remove_cell_raises_if_not_in_tally(self):
         t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)
         cell = montepy.Cell()
         cell.number = 99
@@ -1304,3 +1315,84 @@ class TestReprAndEquality:
         from montepy.data_inputs.tally import Tally
 
         assert Tally._parent_collections() == ()
+
+
+class TestRemoveScored:
+    """remove_cell/remove_surface remove an item from everywhere it is scored,
+    so that afterwards it is not ``in`` the tally (review feedback, PR #1005)."""
+
+    @staticmethod
+    def _remove(line, number):
+        t = Tally.from_input(line, jit_parse=False)
+        t.remove_cell(montepy.Cell(number=number))
+        return t
+
+    @pytest.mark.parametrize(
+        "line, number, expected",
+        [
+            ("f4:n (1 2 3)", 2, "f4:n (1 3)"),
+            ("f4:n (1 2[0 0 0] 3)", 2, "f4:n (1 3)"),
+            ("f4:n (1 2[0 0 0])", 2, "f4:n (1)"),
+            ("f4:n (1[0 0 0] 2)", 1, "f4:n (2)"),
+            ("f4:n (1 3i 5) 6", 5, "f4:n (1 2i 4) 6"),
+            ("f4:n (1 2 3) 4", 3, "f4:n (1 2) 4"),
+            # A union keeps its parens with one member left.
+            ("f4:n (1 2)", 1, "f4:n (2)"),
+            ("f4:n 3 (3 4)", 3, "f4:n (4)"),
+            ("f4:n ((1 2) < 5)", 1, "f4:n ((2) < 5)"),
+            # A bin or path left with nothing to score is removed.
+            ("f4:n (4 < 5) 6", 4, "f4:n 6"),
+            ("f4:n ((1 2) < 5) 6", 1, "f4:n ((2) < 5) 6"),
+        ],
+    )
+    def test_removed_from_where_it_is_scored(self, line, number, expected):
+        t = self._remove(line, number)
+        assert montepy.Cell(number=number) not in t
+        assert t.mcnp_str().strip() == expected
+
+    def test_removed_from_shortcut_in_union(self):
+        t = self._remove("f4:n (1 3i 5)", 3)
+        reread = Tally.from_input(t.mcnp_str())
+        assert reread.groups[0].old_numbers == [1, 2, 4, 5]
+        assert reread.groups[0].is_grouped
+
+    def test_last_union_member_removes_the_union(self):
+        t = self._remove("f4:n (2) 6", 2)
+        assert [g.old_numbers for g in t.groups] == [[6]]
+
+    def test_only_in_path_raises(self):
+        t = Tally.from_input("f4:n (2 < 5)", jit_parse=False)
+        with pytest.raises(montepy.exceptions.OnlyInPathError):
+            t.remove_cell(montepy.Cell(number=5))
+        assert t.mcnp_str() == "f4:n (2 < 5)"
+
+    def test_only_in_path_is_a_value_error(self):
+        assert issubclass(montepy.exceptions.OnlyInPathError, ValueError)
+
+    def test_also_in_path_warns(self):
+        t = Tally.from_input("f4:n 3 (1 < 3)", jit_parse=False)
+        with pytest.warns(montepy.exceptions.PathContainmentWarning):
+            t.remove_cell(montepy.Cell(number=3))
+        assert t.mcnp_str().strip() == "f4:n (1 < 3)"
+
+    def test_not_in_tally_raises_value_error(self):
+        t = Tally.from_input("f4:n 1 2", jit_parse=False)
+        with pytest.raises(ValueError) as e:
+            t.remove_cell(montepy.Cell(number=9))
+        assert not isinstance(e.value, montepy.exceptions.OnlyInPathError)
+
+    def test_linked_cell_removed_from_union(self, tally_problem):
+        t = tally_problem.tallies[24]
+        cell = tally_problem.cells[1]
+        assert cell in t
+        t.remove_cell(cell)
+        assert cell not in t
+        assert cell not in t.cells
+
+    def test_remove_surface_from_union_and_path(self):
+        t = Tally.from_input("f2:n (1 2) ((1 3) < 5)", jit_parse=False)
+        surface = montepy.surfaces.surface_builder.parse_surface("1 so 1")
+        t.remove_surface(surface)
+        assert t.mcnp_str().strip() == "f2:n (2) ((3) < 5)"
+        with pytest.raises(montepy.exceptions.OnlyInPathError):
+            t.remove_surface(montepy.surfaces.surface_builder.parse_surface("5 so 1"))
