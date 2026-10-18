@@ -18,7 +18,12 @@ from montepy.data_inputs.tally_group import (
     _parse_tally_numbers,
 )
 from montepy.data_inputs.tally_type import Score, TallyType, _TallyKey
-from montepy.exceptions import IllegalState, MalformedInputError, NumberConflictError
+from montepy.exceptions import (
+    IllegalState,
+    MalformedInputError,
+    NumberConflictError,
+    UnsupportedFeature,
+)
 from montepy.input_parser import syntax_node
 from montepy.input_parser.tally_parser import (
     TallyParser,
@@ -35,12 +40,31 @@ import montepy.types as ty
 from montepy.utilities import *
 
 _TALLY_TYPE_MODULUS = 10
+# Detector tallies (F5) have their own syntax and aren't supported yet; see
+# https://github.com/idaholab/MontePy/issues/1024.
+_DETECTOR_MODULO = 5
 _VALID_MODULI = {t.modulo for t in TallyType if t.modulo is not None}
 
 
 def _digit_of(num: ty.Integral) -> ty.Integral:
     """The tally type digit (last digit) of a tally number."""
     return num % _TALLY_TYPE_MODULUS
+
+
+def _is_detector_input(input) -> bool:
+    """Whether ``input`` is a detector (``F5``) tally, or an ``FM`` card for one.
+
+    Neither is supported yet. ``False`` if the classifier can't be read, so
+    the tally or multiplier class reports the error.
+    """
+    try:
+        classifier = DataInputAbstract._peek_light_parse(input).nodes["classifier"]
+        return (
+            classifier.prefix.value.upper() in {"F", "FM"}
+            and classifier.number.value % _TALLY_TYPE_MODULUS == _DETECTOR_MODULO
+        )
+    except Exception:
+        return False
 
 
 def _link_multiplier_to_tally(self, fm):
@@ -50,8 +74,11 @@ def _link_multiplier_to_tally(self, fm):
 
 
 class Tally(Numbered_MCNP_Object, DataInputAbstract):
-    """Base class for MCNP F-card tallies (``F1``, ``F2``, ``F4``, ``F5``,
-    ``F6``, ``F7``, ``F8``).
+    """Base class for MCNP F-card tallies (``F1``, ``F2``, ``F4``, ``F6``,
+    ``F7``, ``F8``).
+
+    Detector (``F5``) tallies are not supported yet; they are read as plain
+    data inputs.
 
     Use :meth:`from_input` as a factory to create the appropriate subclass
     when reading from a file.
@@ -293,6 +320,8 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         input, num: ty.Integral, modifier: str | None = None, mnemonic: str = "F"
     ) -> type[Tally]:
         """The :class:`Tally` subclass for a tally mnemonic/number/modifier."""
+        if mnemonic == "F" and num % _TALLY_TYPE_MODULUS == _DETECTOR_MODULO:
+            raise UnsupportedFeature("Detector (F5) tallies are not supported.", input)
         try:
             tally_type = TallyType(
                 _TallyKey(mnemonic, num % _TALLY_TYPE_MODULUS, modifier)
@@ -473,8 +502,8 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
 
     @staticmethod
     def _tally_category(cls: type[Tally]) -> type[Tally] | None:
-        """Which of {SurfaceTally, CellTally, DetectorTally} ``cls`` belongs to."""
-        for category in (SurfaceTally, CellTally, DetectorTally):
+        """Which of {SurfaceTally, CellTally} ``cls`` belongs to."""
+        for category in (SurfaceTally, CellTally):
             if issubclass(cls, category):
                 return category
         return None
@@ -546,9 +575,7 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
 
         Only conversions within the same tally category are allowed:
         ``F1``/``F2`` (surface-based) convert freely among each other, as do
-        ``F4``/``F6``/``F7``/``F8`` (cell-based); ``F5`` (point/ring detector) has no
-        cell/surface geometry to carry over and can't be converted to or
-        from.
+        ``F4``/``F6``/``F7``/``F8`` (cell-based).
 
         Parameters
         ----------
@@ -893,16 +920,6 @@ class CellTally(Tally):
                         self._cells.append(cell)
 
 
-class DetectorTally(Tally):
-    """``F5``: point/ring detector tally.
-
-    .. versionadded:: 1.6.0b2
-    """
-
-    _TALLY_TYPE = TallyType.DETECTOR
-    _DEFAULT_SCORES = (Score.FLUX,)
-
-
 # ── Concrete subclasses ────────────────────────────────────────────────────────
 
 
@@ -992,7 +1009,6 @@ _TALLY_TYPE_MAP: dict[TallyType, type[Tally]] = {
     TallyType.CURRENT: SurfaceCurrentTally,
     TallyType.SURFACE_FLUX: SurfaceFluxTally,
     TallyType.CELL_FLUX: CellFluxTally,
-    TallyType.DETECTOR: DetectorTally,
     TallyType.ENERGY_DEPOSITION: EnergyDepositionTally,
     TallyType.COLLISION_HEATING: CollisionHeatingTally,
     TallyType.FISSION_ENERGY_DEPOSITION: FissionEnergyDepositionTally,
@@ -1005,7 +1021,6 @@ _TALLY_TYPE_MAP: dict[TallyType, type[Tally]] = {
 F1Tally = SurfaceCurrentTally
 F2Tally = SurfaceFluxTally
 F4Tally = CellFluxTally
-F5Tally = DetectorTally
 F6Tally = EnergyDepositionTally
 F7Tally = FissionEnergyDepositionTally
 F8Tally = EnergyDetectorPulseTally

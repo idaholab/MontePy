@@ -400,10 +400,11 @@ class DataInput(DataInputAbstract):
         .. versionadded:: 0.3.0
         """
         PARAM_PARSER = ParamOnlyDataParser
-        tally_parser = montepy.input_parser.tally_parser
+        # No "f" or "fm": Tally and TallyMultiplier have their own parsers. The
+        # only plain DataInputs left with those prefixes are detector (F5)
+        # tallies and their FM cards, whose syntax the tally parsers don't
+        # cover (e.g. non-integer detector coordinates).
         PARSER_PREFIX_MAP = {
-            "f": tally_parser.TallyParser,
-            "fm": tally_parser.TallyMultiplierParser,
             "fs": montepy.input_parser.tally_seg_parser.TallySegmentParser,
             "sdef": PARAM_PARSER,
         }

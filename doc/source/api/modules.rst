@@ -203,7 +203,6 @@ Tally Objects
    montepy.Tally
    montepy.SurfaceTally
    montepy.CellTally
-   montepy.DetectorTally
    montepy.SurfaceCurrentTally
    montepy.SurfaceFluxTally
    montepy.CellFluxTally

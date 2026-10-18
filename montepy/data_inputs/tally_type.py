@@ -57,7 +57,6 @@ class TallyType(Enum):
     CURRENT = _TallyKey("F", 1)
     SURFACE_FLUX = _TallyKey("F", 2)
     CELL_FLUX = _TallyKey("F", 4)
-    DETECTOR = _TallyKey("F", 5)
     ENERGY_DEPOSITION = _TallyKey("F", 6)
     COLLISION_HEATING = _TallyKey("F", 6, "+")
     FISSION_ENERGY_DEPOSITION = _TallyKey("F", 7)
@@ -93,10 +92,9 @@ class Score(Enum):
 
     ``Score`` is deliberately coarser than :class:`TallyType`: several tally
     types report the same physical quantity, so they collapse to one
-    ``Score`` (``SURFACE_FLUX``, ``CELL_FLUX``, and ``DETECTOR`` are three
-    distinct ``TallyType`` members that all report ``Score.FLUX`` -- flux is
-    flux, whether it's tallied at a surface, in a cell, or by a point
-    detector). ``TallyType`` answers "how is this number dispatched," while
+    ``Score`` (``SURFACE_FLUX`` and ``CELL_FLUX`` are two distinct
+    ``TallyType`` members that both report ``Score.FLUX`` -- flux is flux,
+    whether it's tallied at a surface or in a cell). ``TallyType`` answers "how is this number dispatched," while
     ``Score`` answers "what quantity does it report" -- they aren't
     redundant.
 

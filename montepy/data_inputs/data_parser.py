@@ -70,6 +70,13 @@ def parse_data(
     if prefix in VERBOTEN:
         return data_input.ForbiddenDataInput(input)
     DataClass = PREFIX_MATCHES.get(prefix)
+    if DataClass in {
+        tally.Tally,
+        tally_multiplier.TallyMultiplier,
+    } and tally._is_detector_input(input):
+        # Detector (F5) tallies, and their FM cards, aren't supported yet, so
+        # they're read as plain data inputs instead.
+        return data_input.DataInput(input, prefix=prefix, jit_parse=jit_parse)
     if DataClass is not None:
         if DataClass is tally.Tally:
             # A bare "F" prefix maps to many concrete Tally subclasses

@@ -57,10 +57,6 @@ type:
      - ``F4``
      - :class:`~montepy.CellFluxTally`
      - ``montepy.F4Tally``
-   * - Point/ring detector flux
-     - ``F5``
-     - :class:`~montepy.DetectorTally`
-     - ``montepy.F5Tally``
    * - Energy deposition
      - ``F6``
      - :class:`~montepy.EnergyDepositionTally`
@@ -84,6 +80,10 @@ type:
 
 The Shorthand Alias is just another name for the same class, e.g.
 ``montepy.F4Tally`` is :class:`~montepy.CellFluxTally`.
+
+Detector (``F5``) tallies are not supported yet.
+They are read as plain data inputs, so they are kept and written back out unchanged,
+but they are not in :attr:`~montepy.MCNP_Problem.tallies`.
 
 The leading ``+`` on ``+F6``/``+F8`` is a real, separate MCNP tally variant, not
 a typo of the plain card: ``+F6`` (collision heating) and ``+F8`` (charge
@@ -369,8 +369,6 @@ the heating in those same cells, without retyping the cell list:
 ``clone_as`` only allows conversions within the same family: surface tallies
 (i.e., ``F1`` and ``F2``) convert to other surface tallies, and cell tallies
 (i.e., ``F4``, ``F6``, ``F7``, and ``F8``) convert to other cell tallies.
-``F5`` point/ring detectors are their own family, since they don't have cells or
-surfaces to carry over.
 Trying to cross families raises a ``ValueError``.
 
 The ``+F6``/``+F8`` modifier variants (see the table above) are part of the same

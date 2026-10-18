@@ -400,6 +400,50 @@ class TestTallyObject:
         with pytest.raises(montepy.exceptions.MalformedInputError):
             t.groups
 
+    @pytest.mark.parametrize(
+        "line",
+        [
+            "f5:n 0 0 0 0.5",
+            "F15:p 1 2 3 -0.5 4 5 6 0.1",
+            "*f25:p 0 0 0 1",
+            "fm5 (1 10 -2)",
+        ],
+    )
+    def test_detector_tally_read_as_plain_data_input(self, line):
+        # Review feedback (PR #1005): F5 detector tallies have their own
+        # syntax and aren't supported yet (see #1024), so they, and FM cards
+        # for them, are parsed like any unimplemented data input.
+        data = parse_data(Input([line], BlockType.DATA))
+        assert type(data) is montepy.data_inputs.data_input.DataInput
+        assert data.mcnp_str() == line
+        # A full parse must work too, e.g. for read_input(jit_parse=False):
+        # the tally parser read detector coordinates as integers.
+        data.full_parse()
+        assert data.mcnp_str() == line
+
+    def test_detector_tally_from_input_unsupported(self):
+        with pytest.raises(montepy.exceptions.UnsupportedFeature):
+            Tally.from_input("f5:n 0 0 0 0.5")
+
+    def test_detector_tally_and_multiplier_round_trip_in_problem(self, tmp_path):
+        tally_lines = ["F4:n 1", "F5:n 0 0 0 0.5", "FM5 (1 10 -2)"]
+        path = tmp_path / "f5.imcnp"
+        path.write_text(
+            "\n".join(
+                ["F5 test", "1 0 -1 imp:n=1", "2 0 1 imp:n=0", "", "1 so 5", ""]
+                + ["m10 1001.80c 1"]
+                + tally_lines
+            )
+            + "\n"
+        )
+        problem = montepy.read_input(path)
+        assert [t.number for t in problem.tallies] == [4]
+        assert list(montepy.read_input(path, jit_parse=False).tallies.numbers) == [4]
+        assert [d.mcnp_str() for d in problem.data_inputs][1:] == tally_lines
+        out = tmp_path / "out.imcnp"
+        problem.write_problem(out)
+        assert out.read_text().splitlines()[7:10] == tally_lines
+
     def test_dispatch_class_uses_actual_mnemonic_not_hardcoded_f(self):
         # Regression test: _dispatch_class used to hard-bake the "F"
         # mnemonic internally, so it could never distinguish a real F-card
