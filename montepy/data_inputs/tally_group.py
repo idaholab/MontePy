@@ -462,12 +462,15 @@ class FlatGroup(TallyGroup):
         numbers = self._current_numbers()
         self._number_nodes = []
         for i, num in enumerate(numbers):
-            num_node = _make_value_node(int, num, padding=" ")
+            idx = self._lattice_indices[i] if i < len(self._lattice_indices) else None
+            # MCNP requires the brackets to immediately follow the cell number.
+            num_node = _make_value_node(int, num, padding=" " if idx is None else None)
             self._number_nodes.append(num_node)
             body.append(num_node)
-            idx = self._lattice_indices[i] if i < len(self._lattice_indices) else None
             if idx is not None:
-                body.append(idx.node)
+                lattice_node = idx.node
+                lattice_node.append(syntax_node.PaddingNode(" "))
+                body.append(lattice_node)
         if self._is_grouped:
             self._node = _make_group_node(body.nodes)
         else:

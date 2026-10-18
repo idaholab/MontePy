@@ -997,6 +997,26 @@ class TestGroupRoundTrip:
         t.remove_group(t.groups[-1])
         assert t.mcnp_str().rstrip() == "f4:n 1 3i 5 6"
 
+    @pytest.mark.parametrize(
+        "lattice, written",
+        [
+            ([0, 0, 0], "(1 < (2[0 0 0] 3 ))"),
+            ([(0, 1), 0, 0], "(1 < (2[0:1 0 0] 3 ))"),
+        ],
+    )
+    def test_lattice_written_right_after_its_cell(self, lattice, written):
+        # Regression test: a path built from scratch wrote "2 [0 0 0]3",
+        # but MCNP requires the brackets to immediately follow the cell.
+        tally = montepy.CellFluxTally(number=314)
+        cells = [montepy.Cell(number=i) for i in (1, 2, 3)]
+        pg = tally.add_path_group(cells[0])
+        pg.inside(cells[1], cells[2], lattice=lattice)
+        assert tally.mcnp_str().endswith(written)
+        reread = Tally.from_input(tally.mcnp_str())
+        assert reread.groups[0].levels[1].lattice_indices[0].elements == (
+            tuple(lattice),
+        )
+
     def test_lattice_after_shortcut_attaches_to_its_last_value(self):
         # Regression test: a lattice index right after a shortcut was dropped.
         t = Tally.from_input("f4:n (1 < 2 3i 6[0 0 0] < 7)", jit_parse=False)
