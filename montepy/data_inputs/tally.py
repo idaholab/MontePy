@@ -367,7 +367,37 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
                 "still a containment level of one of its paths.",
                 PathContainmentWarning,
             )
-        self._prune_unreferenced()
+        self._prune_unreferenced([item])
+
+    def _prune_unreferenced(self, entries) -> None:
+        """Drop the objects for ``entries`` from :attr:`cells`/:attr:`surfaces`
+        if no remaining group still scores them.
+
+        ``entries`` are the items (objects or numbers) of what was just
+        removed, so only those are checked, not the whole collection.
+        """
+        collection = self._scored_collection
+        referenced_objects, referenced_numbers = self._referenced_objects_and_numbers()
+        for entry in entries:
+            if isinstance(entry, ty.Integral):
+                obj = collection.get(entry)
+                if obj is None:
+                    continue
+            else:
+                obj = entry
+            if (
+                obj in collection
+                and id(obj) not in referenced_objects
+                and obj.old_number not in referenced_numbers
+                and obj.number not in referenced_numbers
+            ):
+                collection.remove(obj)
+
+    @staticmethod
+    def _scored_entries(group: TallyGroup) -> list:
+        """The items (objects or numbers) ``group`` scores: a path's innermost level."""
+        scored = group.levels[0] if isinstance(group, PathGroup) else group
+        return list(scored._items)
 
     @staticmethod
     def _dispatch_class(
@@ -722,6 +752,10 @@ class SurfaceTally(Tally):
         """The surfaces this tally scores over."""
         return self._surfaces
 
+    @property
+    def _scored_collection(self) -> Surfaces:
+        return self._surfaces
+
     @args_checked
     @needs_full_cst
     def add_surface(self, surface: montepy.Surface) -> None:
@@ -777,6 +811,9 @@ class SurfaceTally(Tally):
         first_level = FlatGroup(list(surfaces), is_grouped=is_grouped)
         pg = PathGroup([first_level])
         self._groups.append(pg)
+        for s in surfaces:
+            if s not in self._surfaces:
+                self._surfaces.append(s)
         return pg
 
     @args_checked
@@ -824,18 +861,7 @@ class SurfaceTally(Tally):
             The group to remove.
         """
         self._groups.remove(group)
-        self._prune_unreferenced()
-
-    def _prune_unreferenced(self):
-        """Drop surfaces no remaining group references from :attr:`surfaces`."""
-        referenced_objects, referenced_numbers = self._referenced_objects_and_numbers()
-        for surface in list(self._surfaces):
-            if (
-                id(surface) not in referenced_objects
-                and surface.old_number not in referenced_numbers
-                and surface.number not in referenced_numbers
-            ):
-                self._surfaces.remove(surface)
+        self._prune_unreferenced(self._scored_entries(group))
 
     def link_to_problem(self, problem, *, deepcopy=False):
         super().link_to_problem(problem, deepcopy=deepcopy)
@@ -869,6 +895,10 @@ class CellTally(Tally):
     @needs_full_ast
     def cells(self) -> Cells:
         """The cells this tally scores in."""
+        return self._cells
+
+    @property
+    def _scored_collection(self) -> Cells:
         return self._cells
 
     @args_checked
@@ -924,6 +954,9 @@ class CellTally(Tally):
         first_level = FlatGroup(list(cells), is_grouped=is_grouped)
         pg = PathGroup([first_level])
         self._groups.append(pg)
+        for c in cells:
+            if c not in self._cells:
+                self._cells.append(c)
         return pg
 
     @args_checked
@@ -971,18 +1004,7 @@ class CellTally(Tally):
             The group to remove.
         """
         self._groups.remove(group)
-        self._prune_unreferenced()
-
-    def _prune_unreferenced(self):
-        """Drop cells no remaining group references from :attr:`cells`."""
-        referenced_objects, referenced_numbers = self._referenced_objects_and_numbers()
-        for cell in list(self._cells):
-            if (
-                id(cell) not in referenced_objects
-                and cell.old_number not in referenced_numbers
-                and cell.number not in referenced_numbers
-            ):
-                self._cells.remove(cell)
+        self._prune_unreferenced(self._scored_entries(group))
 
     def link_to_problem(self, problem, *, deepcopy=False):
         super().link_to_problem(problem, deepcopy=deepcopy)

@@ -1396,3 +1396,36 @@ class TestRemoveScored:
         assert t.mcnp_str().strip() == "f2:n (2) ((3) < 5)"
         with pytest.raises(montepy.exceptions.OnlyInPathError):
             t.remove_surface(montepy.surfaces.surface_builder.parse_surface("5 so 1"))
+
+    @pytest.mark.parametrize("tally_cls", [F4Tally, F1Tally])
+    def test_add_path_group_updates_scored_collection(self, tally_cls):
+        # Regression test: add_path_group didn't add its innermost items to
+        # cells/surfaces until link_to_problem rebuilt them, so an item
+        # could be "in" the tally but not in tally.cells.
+        if tally_cls is F4Tally:
+            items = [montepy.Cell(number=n) for n in (1, 2)]
+        else:
+            items = [
+                montepy.surfaces.surface_builder.parse_surface(f"{n} so 1")
+                for n in (1, 2)
+            ]
+        t = tally_cls()
+        pg = t.add_path_group(items[0])
+        pg.inside(items[1])
+        scored = t.cells if tally_cls is F4Tally else t.surfaces
+        assert items[0] in t
+        assert items[0] in scored
+        # The containment level isn't scored.
+        assert items[1] not in scored
+        t.remove_group(pg)
+        assert items[0] not in scored
+
+    def test_remove_group_keeps_items_other_groups_score(self):
+        cells = [montepy.Cell(number=n) for n in (1, 2, 3)]
+        t = F4Tally()
+        t.add_group(cells[:2])
+        t.add_path_group(cells[1], cells[2])
+        t.remove_group(t.groups[0])
+        assert cells[0] not in t.cells
+        assert cells[1] in t.cells
+        assert cells[2] in t.cells
