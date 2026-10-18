@@ -984,7 +984,7 @@ class ValueNode(SyntaxNodeBase):
     ----------
     token : str
         the original token for the ValueNode.
-    token_type : type
+    token_type : type[int] | type[float] | type[str]
         the type for the ValueNode.
     padding : PaddingNode
         the padding for this node.
@@ -1091,11 +1091,11 @@ class ValueNode(SyntaxNodeBase):
 
         Parameters
         ----------
-        enum_class : type
+        enum_class : type[enum.Enum]
             the class for the enum to use.
         allow_none : bool
             Whether or not to allow None as a value.
-        format_type : type
+        format_type : type[int] | type[float] | type[str]
             the base data type to format this ValueNode as.
         switch_to_upper : bool
             Whether or not to convert a string to upper case before
@@ -1505,7 +1505,7 @@ class ValueNode(SyntaxNodeBase):
 
         Returns
         -------
-        type
+        type[int] | type[float] | type[str] | type[enum.Enum]
             the class for the value of this node.
         """
         return self._type

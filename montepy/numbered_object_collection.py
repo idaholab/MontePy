@@ -135,7 +135,7 @@ class NumberedObjectCollection(ABC):
 
     Parameters
     ----------
-    obj_class : type
+    obj_class : type[Numbered_MCNP_Object]
         the class of numbered objects being collected
     objects : list
         the list of cells to start with if needed
@@ -425,8 +425,8 @@ class NumberedObjectCollection(ABC):
 
         Returns
         -------
-        type(self)
-            a cloned copy of this object.
+        NumberedObjectCollection
+            a cloned copy of this object, of the same class.
         """
         if starting_number is None:
             starting_number = self.starting_number

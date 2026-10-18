@@ -228,7 +228,7 @@ def check_type_and_value(
         The annotation from the function signature. May be a plain type, a
         parameterised generic (e.g. ``list[int]``), or an ``Annotated`` type whose
         extra args are constraint callables.
-    expected_iter_type : type or None, optional
+    expected_iter_type : type | None, optional
         Expected element type when ``value`` is iterable.
     none_ok : bool, optional
         Whether ``None`` passes validation without further checks.
@@ -287,9 +287,9 @@ def check_type(
         Description of value being checked
     value : object
         Object to check type of
-    expected_type : type or Iterable of type
+    expected_type : type | Iterable[type]
         type to check object against
-    expected_iter_type : type or Iterable of type or None, optional
+    expected_iter_type : type | Iterable[type] | None, optional
         Expected type of each element in value, assuming it is iterable. If
         None, no check will be performed.
     none_ok : bool, optional
@@ -640,7 +640,7 @@ class CheckedList(list):
 
     Parameters
     ----------
-    expected_type : type or Iterable of type
+    expected_type : type | Iterable[type]
         Type(s) which each element should be
     name : str
         Name of data being checked

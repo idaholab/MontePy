@@ -209,8 +209,8 @@ class Numbered_MCNP_Object(MCNP_Object):
 
         Returns
         -------
-        type(self)
-            a cloned copy of this object.
+        Numbered_MCNP_Object
+            a cloned copy of this object, of the same class.
         """
         ret = copy.deepcopy(self)
         if self._problem:

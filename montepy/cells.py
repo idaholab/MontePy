@@ -259,7 +259,7 @@ class Cells(NumberedObjectCollection):
 
         Returns
         -------
-        type(self)
+        Cells
             a cloned copy of this object.
         """
         if starting_number is None:

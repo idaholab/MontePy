@@ -124,8 +124,8 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
         The class (not instance) of the parser for this class.
 
         Returns
-        ------
-        type
+        -------
+        type[MCNP_Parser]
         """
         pass
 
@@ -652,8 +652,8 @@ The new input was:\n\n"""
 
         Returns
         -------
-        type(self)
-            a new instance identical to this object.
+        MCNP_Object
+            a new instance identical to this object, of the same class.
         """
         return copy.deepcopy(self)
 
