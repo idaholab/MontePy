@@ -205,6 +205,20 @@ tally example above.
 To build flat and grouped bins like these from scratch instead of reading them from
 an existing tally, see `Building Tallies from Scratch`_ below.
 
+Parentheses can also nest, e.g. ``(1 (2 3))``.
+:attr:`~montepy.data_inputs.tally.FlatGroup.old_numbers` covers every cell in a group,
+including the nested ones, while
+:attr:`~montepy.data_inputs.tally.FlatGroup.members` keeps the structure, with each
+nested union as its own :class:`~montepy.data_inputs.tally.FlatGroup`:
+
+.. doctest::
+
+   >>> nested = montepy.CellFluxTally("f24:n (1 (2 3))")
+   >>> nested.groups[0].old_numbers
+   [1, 2, 3]
+   >>> nested.groups[0].members
+   [1, FlatGroup([2, 3], grouped=True)]
+
 For cell tallies, :attr:`~montepy.CellTally.cells` gives you the
 flattened, deduplicated set of every cell the tally touches, across all of its groups.
 Surface tallies have the equivalent

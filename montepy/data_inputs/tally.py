@@ -387,23 +387,17 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         found = False
         for group in list(self._groups):
             scored = group.levels[0] if isinstance(group, PathGroup) else group
-            indices = [
-                i for i, entry in enumerate(scored._items) if self._is_same(entry, item)
-            ]
-            if not indices:
+            if not scored._remove_matching(lambda entry: self._is_same(entry, item)):
                 continue
             found = True
-            if len(indices) == len(scored._items):
+            if not scored._items:
                 self._groups.remove(group)
-            else:
-                for i in reversed(indices):
-                    scored._remove_item(i)
         in_path = any(
             self._is_same(entry, item)
             for group in self._groups
             if isinstance(group, PathGroup)
             for level in group.levels[1:]
-            for entry in level._items
+            for entry, _, _ in level._leaves()
         )
         if not found:
             if in_path:
@@ -449,7 +443,7 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
     def _scored_entries(group: TallyGroup) -> list:
         """The items (objects or numbers) ``group`` scores: a path's innermost level."""
         scored = group.levels[0] if isinstance(group, PathGroup) else group
-        return list(scored._items)
+        return [entry for entry, _, _ in scored._leaves()]
 
     @staticmethod
     def _dispatch_class(

@@ -66,6 +66,8 @@ def _set_end_flag(tally_list: syntax_node.SyntaxNode, flag: str | None) -> None:
 def _item_kind(item) -> str:
     if isinstance(item, syntax_node.SyntaxNode) and item.name == "tally group":
         return "group"
+    if isinstance(item, syntax_node.SyntaxNode) and item.name == "lattice cell":
+        return "cell"
     if isinstance(item, syntax_node.ListNode) and item.name == "lattice phrase":
         return "lattice"
     if isinstance(item, syntax_node.ListNode) and item.name == "universe phrase":
@@ -174,33 +176,90 @@ class TallyParser(DataParser):
     def tally_flat_item(self, p):
         return p[0]
 
-    @_("lparen_phrase tally_group_body rparen_phrase")
+    @_(
+        "lparen_phrase tally_level rparen_phrase",
+        "lparen_phrase tally_path rparen_phrase",
+    )
     def tally_group(self, p):
+        """A parenthesized group: a union of its entries, or a ``<`` path.
+
+        A union's entries are its children directly. A path's children are
+        its ``("level", n)`` levels, separated by ``("sep", n)`` ``<`` nodes.
+
+        Returns
+        -------
+        SyntaxNode
+            a ``"tally group"`` node.
+        """
         nodes = {"start_pad": p.lparen_phrase}
-        nodes.update(p.tally_group_body.nodes)
+        nodes.update(p[1].nodes)
         nodes["end_pad"] = p.rparen_phrase
         return syntax_node.SyntaxNode("tally group", nodes)
 
-    @_("tally_group_item", "tally_group_body tally_group_item")
-    def tally_group_body(self, p):
-        if hasattr(p, "tally_group_body"):
-            ret = p.tally_group_body
+    @_("tally_level path_sep tally_level", "tally_path path_sep tally_level")
+    def tally_path(self, p):
+        """The levels of a repeated-structures ``<`` path, innermost first.
+
+        Returns
+        -------
+        SyntaxNode
+            a ``"tally path"`` node of ``("level", n)`` and ``("sep", n)``
+            children.
+        """
+        if hasattr(p, "tally_path"):
+            ret = p.tally_path
+            level = p.tally_level
         else:
-            ret = syntax_node.SyntaxNode("tally group body", {})
-        _append_tally_item(ret, p.tally_group_item)
+            ret = syntax_node.SyntaxNode("tally path", {("level", 0): p.tally_level0})
+            level = p.tally_level1
+        ret.nodes[_next_key(ret, "sep")] = p.path_sep
+        ret.nodes[_next_key(ret, "level")] = level
+        return ret
+
+    @_("tally_level_item", "tally_level tally_level_item")
+    def tally_level(self, p):
+        """The entries of one union, or of one level of a ``<`` path.
+
+        Returns
+        -------
+        SyntaxNode
+            a ``"tally level"`` node, with its numbers collected into runs.
+        """
+        if hasattr(p, "tally_level"):
+            ret = p.tally_level
+        else:
+            ret = syntax_node.SyntaxNode("tally level", {})
+        _append_tally_item(ret, p.tally_level_item)
         return ret
 
     @_(
         "identifier_phrase",
         "null_ident_phrase",
         "tally_shortcut_phrase",
-        "path_sep",
-        "lattice_phrase",
+        "lattice_cell",
         "universe_phrase",
         "tally_group",
     )
-    def tally_group_item(self, p):
+    def tally_level_item(self, p):
         return p[0]
+
+    @_("identifier_phrase lattice_phrase", "tally_shortcut_phrase lattice_phrase")
+    def lattice_cell(self, p):
+        """A lattice cell and the lattice elements it is limited to, e.g. ``2[0 0 0]``.
+
+        After a shortcut (e.g. ``2 3i 6[0 0 0]``) the index applies to its
+        last value.
+
+        Returns
+        -------
+        SyntaxNode
+            a ``"lattice cell"`` node: a ``("run", 0)`` of the number(s), and
+            the ``"lattice"`` phrase.
+        """
+        ret = syntax_node.SyntaxNode("lattice cell", {})
+        _append_tally_item(ret, p[0])
+        ret.nodes["lattice"] = p.lattice_phrase
+        return ret
 
     @_("identifier_phrase", "tally_shortcut_phrase")
     def tally_shortcut_start(self, p):
@@ -346,6 +405,10 @@ class TallyMultiplierParser(TallyParser):
         "tally_group_body",
         "tally_flat_item",
         "tally_group_item",
+        "tally_path",
+        "tally_level",
+        "tally_level_item",
+        "lattice_cell",
     }
 
     @_(

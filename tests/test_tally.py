@@ -129,14 +129,19 @@ class TestTallyParser:
         assert list(bins.nodes) == [("run", 0), ("group", 0), ("run", 1)]
         group = bins[("group", 0)]
         assert isinstance(group, syntax_node.SyntaxNode)
+        # The grammar gives a path its levels, and a lattice index its cell.
         assert list(group.nodes) == [
             "start_pad",
-            ("run", 0),
+            ("level", 0),
             ("sep", 0),
-            ("run", 1),
-            ("lattice", 0),
+            ("level", 1),
             "end_pad",
         ]
+        assert list(group[("level", 0)].nodes) == [("run", 0)]
+        assert list(group[("level", 1)].nodes) == [("cell", 0)]
+        cell = group[("level", 1)][("cell", 0)]
+        assert list(cell.nodes) == [("run", 0), "lattice"]
+        assert cell["lattice"].format() == "[0 0 0]"
 
     def test_next_key_never_reuses_a_number(_):
         from montepy.input_parser.tally_parser import _next_key
@@ -462,10 +467,13 @@ class TestTallyObject:
 
     def test_universe_spec_nested_in_bare_group(self):
         # A universe designator wrapped in its own parens, inside a group
-        # with no `<` path separator at all: _extract_universe_spec_from_nodes
-        # must recurse into the nested "tally group" node to find it.
+        # with no `<` path separator at all, is a nested union: of any cell
+        # in universe 2.
         t = F4Tally(Input(["f4:n (5 (u=2) 7)"], BlockType.DATA))
-        assert t.groups[0].universe_spec == 2
+        nested = t.groups[0].members[1]
+        assert nested.universe_spec == 2
+        assert nested.is_grouped
+        assert t.groups[0].universe_spec is None
 
     @pytest.mark.parametrize("line", ["f", "f4:n( 1", "f4:n,1 1"])
     def test_from_input_malformed_classifier_raises_parsing_error(self, line):
@@ -1562,3 +1570,83 @@ class TestStarModifier:
         t = Tally.from_input(line)
         new = t.clone_as(getattr(montepy.data_inputs.tally, target))
         assert new.mcnp_str()[0] == "f"
+
+
+class TestNestedUnions:
+    """A union nested in a union or a path level, e.g. ``(1 (2 3) < 5)``
+    (review feedback, PR #1005). These used to be silently dropped from the
+    object model."""
+
+    @staticmethod
+    def _tally(line):
+        return Tally.from_input(line, jit_parse=False)
+
+    @pytest.mark.parametrize(
+        "line, numbers",
+        [
+            ("f4:n (1 (2 3))", [1, 2, 3]),
+            ("f4:n ((1 2) (3 4))", [1, 2, 3, 4]),
+            ("f4:n (1 (2 (3 4)))", [1, 2, 3, 4]),
+        ],
+    )
+    def test_nested_in_union(self, line, numbers):
+        t = self._tally(line)
+        group = t.groups[0]
+        assert group.is_grouped
+        assert group.old_numbers == numbers
+        assert all(montepy.Cell(number=n) in t for n in numbers)
+        assert t.mcnp_str() == line
+
+    def test_nested_members(self):
+        group = self._tally("f4:n (1 (2 3))").groups[0]
+        first, nested = group.members
+        assert first == 1
+        assert isinstance(nested, FlatGroup)
+        assert nested.is_grouped
+        assert nested.old_numbers == [2, 3]
+
+    def test_nested_in_path_level(self):
+        t = self._tally("f4:n (1 (2 3) < 5)")
+        inner = t.groups[0].levels[0]
+        assert not inner.is_grouped
+        assert inner.old_numbers == [1, 2, 3]
+        assert montepy.Cell(number=2) in t
+        assert montepy.Cell(number=5) not in t
+        assert t.mcnp_str() == "f4:n (1 (2 3) < 5)"
+
+    def test_nested_lattice_indices_parallel_old_numbers(self):
+        level = self._tally("f4:n (1 < (2[0 0 0] 3) 4 < 5)").groups[0].levels[1]
+        assert level.old_numbers == [2, 3, 4]
+        assert [i and i.elements for i in level.lattice_indices] == [
+            ((0, 0, 0),),
+            None,
+            None,
+        ]
+
+    def test_nested_linked_and_renumbered(self, tally_problem):
+        t = Tally.from_input("f44:n (1 (2 3))", jit_parse=False)
+        t.link_to_problem(tally_problem)
+        assert tally_problem.cells[2] in t.cells
+        tally_problem.cells[2].number = 22
+        assert t.mcnp_str() == "f44:n (1 (22 3))"
+
+    @pytest.mark.parametrize(
+        "line, numbers, expected",
+        [
+            ("f4:n (1 (2 3))", [2], "f4:n (1 (3))"),
+            ("f4:n (1 (2 3))", [2, 3], "f4:n (1)"),
+            ("f4:n ((2 3) 1)", [2, 3], "f4:n (1)"),
+            ("f4:n (1 (2 3) < 5)", [3], "f4:n (1 (2) < 5)"),
+            ("f4:n (1 (2 3) < 5) 6", [1, 2, 3], "f4:n 6"),
+        ],
+    )
+    def test_remove_from_nested(self, line, numbers, expected):
+        t = self._tally(line)
+        for n in numbers:
+            t.remove_cell(montepy.Cell(number=n))
+        assert t.mcnp_str().strip() == expected
+        assert Tally.from_input(t.mcnp_str()).mcnp_str() == t.mcnp_str()
+
+    def test_path_nested_in_group_unsupported(self):
+        with pytest.raises(montepy.exceptions.UnsupportedFeature):
+            self._tally("f4:n ((1 < 2) 3)").groups

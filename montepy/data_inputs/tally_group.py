@@ -12,9 +12,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 import montepy
-from montepy.exceptions import BrokenObjectLinkError
+from montepy.exceptions import BrokenObjectLinkError, UnsupportedFeature
 from montepy.input_parser import syntax_node
-from montepy.input_parser.tally_parser import _append_tally_item, _is_run
+from montepy.input_parser.tally_parser import _append_tally_item, _is_run, _next_key
 import montepy.types as ty
 from montepy.utilities import *
 
@@ -271,18 +271,22 @@ class SpatialFilter(Filter):
 
 
 class FlatGroup(TallyGroup):
-    """A flat list of cells/surfaces to score over.
+    """A list of cells/surfaces to score over: a union, or a set of separate bins.
 
     Used as both a top-level bin and as an individual level in a
-    :class:`PathGroup` chain.
+    :class:`PathGroup` chain. A member can itself be a parenthesized union,
+    e.g. the ``(2 3)`` in ``(1 (2 3) < 5)``, as a nested ``FlatGroup``.
 
     .. versionadded:: 1.6.0b2
 
+    .. versionchanged:: 1.6.0b4
+        A member can be a nested union ``FlatGroup``.
+
     Parameters
     ----------
-    items : list[Integral | montepy.Cell | montepy.Surface]
-        Cell/surface numbers, or the live objects themselves (e.g. from
-        :meth:`~montepy.CellTally.add_cell`). Mirrors
+    items : list[Integral | montepy.Cell | montepy.Surface | FlatGroup]
+        Cell/surface numbers, the live objects themselves (e.g. from
+        :meth:`~montepy.CellTally.add_cell`), or nested unions. Mirrors
         :attr:`~montepy.UnitHalfSpace.divider`'s "store whatever's given"
         design.
     lattice_indices : list[LatticeIndex | None], optional
@@ -307,7 +311,7 @@ class FlatGroup(TallyGroup):
     @args_checked
     def __init__(
         self,
-        items: list[ty.Integral | montepy.Cell | montepy.Surface],
+        items: list[ty.Integral | montepy.Cell | montepy.Surface | FlatGroup],
         lattice_indices: list[LatticeIndex | None] | None = None,
         *,
         is_grouped: bool,
@@ -319,69 +323,55 @@ class FlatGroup(TallyGroup):
         # A frozen snapshot of the numbers as given here -- deliberately
         # never updated even after update_pointers() resolves an entry, or
         # after a resolved object is later renumbered, so old_numbers keeps
-        # meaning "as originally read/added", not "as of right now".
+        # meaning "as originally read/added", not "as of right now". None for
+        # a nested union.
         self._old_numbers = [self._number_of(item) for item in self._items]
         self._lattice_indices = lattice_indices or [None] * len(self._items)
         self._is_grouped = is_grouped
         self._universe_spec = universe_spec
         self._node = node
+        # Parallel to _items: the ValueNode holding each number, or None for
+        # a nested union. Empty until the tree is built.
         self._number_nodes = list(number_nodes) if number_nodes else []
 
-    def _remove_item(self, index: int) -> None:
-        """Remove the item at ``index``, with its lattice index, from this group and its tree.
+    @staticmethod
+    def _number_of(
+        item: ty.Integral | montepy.Cell | montepy.Surface | FlatGroup,
+    ) -> ty.Integral | None:
+        if isinstance(item, FlatGroup):
+            return None
+        return item if isinstance(item, ty.Integral) else item.number
 
-        A shortcut it was part of is re-zipped around the remaining values.
+    def _leaves(self):
+        """Every scored entry, including those in nested unions, in order.
+
+        Yields ``(entry, old_number, lattice_index)``.
+        """
+        for item, number, index in zip(
+            self._items, self._old_numbers, self._lattice_indices
+        ):
+            if isinstance(item, FlatGroup):
+                yield from item._leaves()
+            else:
+                yield item, number, index
+
+    @property
+    def members(self) -> list[ty.Integral | montepy.Cell | montepy.Surface | FlatGroup]:
+        """The entries of this group, in order.
+
+        Each is a :class:`~montepy.Cell`/:class:`~montepy.Surface` (or its
+        number, if not linked to a problem yet), or a nested union
+        :class:`FlatGroup`, e.g. the ``(2 3)`` in ``(1 (2 3))``.
 
         .. versionadded:: 1.6.0b4
         """
-        del self._items[index]
-        del self._old_numbers[index]
-        del self._lattice_indices[index]
-        if not self._number_nodes:
-            return
-        num_node = self._number_nodes.pop(index)
-        keys = list(self._node.nodes)
-        for i, key in enumerate(keys):
-            run = self._node.nodes[key]
-            if not _is_run(run):
-                continue
-            values = list(run)
-            if not any(v is num_node for v in values):
-                continue
-            # The padding after the removed item: its own, or, if a lattice
-            # index follows it, the lattice's. A lattice index always ends its
-            # run, so it can only follow the run's last value.
-            trailing = num_node.padding
-            following = keys[i + 1] if i + 1 < len(keys) else None
-            if (
-                values[-1] is num_node
-                and isinstance(following, tuple)
-                and following[0] == "lattice"
-            ):
-                lattice = self._node.nodes.pop(following)
-                tail = lattice.nodes[-2:]
-                trailing = tail[-1] if tail[0].format() == "]" else None
-            remaining = [v for v in values if v is not num_node]
-            if remaining:
-                if values[-1] is num_node and any(
-                    n is remaining[-1] for n in run.nodes
-                ):
-                    # The new last value takes over the trailing padding, so
-                    # "(1 2 3)" becomes "(1 2)", not "(1 2 )".
-                    remaining[-1].padding = trailing
-                run.update_with_new_values(remaining)
-            else:
-                del self._node.nodes[key]
-            return
-
-    @staticmethod
-    def _number_of(item: ty.Integral | montepy.Cell | montepy.Surface) -> ty.Integral:
-        return item if isinstance(item, ty.Integral) else item.number
+        return list(self._items)
 
     @property
     def old_numbers(self):
-        """The cell/surface numbers as originally read or added."""
-        return list(self._old_numbers)
+        """The cell/surface numbers as originally read or added, including
+        those in nested unions."""
+        return [number for _, number, _ in self._leaves()]
 
     @property
     def is_grouped(self):
@@ -399,16 +389,29 @@ class FlatGroup(TallyGroup):
 
         .. versionadded:: 1.6.0b3
         """
-        return list(self._lattice_indices)
+        return [index for _, _, index in self._leaves()]
 
     @property
     def cells_or_surfaces(self):
         """The resolved :class:`~montepy.Cell`/:class:`~montepy.Surface` objects
-        this group covers, once linked to a problem. Empty if not yet linked.
+        this group covers, including those in nested unions, once linked to a
+        problem. Empty if not yet linked.
 
         .. versionadded:: 1.6.0b3
         """
-        return [item for item in self._items if not isinstance(item, ty.Integral)]
+        return [
+            entry
+            for entry, _, _ in self._leaves()
+            if not isinstance(entry, ty.Integral)
+        ]
+
+    def _all_of(self, kind) -> list | None:
+        objs = self.cells_or_surfaces
+        if not objs or len(objs) != len(self.old_numbers):
+            return None
+        if not all(isinstance(o, kind) for o in objs):
+            return None
+        return objs
 
     @property
     def cells(self) -> list[montepy.Cell] | None:
@@ -422,12 +425,7 @@ class FlatGroup(TallyGroup):
         list[Cell] | None
             The resolved cells, or ``None``.
         """
-        objs = self.cells_or_surfaces
-        if not objs or len(objs) != len(self._items):
-            return None
-        if not all(isinstance(o, montepy.Cell) for o in objs):
-            return None
-        return objs
+        return self._all_of(montepy.Cell)
 
     @property
     def surfaces(self) -> list[montepy.Surface] | None:
@@ -441,12 +439,7 @@ class FlatGroup(TallyGroup):
         list[Surface] | None
             The resolved surfaces, or ``None``.
         """
-        objs = self.cells_or_surfaces
-        if not objs or len(objs) != len(self._items):
-            return None
-        if not all(isinstance(o, montepy.Surface) for o in objs):
-            return None
-        return objs
+        return self._all_of(montepy.Surface)
 
     def update_pointers(
         self, container, *, is_cell: bool, tally: montepy.data_inputs.tally.Tally
@@ -471,15 +464,127 @@ class FlatGroup(TallyGroup):
         """
         kind = "Cell" if is_cell else "Surface"
         for i, item in enumerate(self._items):
-            if isinstance(item, ty.Integral):
+            if isinstance(item, FlatGroup):
+                item.update_pointers(container, is_cell=is_cell, tally=tally)
+            elif isinstance(item, ty.Integral):
                 try:
                     self._items[i] = container[item]
                 except KeyError:
                     raise BrokenObjectLinkError("Tally", tally.number, kind, item)
 
+    def _remove_matching(self, matches) -> bool:
+        """Remove every entry, including in nested unions, for which ``matches(entry)``.
+
+        A nested union left empty is removed too.
+
+        Returns
+        -------
+        bool
+            Whether anything was removed.
+        """
+        found = False
+        for i in reversed(range(len(self._items))):
+            item = self._items[i]
+            if isinstance(item, FlatGroup):
+                if item._remove_matching(matches):
+                    found = True
+                    if not item._items:
+                        self._remove_item(i)
+            elif matches(item):
+                found = True
+                self._remove_item(i)
+        return found
+
+    def _remove_item(self, index: int) -> None:
+        """Remove the member at ``index``, with its lattice index, from this group and its tree.
+
+        A shortcut it was part of is re-zipped around the remaining values.
+
+        .. versionadded:: 1.6.0b4
+        """
+        item = self._items.pop(index)
+        del self._old_numbers[index]
+        del self._lattice_indices[index]
+        if not self._number_nodes:
+            return
+        num_node = self._number_nodes.pop(index)
+        if isinstance(item, FlatGroup):
+            self._remove_child(item._node)
+        else:
+            self._remove_number_node(num_node)
+
+    def _remove_child(self, child) -> None:
+        """Remove ``child``, or the lattice cell holding it, from this group's tree."""
+        if isinstance(self._node, syntax_node.ListNode):
+            nodes = self._node.nodes
+            for i, node in enumerate(nodes):
+                if node is child or (
+                    _is_lattice_cell(node)
+                    and any(v is child for v in node.nodes[("run", 0)])
+                ):
+                    del nodes[i]
+                    return
+            return
+        for key, node in list(self._node.nodes.items()):
+            if node is child:
+                text = child.format()
+                space = text[len(text.rstrip()) :]
+                self._drop_key(key, syntax_node.PaddingNode(space) if space else None)
+                return
+
+    def _drop_key(self, key, trailing) -> None:
+        """Delete the child at ``key`` from this group's tree.
+
+        If it was the last entry, the entry before it takes over its trailing
+        padding, so ``(1 2[0 0 0])`` becomes ``(1)``, not ``(1 )``.
+        """
+        keys = list(self._node.nodes)
+        i = keys.index(key)
+        del self._node.nodes[key]
+        following = keys[i + 1] if i + 1 < len(keys) else None
+        if following not in (None, "end_pad") or i == 0:
+            return
+        previous = self._node.nodes.get(keys[i - 1])
+        if previous is not None:
+            _set_trailing_padding(previous, trailing)
+
+    def _remove_number_node(self, num_node) -> None:
+        if isinstance(self._node, syntax_node.ListNode):
+            self._remove_child(num_node)
+            return
+        for key, child in list(self._node.nodes.items()):
+            cell = child if _is_lattice_cell(child) else None
+            run = cell.nodes[("run", 0)] if cell is not None else child
+            if not _is_run(run):
+                continue
+            values = list(run)
+            if not any(v is num_node for v in values):
+                continue
+            # The padding after the removed number: its own, or, if a lattice
+            # index follows it, the lattice's. A lattice index always follows
+            # its cell's last value.
+            trailing = num_node.padding
+            if cell is not None and values[-1] is num_node:
+                lattice = cell.nodes.pop("lattice")
+                tail = lattice.nodes[-2:]
+                trailing = tail[-1] if tail[0].format() == "]" else None
+            remaining = [v for v in values if v is not num_node]
+            if remaining:
+                if values[-1] is num_node and any(
+                    n is remaining[-1] for n in run.nodes
+                ):
+                    # The new last value takes over the trailing padding, so
+                    # "(1 2 3)" becomes "(1 2)", not "(1 2 )".
+                    remaining[-1].padding = trailing
+                run.update_with_new_values(remaining)
+            else:
+                self._drop_key(key, trailing)
+            return
+
     def _current_numbers(self):
-        """The numbers to write out: live cell/surface numbers if linked,
-        else the numbers as originally read."""
+        """The numbers to write out, parallel to the members: live cell/surface
+        numbers if linked, else the numbers as originally read. ``None`` for a
+        nested union."""
         return [self._number_of(item) for item in self._items]
 
     @property
@@ -498,50 +603,67 @@ class FlatGroup(TallyGroup):
 
     def _ensure_has_node(self):
         if self._node is not None:
+            for item in self._items:
+                if isinstance(item, FlatGroup):
+                    item._ensure_has_node()
             return
-        body = syntax_node.ListNode("flat group body")
+        entries = []
         if self._universe_spec is not None:
             universe = syntax_node.ListNode("universe phrase")
             universe.append(_make_value_node(str, "u", padding=None))
             universe.append(syntax_node.PaddingNode("="))
             universe.append(_make_value_node(int, self._universe_spec, padding=None))
-            body.append(universe)
-        numbers = self._current_numbers()
+            entries.append(universe)
         self._number_nodes = []
-        for i, num in enumerate(numbers):
-            idx = self._lattice_indices[i] if i < len(self._lattice_indices) else None
+        for item, num, idx in zip(
+            self._items, self._current_numbers(), self._lattice_indices
+        ):
+            if isinstance(item, FlatGroup):
+                item._ensure_has_node()
+                self._number_nodes.append(None)
+                entries.append(item._node)
+                continue
             # MCNP requires the brackets to immediately follow the cell number.
             num_node = _make_value_node(int, num, padding=" " if idx is None else None)
             self._number_nodes.append(num_node)
-            body.append(num_node)
-            if idx is not None:
-                lattice_node = idx.node
-                lattice_node.append(syntax_node.PaddingNode(" "))
-                body.append(lattice_node)
+            if idx is None:
+                entries.append(num_node)
+                continue
+            cell = syntax_node.SyntaxNode("lattice cell", {})
+            _append_tally_item(cell, num_node)
+            lattice_node = idx.node
+            lattice_node.append(syntax_node.PaddingNode(" "))
+            cell.nodes["lattice"] = lattice_node
+            entries.append(cell)
         if self._is_grouped:
-            self._node = _make_group_node(body.nodes)
+            self._node = _make_group_node(entries)
         else:
-            self._node = body
+            self._node = syntax_node.ListNode("flat group body")
+            for entry in entries:
+                self._node.append(entry)
 
     def _update_node(self):
-        numbers = self._current_numbers()
-        for num_node, num in zip(self._number_nodes, numbers):
-            if num_node.value != num:
+        for item, num_node, num in zip(
+            self._items, self._number_nodes, self._current_numbers()
+        ):
+            if isinstance(item, FlatGroup):
+                item._update_node()
+            elif num_node is not None and num_node.value != num:
                 num_node.value = num
 
     def __contains__(self, item) -> bool:
-        objs = self.cells_or_surfaces
-        if objs:
-            return item in objs
-        for num in self._old_numbers:
-            if hasattr(item, "old_number") and item.old_number == num:
-                return True
-            if hasattr(item, "number") and item.number == num:
+        for entry, number, _ in self._leaves():
+            if isinstance(entry, ty.Integral):
+                if hasattr(item, "old_number") and item.old_number == number:
+                    return True
+                if hasattr(item, "number") and item.number == number:
+                    return True
+            elif entry is item or entry == item:
                 return True
         return False
 
     def __repr__(self):
-        return f"FlatGroup({self._old_numbers}, grouped={self._is_grouped})"
+        return f"FlatGroup({self.old_numbers}, grouped={self._is_grouped})"
 
 
 class PathGroup(TallyGroup):
@@ -627,18 +749,27 @@ class PathGroup(TallyGroup):
             for level in self._levels:
                 level._ensure_has_node()
             return
-        body = syntax_node.ListNode("flat group body")
+        node = syntax_node.SyntaxNode(
+            "tally group", {"start_pad": syntax_node.PaddingNode("(")}
+        )
         for i, level in enumerate(self._levels):
             level._ensure_has_node()
             level._update_node()
-            if _is_group_node(level.node):
-                body.append(level.node)
+            if i != 0:
+                node.nodes[_next_key(node, "sep")] = _make_value_node(
+                    str, "<", padding=" "
+                )
+            level_node = syntax_node.SyntaxNode("tally level", {})
+            if _is_group_node(level._node):
+                _append_tally_item(level_node, level._node)
             else:
-                for n in level.node.nodes:
-                    body.append(n)
-            if i != len(self._levels) - 1:
-                body.append(_make_value_node(str, "<", padding=" "))
-        self._node = _make_group_node(body.nodes)
+                for entry in level._node.nodes:
+                    _append_tally_item(level_node, entry)
+                # The level now edits its entries where they are in this path.
+                level._node = level_node
+            node.nodes[_next_key(node, "level")] = level_node
+        node.nodes["end_pad"] = syntax_node.PaddingNode(")")
+        self._node = node
 
     def _update_node(self):
         for level in self._levels:
@@ -694,6 +825,40 @@ def _is_group_node(node) -> bool:
     return isinstance(node, syntax_node.SyntaxNode) and node.name == "tally group"
 
 
+def _set_trailing_padding(node, padding) -> None:
+    """Replace the padding at the end of a tree entry with ``padding`` (or none)."""
+    if _is_run(node) and node.nodes:
+        last = node.nodes[-1]
+        if isinstance(last, syntax_node.ShortcutNode):
+            last.end_padding = padding or syntax_node.PaddingNode("")
+        elif isinstance(last, syntax_node.ValueNode):
+            last.padding = padding
+    elif _is_lattice_cell(node) and "lattice" in node.nodes:
+        lattice = node.nodes["lattice"]
+        while lattice.nodes and lattice.nodes[-1].format() != "]":
+            del lattice.nodes[-1]
+        if padding is not None:
+            lattice.append(padding)
+    elif _is_group_node(node):
+        end = syntax_node.PaddingNode(")")
+        if padding is not None:
+            end += padding
+        node.nodes["end_pad"] = end
+
+
+def _is_lattice_cell(node) -> bool:
+    return isinstance(node, syntax_node.SyntaxNode) and node.name == "lattice cell"
+
+
+def _levels_of(group_node) -> list:
+    """The ``("level", n)`` children of a ``<`` path group node, empty for a union."""
+    return [
+        node
+        for key, node in group_node.nodes.items()
+        if isinstance(key, tuple) and key[0] == "level"
+    ]
+
+
 def _make_group_node(items) -> syntax_node.SyntaxNode:
     """Build a parenthesized ``"tally group"`` node, as the parser does."""
     node = syntax_node.SyntaxNode(
@@ -705,77 +870,49 @@ def _make_group_node(items) -> syntax_node.SyntaxNode:
     return node
 
 
-def _flatten_runs(nodes) -> list:
-    """Replace each ``"tally number run"`` in ``nodes`` with its children."""
-    ret = []
-    for n in nodes:
-        if _is_run(n):
-            ret.extend(n.nodes)
-        else:
-            ret.append(n)
-    return ret
-
-
-def _extract_numbers_with_lattice(nodes):
-    """Pair each number with the lattice phrase that follows it, if any.
-
-    Returns ``(numbers, lattice_indices, number_nodes)`` where
-    ``lattice_indices[i]`` is a :class:`LatticeIndex` or ``None``, and
-    ``number_nodes[i]`` is the :class:`~montepy.input_parser.syntax_node.ValueNode`
-    holding that number, patched in place on write. For a shortcut (e.g.
-    ``3i``) that's one of its expanded values;
-    :meth:`~montepy.data_inputs.tally.Tally._update_values` then re-zips the
-    shortcut around the patched values.
-    """
-    numbers = []
-    lattice_indices = []
-    number_nodes = []
-    for n in _flatten_runs(nodes):
-        if isinstance(n, syntax_node.ShortcutNode):
-            values = [v for v in n.nodes if v.value is not None]
-        elif isinstance(n, syntax_node.ValueNode) and n.type is int:
-            values = [n]
-        elif isinstance(n, syntax_node.ListNode) and n.name == "lattice phrase":
-            # Applies to the number just before it, even a shortcut's last.
-            if numbers:
-                lattice_indices[-1] = LatticeIndex.parse_input_node(n)
-            continue
-        else:
-            continue
-        for v in values:
-            numbers.append(v.value)
-            lattice_indices.append(None)
-            number_nodes.append(v)
-    return numbers, lattice_indices, number_nodes
-
-
-def _extract_universe_spec_from_nodes(nodes):
-    """Extract universe number from nodes that may contain a universe_phrase ListNode."""
-    for n in nodes:
-        if isinstance(n, syntax_node.ListNode) and n.name == "universe phrase":
-            for m in n.nodes:
-                if isinstance(m, syntax_node.ValueNode) and isinstance(
-                    m.value, (int, float)
-                ):
-                    return int(m.value)
-        elif _is_group_node(n):
-            inner = list(n.nodes.values())[1:-1]
-            result = _extract_universe_spec_from_nodes(inner)
-            if result is not None:
-                return result
+def _parse_universe_spec(universe_node) -> int | None:
+    for m in universe_node.nodes:
+        if isinstance(m, syntax_node.ValueNode) and isinstance(m.value, (int, float)):
+            return int(m.value)
     return None
 
 
-def _parse_body_segment(nodes, *, is_grouped, node=None) -> FlatGroup:
-    numbers, lattice_indices, number_nodes = _extract_numbers_with_lattice(nodes)
-    universe_spec = _extract_universe_spec_from_nodes(nodes)
-    if node is None and nodes:
-        wrapper = syntax_node.ListNode("flat group body")
-        for n in nodes:
-            wrapper.append(n)
-        node = wrapper
+def _parse_entries(node, *, is_grouped) -> FlatGroup:
+    """Parse the entries of a union or a path level (``node``) into a :class:`FlatGroup`."""
+    items = []
+    lattice_indices = []
+    number_nodes = []
+    universe_spec = None
+
+    def add_run(run):
+        for value in run:
+            if value.value is None:
+                continue
+            items.append(value.value)
+            lattice_indices.append(None)
+            number_nodes.append(value)
+
+    for child in node.nodes.values():
+        if _is_run(child):
+            add_run(child)
+        elif _is_lattice_cell(child):
+            add_run(child.nodes[("run", 0)])
+            # The index applies to the cell's last value, even a shortcut's.
+            lattice_indices[-1] = LatticeIndex.parse_input_node(child.nodes["lattice"])
+        elif (
+            isinstance(child, syntax_node.ListNode) and child.name == "universe phrase"
+        ):
+            universe_spec = _parse_universe_spec(child)
+        elif _is_group_node(child):
+            if _levels_of(child):
+                raise UnsupportedFeature(
+                    f"A '<' path inside another group isn't supported: {child.format()}"
+                )
+            items.append(_parse_entries(child, is_grouped=True))
+            lattice_indices.append(None)
+            number_nodes.append(None)
     return FlatGroup(
-        numbers,
+        items,
         lattice_indices,
         is_grouped=is_grouped,
         universe_spec=universe_spec,
@@ -784,18 +921,26 @@ def _parse_body_segment(nodes, *, is_grouped, node=None) -> FlatGroup:
     )
 
 
-def _parse_segment_as_level(seg) -> FlatGroup:
-    """Parse a path segment (between ``<`` separators) into a :class:`FlatGroup` level."""
-    non_pad = [n for n in seg if not isinstance(n, syntax_node.PaddingNode)]
-    if len(non_pad) == 1 and _is_group_node(non_pad[0]):
-        inner_body = list(non_pad[0].nodes.values())[1:-1]
-        return _parse_body_segment(inner_body, is_grouped=True, node=non_pad[0])
-    return _parse_body_segment(seg, is_grouped=False)
+def _parse_level(level_node) -> FlatGroup:
+    """Parse one level of a ``<`` path.
+
+    A level that is only a parenthesized union, e.g. the ``(1 2)`` in
+    ``((1 2) < 5)``, is that union.
+    """
+    children = list(level_node.nodes.values())
+    if (
+        len(children) == 1
+        and _is_group_node(children[0])
+        and not _levels_of(children[0])
+    ):
+        return _parse_entries(children[0], is_grouped=True)
+    return _parse_entries(level_node, is_grouped=False)
 
 
 def _parse_tally_group_node(group_node) -> TallyGroup:
     nodes = list(group_node.nodes.values())
     for i, n in enumerate(nodes):
+        # A "<" with no padding, e.g. in "(1<2)", stays unpadded when rewritten.
         if (
             isinstance(n, syntax_node.ValueNode)
             and n.padding is None
@@ -803,52 +948,27 @@ def _parse_tally_group_node(group_node) -> TallyGroup:
             and not isinstance(nodes[i + 1], syntax_node.PaddingNode)
         ):
             n.never_pad = True
-    body = nodes[1:-1] if len(nodes) >= 2 else nodes
-
-    path_sep_indices = [
-        i
-        for i, n in enumerate(body)
-        if (
-            isinstance(n, syntax_node.ValueNode)
-            and isinstance(n.value, str)
-            and n.value.strip() == "<"
-        )
-    ]
-
-    if not path_sep_indices:
-        return _parse_body_segment(body, is_grouped=True, node=group_node)
-
-    segments = []
-    start = 0
-    for sep_i in path_sep_indices:
-        segments.append(body[start:sep_i])
-        start = sep_i + 1
-    segments.append(body[start:])
-
-    return PathGroup(
-        [_parse_segment_as_level(seg) for seg in segments], node=group_node
-    )
+    levels = _levels_of(group_node)
+    if not levels:
+        return _parse_entries(group_node, is_grouped=True)
+    return PathGroup([_parse_level(level) for level in levels], node=group_node)
 
 
 def _parse_tally_numbers(tally_numbers_node) -> list[TallyGroup]:
     groups = []
-    nodes = []
     for node in tally_numbers_node.nodes.values():
         if _is_run(node):
-            nodes.extend(node)
-        else:
-            nodes.append(node)
-    for node in nodes:
-        if isinstance(node, syntax_node.ValueNode):
-            v = node.value
-            if v is None:
-                continue
-            if isinstance(v, (int, float)) and not isinstance(v, bool):
+            for value in node:
+                if value.value is None:
+                    continue
                 wrapper = syntax_node.ListNode("flat group body")
-                wrapper.append(node)
+                wrapper.append(value)
                 groups.append(
                     FlatGroup(
-                        [int(v)], is_grouped=False, node=wrapper, number_nodes=[node]
+                        [int(value.value)],
+                        is_grouped=False,
+                        node=wrapper,
+                        number_nodes=[value],
                     )
                 )
         elif _is_group_node(node):
