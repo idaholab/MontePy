@@ -62,7 +62,7 @@ black --target-version py312 montepy/ tests/
 # To check without applying changes:
 black --target-version py312 --check montepy/ tests/
 
-# Black version: 26.x (specified in pyproject.toml as black>=26.1,<27.0)
+# Black version: 26 (specified in pyproject.toml as black>=26.1,<27.0)
 ```
 
 ### Building Documentation
@@ -224,7 +224,8 @@ doc/                  # Sphinx documentation
 ## Code Style & Quality Standards
 
 ### Formatting (Required)
-- Use `black>=26.1,<27.0` with target-version py312
+- Use black 26 (`black>=26.1,<27.0`) with target-version py312
+- The project moves to a new black major version about once a year, so don't format with any other version
 - Command: `black --target-version py312 montepy/ tests/`
 - Format before commit (enforced in code review)
 
