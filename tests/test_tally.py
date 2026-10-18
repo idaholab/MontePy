@@ -1650,3 +1650,61 @@ class TestNestedUnions:
     def test_path_nested_in_group_unsupported(self):
         with pytest.raises(montepy.exceptions.UnsupportedFeature):
             self._tally("f4:n ((1 < 2) 3)").groups
+
+    @staticmethod
+    def _cells(*numbers):
+        return [montepy.Cell(number=n) for n in numbers]
+
+    def test_add_group_with_nested_union(self):
+        c1, c2, c3, c4, c5 = self._cells(1, 2, 3, 4, 5)
+        t = F4Tally()
+        t.add_group([c1, [c2, c3], (c4, [c5])])
+        group = t.groups[0]
+        assert group.old_numbers == [1, 2, 3, 4, 5]
+        assert isinstance(group.members[1], FlatGroup)
+        assert list(t.cells.numbers) == [1, 2, 3, 4, 5]
+        assert all(c in t for c in (c1, c2, c3, c4, c5))
+        reread = Tally.from_input(t.mcnp_str())
+        nested = reread.groups[0].members
+        assert nested[0] == 1
+        assert nested[1].old_numbers == [2, 3]
+        assert nested[2].old_numbers == [4, 5]
+        assert nested[2].members[1].old_numbers == [5]
+
+    def test_add_group_nested_union_is_not_glued(self):
+        c1, c2, c3 = self._cells(1, 2, 3)
+        t = F4Tally()
+        t.add_group([[c1, c2], c3])
+        assert ") 3" in t.mcnp_str()
+
+    def test_add_group_nested_surfaces(self):
+        surfaces = [
+            montepy.surfaces.surface_builder.parse_surface(f"{n} so 1")
+            for n in (1, 2, 3)
+        ]
+        t = montepy.SurfaceFluxTally()
+        t.add_group([surfaces[0], [surfaces[1], surfaces[2]]])
+        assert list(t.surfaces.numbers) == [1, 2, 3]
+        reread = Tally.from_input(t.mcnp_str())
+        assert reread.groups[0].members[1].old_numbers == [2, 3]
+
+    def test_remove_from_built_nested_union(self):
+        c1, c2, c3 = self._cells(1, 2, 3)
+        t = F4Tally()
+        t.add_group([c1, [c2, c3]])
+        t.remove_cell(c2)
+        t.remove_cell(c3)
+        assert c2 not in t.cells and c3 not in t.cells
+        assert Tally.from_input(t.mcnp_str()).groups[0].members == [1]
+
+    @pytest.mark.parametrize("members", [[], [[]], ["a"], [1]])
+    def test_add_group_rejects_bad_members(self, members):
+        t = F4Tally()
+        with pytest.raises((TypeError, ValueError)):
+            t.add_group(members)
+        assert t.groups == []
+
+    def test_add_group_rejects_wrong_kind(self):
+        t = montepy.SurfaceFluxTally()
+        with pytest.raises(TypeError):
+            t.add_group(self._cells(1))

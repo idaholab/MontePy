@@ -439,6 +439,35 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             ):
                 collection.remove(obj)
 
+    def _add_union(self, members, kind: type) -> None:
+        """Add ``members`` as one union bin, a nested list or tuple being a nested union.
+
+        Each ``kind`` object is also added to :attr:`cells`/:attr:`surfaces`.
+        """
+
+        def build(members):
+            items = []
+            for member in members:
+                if isinstance(member, (list, tuple)):
+                    items.append(build(member))
+                elif isinstance(member, kind):
+                    items.append(member)
+                else:
+                    raise TypeError(
+                        f"A union can only hold {kind.__name__} objects or nested "
+                        f"lists of them, not {member!r}."
+                    )
+            if not items:
+                raise ValueError("A union can't be empty.")
+            return FlatGroup(items, is_grouped=True)
+
+        group = build(members)
+        self._groups.append(group)
+        collection = self._scored_collection
+        for entry, _, _ in group._leaves():
+            if entry not in collection:
+                collection.append(entry)
+
     @staticmethod
     def _scored_entries(group: TallyGroup) -> list:
         """The items (objects or numbers) ``group`` scores: a path's innermost level."""
@@ -824,22 +853,28 @@ class SurfaceTally(Tally):
 
     @args_checked
     @needs_full_cst
-    def add_group(
-        self, surfaces: list[montepy.Surface] | tuple[montepy.Surface, ...]
-    ) -> None:
+    def add_group(self, surfaces: list | tuple) -> None:
         """Add surfaces as a single union (averaged) bin.
+
+        A nested list or tuple is a nested union, so ``[s1, [s2, s3]]`` is
+        ``(1 (2 3))``.
+
+        .. versionchanged:: 1.6.0b4
+            Nested lists or tuples make nested unions.
 
         Parameters
         ----------
-        surfaces : list[Surface] | tuple[Surface, ...]
-            The surfaces to group, in order.
+        surfaces : list[Surface | list | tuple] | tuple[Surface | list | tuple, ...]
+            The surfaces to group, in order, or nested lists or tuples of them.
+
+        Raises
+        ------
+        TypeError
+            If an entry isn't a :class:`~montepy.Surface`, list, or tuple.
+        ValueError
+            If the union, or one nested in it, is empty.
         """
-        surfaces = list(surfaces)
-        group = FlatGroup(surfaces, is_grouped=True)
-        self._groups.append(group)
-        for s in surfaces:
-            if s not in self._surfaces:
-                self._surfaces.append(s)
+        self._add_union(surfaces, montepy.Surface)
 
     @args_checked
     @needs_full_cst
@@ -969,20 +1004,28 @@ class CellTally(Tally):
 
     @args_checked
     @needs_full_cst
-    def add_group(self, cells: list[montepy.Cell] | tuple[montepy.Cell, ...]) -> None:
+    def add_group(self, cells: list | tuple) -> None:
         """Add cells as a single union (averaged) bin.
+
+        A nested list or tuple is a nested union, so ``[c1, [c2, c3]]`` is
+        ``(1 (2 3))``.
+
+        .. versionchanged:: 1.6.0b4
+            Nested lists or tuples make nested unions.
 
         Parameters
         ----------
-        cells : list[Cell] | tuple[Cell, ...]
-            The cells to group, in order.
+        cells : list[Cell | list | tuple] | tuple[Cell | list | tuple, ...]
+            The cells to group, in order, or nested lists or tuples of them.
+
+        Raises
+        ------
+        TypeError
+            If an entry isn't a :class:`~montepy.Cell`, list, or tuple.
+        ValueError
+            If the union, or one nested in it, is empty.
         """
-        cells = list(cells)
-        group = FlatGroup(cells, is_grouped=True)
-        self._groups.append(group)
-        for c in cells:
-            if c not in self._cells:
-                self._cells.append(c)
+        self._add_union(cells, montepy.Cell)
 
     @args_checked
     @needs_full_cst

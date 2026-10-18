@@ -308,6 +308,17 @@ If you want a group of cells averaged into a single bin instead, use
    [2] False
    [1, 3] True
 
+A nested list (or tuple) in ``add_group`` is a nested union:
+
+.. doctest::
+
+   >>> nested_tally = montepy.CellFluxTally(number=114)
+   >>> nested_tally.add_group([problem.cells[1], [problem.cells[2], problem.cells[3]]])
+   >>> nested_tally.groups[0].old_numbers
+   [1, 2, 3]
+   >>> nested_tally.groups[0].members[1]
+   FlatGroup([2, 3], grouped=True)
+
 :class:`~montepy.SurfaceTally` has the matching
 :func:`~montepy.SurfaceTally.add_surface` and
 :func:`~montepy.SurfaceTally.add_group`.

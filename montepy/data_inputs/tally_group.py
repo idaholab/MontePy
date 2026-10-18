@@ -615,12 +615,15 @@ class FlatGroup(TallyGroup):
             universe.append(_make_value_node(int, self._universe_spec, padding=None))
             entries.append(universe)
         self._number_nodes = []
-        for item, num, idx in zip(
-            self._items, self._current_numbers(), self._lattice_indices
+        for i, (item, num, idx) in enumerate(
+            zip(self._items, self._current_numbers(), self._lattice_indices)
         ):
             if isinstance(item, FlatGroup):
                 item._ensure_has_node()
                 self._number_nodes.append(None)
+                if i != len(self._items) - 1:
+                    # Otherwise it is glued to the next entry: "(2 3)(4)".
+                    _set_trailing_padding(item._node, syntax_node.PaddingNode(" "))
                 entries.append(item._node)
                 continue
             # MCNP requires the brackets to immediately follow the cell number.
