@@ -104,8 +104,9 @@ class TallyParser(DataParser):
     """A parser for ``F`` tally inputs.
 
     Cell/surface numbers, including the values a shortcut (e.g. ``3i``)
-    expands to, are parsed as ``int``. See :class:`TallyMultiplierParser`
-    for ``FM`` inputs, whose numbers are ``float``.
+    expands to, are parsed as ``int``. See
+    :class:`~montepy.input_parser.tally_parser.TallyMultiplierParser` for
+    ``FM`` inputs, whose numbers are ``float``.
 
     Returns
     -------

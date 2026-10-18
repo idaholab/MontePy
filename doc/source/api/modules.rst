@@ -421,6 +421,7 @@ Parsers
    montepy.input_parser.material_parser.MaterialParser
    montepy.input_parser.read_parser.ReadParser
    montepy.input_parser.surface_parser.SurfaceParser
+   montepy.input_parser.tally_parser.TallyMultiplierParser
    montepy.input_parser.tally_parser.TallyParser
    montepy.input_parser.tally_seg_parser.TallySegmentParser
    montepy.input_parser.thermal_parser.ThermalParser

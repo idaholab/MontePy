@@ -7,6 +7,8 @@ from montepy.exceptions import *
 import montepy.types as ty
 
 import functools
+
+from montepy import _wrapping
 import re
 
 """
@@ -99,7 +101,7 @@ def make_prop_val_node(
     def decorator(func):
         @property
         @needs_full_ast
-        @functools.wraps(func)
+        @_wrapping.wraps(func)
         def getter(self):
             result = func(self)
             if result is not None:
@@ -173,7 +175,7 @@ def make_prop_pointer(
 
     def decorator(func):
         @property
-        @functools.wraps(func)
+        @_wrapping.wraps(func)
         def getter(self):
             if not hasattr(self, hidden_param) and hasattr(self, "_not_parsed"):
                 self.full_parse()
@@ -217,7 +219,7 @@ def needs_full_ast(func):
     Calling a marked function will lead to a full (abstract) parse.
     """
 
-    @functools.wraps(func)
+    @_wrapping.wraps(func)
     def decorator(self, *args, **kwargs):
         if hasattr(self, "_not_parsed"):
             self.full_parse()
@@ -273,7 +275,7 @@ def prop_pointer_from_problem(
 
     def decorator(func):
         @make_prop_pointer(hidden_param, types, base_type, validator, deletable)
-        @functools.wraps(func)
+        @_wrapping.wraps(func)
         def pull_from_problem(self):
             if hasattr(self, hidden_param) and getattr(self, hidden_param) is not None:
                 return func(self)
@@ -341,7 +343,7 @@ def prop_pointer_collect_from_problem(
 
     def decorator(func):
         @make_prop_pointer(hidden_param, types, base_type, validator, deletable)
-        @functools.wraps(func)
+        @_wrapping.wraps(func)
         def pull_from_problem(self):
             if hasattr(self, hidden_param) and getattr(self, hidden_param) is not None:
                 return func(self)

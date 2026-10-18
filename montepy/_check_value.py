@@ -33,6 +33,8 @@ import os
 from collections.abc import Callable, Iterable
 from enum import EnumType
 import functools
+
+from montepy import _wrapping
 import inspect
 import numpy as np
 import sys
@@ -164,7 +166,7 @@ def args_checked(func: Callable):
     )
     var_keyword_checkers = arg_checkers[var_keyword_name] if var_keyword_name else []
 
-    @functools.wraps(func)
+    @_wrapping.wraps(func)
     def wrapper(*args, **kwargs):
         # Map call arguments straight to their checkers by position/name,
         # using the signature shape precomputed above, instead of
