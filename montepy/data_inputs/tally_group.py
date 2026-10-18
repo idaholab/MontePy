@@ -33,15 +33,69 @@ def _make_value_node(value_type, default, padding=" ", never_pad=False):
 
 
 class LatticeIndex:
-    """A lattice element index ``[i j k]`` in a tally path specification.
+    """The lattice elements in brackets after a lattice cell in a tally path.
+
+    In ``F4:n (1 < 2[0 0 0] < 3)``, cell 2 is a lattice, and ``[0 0 0]`` limits
+    the tally to cell 1 only when it is inside lattice element ``[0, 0, 0]`` of
+    cell 2. Without the brackets, cell 1 would be scored in every element of
+    cell 2. MCNP accepts three forms inside the brackets:
+
+    * ``[n]``: the n-th lattice element of the cell, counted in the order of
+      its ``FILL`` array.
+    * ``[i j k]``: the single element at lattice indices ``i, j, k``. Any of the
+      three can be a range ``i1:i2`` instead, as on a ``FILL`` card, to select
+      every element in that range, e.g. ``[-1:1 0:1 0]``.
+    * ``[i1 j1 k1, i2 j2 k2]``: a comma-separated list of individual elements.
+
+    :attr:`dimensions` holds the bracket's entries in order: an ``int`` for a
+    single index, or an ``(i1, i2)`` tuple for a range.
 
     .. versionadded:: 1.6.0b2
+
+    .. note::
+
+        The comma-separated list form is not yet modeled: its entries are
+        flattened into :attr:`dimensions`, so ``[0 0 0, 0 1 0]`` gives
+        ``(0, 0, 0, 0, 1, 0)``. The tally is still written out unchanged.
 
     Parameters
     ----------
     dimensions : list[Integral | tuple[Integral, Integral]]
-        Each entry is either a single element index, or a ``(start, stop)``
+        Each entry is either a single lattice index, or a ``(start, stop)``
         range (``i1:i2``).
+
+    Examples
+    --------
+
+    A lattice index is reached through the
+    :attr:`~montepy.data_inputs.tally.FlatGroup.lattice_indices` of a path's
+    level. Levels go from innermost to outermost, so cell 2 is ``levels[1]``:
+
+    .. doctest::
+
+        >>> import montepy
+        >>> tally = montepy.Tally.from_input("F4:n (1 < 2[0 0 0] < 3)")
+        >>> tally.groups[0].levels[1].lattice_indices[0].dimensions
+        (0, 0, 0)
+
+    A range becomes a ``(start, stop)`` tuple:
+
+    .. doctest::
+
+        >>> tally = montepy.Tally.from_input("F4:n (1 < 2[-1:1 0:1 0] < 3)")
+        >>> tally.groups[0].levels[1].lattice_indices[0].dimensions
+        ((-1, 1), (0, 1), 0)
+
+    A single number is the element's position in the ``FILL`` array:
+
+    .. doctest::
+
+        >>> tally = montepy.Tally.from_input("F4:n (1 < 2[5] < 3)")
+        >>> tally.groups[0].levels[1].lattice_indices[0].dimensions
+        (5,)
+
+    To build a path with a lattice index, pass the indices as ``lattice`` to
+    :meth:`~montepy.data_inputs.tally.PathGroup.inside`.
     """
 
     __slots__ = ("_dimensions",)
