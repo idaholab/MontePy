@@ -899,6 +899,23 @@ class TestGroupRoundTrip:
         t.include_total = True
         assert t.mcnp_str().strip().endswith(" T")
 
+    @pytest.mark.parametrize(
+        "line, expected",
+        [
+            ("f4:n 1 2", "f4:n 1 2 T"),
+            ("f4:n (1 2)", "f4:n (1 2) T"),
+            ("f4:n 1 3i 5", "f4:n 1 3i 5 T"),
+            ("f4:n (1 < 2)", "f4:n (1 < 2) T"),
+        ],
+    )
+    def test_added_total_flag_not_glued_to_last_bin(self, line, expected):
+        # Regression test: with no padding after the last bin, setting
+        # include_total wrote "f4:n 1 2T".
+        t = CellFluxTally(Input([line], BlockType.DATA), jit_parse=False)
+        t.include_total = True
+        assert t.mcnp_str().strip() == expected
+        assert Tally.from_input(t.mcnp_str()).include_total
+
     @pytest.mark.parametrize("number", [1, 4])
     def test_link_to_problem_forwards_deepcopy(self, tally_problem, number):
         # Regression test: SurfaceTally/CellTally's link_to_problem

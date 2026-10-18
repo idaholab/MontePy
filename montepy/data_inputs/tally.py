@@ -368,11 +368,18 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         for run in _iter_runs(bins):
             if run._has_changed_values():
                 run.update_with_new_values(list(run))
-        end_node = self._tree["data"]["end"]
+        tally_list = self._tree["data"]
+        end_node = tally_list["end"]
         if self._include_total != self._parsed_include_total:
             # Only rewrite when this actually changed -- preserves the
             # original node (and its casing, e.g. a parsed lowercase "t")
             # untouched for a tally whose include_total was never set.
+            if self._include_total and not bins.format()[-1:].isspace():
+                # The last bin has no trailing padding (e.g. "f4:n 1 2"), so
+                # "T" would be glued to it as "2T".
+                end = tally_list.nodes.pop("end")
+                tally_list.nodes["end_padding"] = syntax_node.PaddingNode(" ")
+                tally_list.nodes["end"] = end
             end_node.value = "T" if self._include_total else None
             self._parsed_include_total = self._include_total
 
