@@ -404,6 +404,26 @@ class TestFlags:
         assert not fm.include_total
         assert fm.mcnp_str().strip().endswith("C")
 
+    @pytest.mark.parametrize(
+        "attr, expected",
+        [("include_total", "fm4 (1 2 3) T"), ("cumulative", "fm4 (1 2 3) C")],
+    )
+    def test_added_flag_not_glued_to_last_bin(self, attr, expected):
+        # Regression test: with no padding after the last bin, the flag was
+        # written as "(1 2 3)T".
+        fm = TallyMultiplier(Input(["fm4 (1 2 3)"], BlockType.DATA), jit_parse=False)
+        setattr(fm, attr, True)
+        assert fm.mcnp_str().strip() == expected
+
+    def test_removed_flag_keeps_trailing_comment(self):
+        # Regression test: removing the flag also dropped the comment after it.
+        fm = TallyMultiplier(
+            Input(["fm4 (1 2 3) t $ hi"], BlockType.DATA), jit_parse=False
+        )
+        fm.include_total = False
+        assert fm.mcnp_str().rstrip().endswith("(1 2 3)   $ hi")
+        assert not TallyMultiplier(fm.mcnp_str()).include_total
+
     def test_include_total_and_cumulative_are_mutually_exclusive(self):
         fm = TallyMultiplier(
             Input(["fm4 (1.0 26 16)"], BlockType.DATA), jit_parse=False

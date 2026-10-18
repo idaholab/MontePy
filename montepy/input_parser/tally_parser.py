@@ -33,6 +33,36 @@ def _next_key(parent: syntax_node.SyntaxNode, kind: str) -> tuple[str, int]:
     return (kind, max(used, default=-1) + 1)
 
 
+def _set_end_flag(tally_list: syntax_node.SyntaxNode, flag: str | None) -> None:
+    """Write ``flag`` (``"T"`` or ``"C"``, or ``None`` to remove it) after the bins.
+
+    ``tally_list`` is the ``"tally list"`` node, holding the bins under
+    ``"tally"`` and the flag under ``"end"``.
+    """
+    end_node = tally_list["end"]
+    if flag is None:
+        # "" rather than None: a None value isn't written, and neither is
+        # its padding, which can hold a trailing comment.
+        if end_node.value is not None:
+            end_node.value = ""
+        return
+    text = tally_list["tally"].format()
+    comments = list(tally_list["tally"].comments)
+    # After a trailing comment, the flag is already moved to a new line.
+    ends_in_comment = bool(comments) and text.endswith(comments[-1].format())
+    if (
+        not text[-1:].isspace()
+        and not ends_in_comment
+        and "end_padding" not in tally_list.nodes
+    ):
+        # The last bin has no trailing padding (e.g. "f4:n 1 2"), so the
+        # flag would be glued to it as "2T".
+        end = tally_list.nodes.pop("end")
+        tally_list.nodes["end_padding"] = syntax_node.PaddingNode(" ")
+        tally_list.nodes["end"] = end
+    end_node.value = flag
+
+
 def _item_kind(item) -> str:
     if isinstance(item, syntax_node.SyntaxNode) and item.name == "tally group":
         return "group"

@@ -916,6 +916,22 @@ class TestGroupRoundTrip:
         assert t.mcnp_str().strip() == expected
         assert Tally.from_input(t.mcnp_str()).include_total
 
+    def test_removed_total_flag_keeps_trailing_comment(self):
+        # Regression test: removing the "t" also dropped the comment after it.
+        t = CellFluxTally(Input(["f4:n 1 2 t $ hi"], BlockType.DATA), jit_parse=False)
+        t.include_total = False
+        assert t.mcnp_str() == "f4:n 1 2   $ hi"
+        assert not Tally.from_input(t.mcnp_str()).include_total
+        t.include_total = True
+        assert t.mcnp_str() == "f4:n 1 2 T $ hi"
+
+    def test_added_total_flag_after_trailing_comment(self):
+        # The padding added so "T" isn't glued to the last bin must not go
+        # after a comment, which would put the "T" inside it.
+        t = CellFluxTally(Input(["f4:n 1 2 $ c"], BlockType.DATA), jit_parse=False)
+        t.include_total = True
+        assert Tally.from_input(t.mcnp_str()).include_total
+
     @pytest.mark.parametrize("number", [1, 4])
     def test_link_to_problem_forwards_deepcopy(self, tally_problem, number):
         # Regression test: SurfaceTally/CellTally's link_to_problem

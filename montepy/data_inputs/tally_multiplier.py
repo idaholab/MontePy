@@ -12,7 +12,7 @@ from montepy.data_inputs.tally_multiplier_type import (
 )
 from montepy.exceptions import MalformedInputWarning
 from montepy.input_parser import syntax_node
-from montepy.input_parser.tally_parser import TallyMultiplierParser
+from montepy.input_parser.tally_parser import TallyMultiplierParser, _set_end_flag
 from montepy.mcnp_object import InitInput
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 import montepy.types as ty
@@ -1701,13 +1701,13 @@ class TallyMultiplier(Numbered_MCNP_Object, DataInputAbstract):
             for bin_ in self._bins:
                 if bin_._node is not None:
                     bin_.node
-        end_node = self._tree["data"]["end"]
         if self._include_total:
-            end_node.value = "T"
+            flag = "T"
         elif self._cumulative:
-            end_node.value = "C"
+            flag = "C"
         else:
-            end_node.value = None
+            flag = None
+        _set_end_flag(self._tree["data"], flag)
 
     def __str__(self):
         try:
