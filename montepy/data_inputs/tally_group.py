@@ -960,6 +960,35 @@ class PathGroup(TallyGroup):
         -------
         PathGroup
             ``self``, for method chaining.
+
+        Examples
+        --------
+
+        Each call adds a level outside the last one. This scores cell 1 where
+        it is in element ``[0 0 0]`` of lattice cell 2, and cell 2 is in cell 5:
+
+        .. doctest::
+
+            >>> import montepy
+            >>> cell_1, cell_2, cell_5 = (montepy.Cell(number=n) for n in (1, 2, 5))
+            >>> tally = montepy.CellFluxTally(number=4)
+            >>> path = tally.add_path_group(cell_1)
+            >>> path.inside(cell_2, lattice=[0, 0, 0]).inside(cell_5)
+            PathGroup(levels=3)
+            >>> print(tally.mcnp_str())  # doctest: +NORMALIZE_WHITESPACE
+            F4 (1 < 2[0 0 0] < 5)
+
+        Several cells at one level are a union, so this scores cell 1 where it
+        is in cell 2 or cell 3:
+
+        .. doctest::
+
+            >>> cell_3 = montepy.Cell(number=3)
+            >>> tally = montepy.CellFluxTally(number=14)
+            >>> tally.add_path_group(cell_1).inside(cell_2, cell_3)
+            PathGroup(levels=2)
+            >>> print(tally.mcnp_str())  # doctest: +NORMALIZE_WHITESPACE
+            F14 (1 < (2 3))
         """
         indices = [None] * len(cells_or_surfaces)
         if lattice is not None and cells_or_surfaces:

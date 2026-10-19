@@ -92,6 +92,52 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
     Examples
     --------
 
+    Building a tally
+    ^^^^^^^^^^^^^^^^
+
+    Make a tally of the class for its type, set its particles, and add the
+    cells it scores. :meth:`~montepy.CellTally.add_cell` gives each cell its
+    own bin, and :meth:`~montepy.CellTally.add_group` averages cells in one
+    bin, with a list as a nested union:
+
+    .. doctest::
+
+        >>> import montepy
+        >>> problem = montepy.read_input("tests/inputs/test_tally.imcnp")
+        >>> cells = problem.cells
+        >>> flux = montepy.CellFluxTally(number=304)
+        >>> flux.particles = {montepy.Particle.NEUTRON}
+        >>> flux.add_cell(cells[1], cells[2])
+        >>> flux.add_group(cells[3], [cells[4], cells[7]])
+        >>> problem.tallies.append(flux)
+        >>> print(flux.mcnp_str())  # doctest: +NORMALIZE_WHITESPACE
+        F304:n 1 2 (3 (4 7))
+
+    For repeated structures, :meth:`~montepy.CellTally.add_path_group` scores
+    cells only where they are inside other cells, which
+    :meth:`~montepy.data_inputs.tally.PathGroup.inside` adds from the inside
+    out:
+
+    .. doctest::
+
+        >>> path = flux.add_path_group(cells[1])
+        >>> path.inside(cells[2], lattice=[0, 0, 0]).inside(cells[5])
+        PathGroup(levels=3)
+        >>> print(flux.mcnp_str())  # doctest: +NORMALIZE_WHITESPACE
+        F304:n 1 2 (3 (4 7)) (1 < 2[0 0 0] < 5)
+
+    Changing the tally type
+    ^^^^^^^^^^^^^^^^^^^^^^^
+
+    :meth:`clone_as` makes a tally of another type that scores the same cells,
+    with the next free number of that type:
+
+    .. doctest::
+
+        >>> heating = flux.clone_as(montepy.TallyType.ENERGY_DEPOSITION)
+        >>> print(heating.mcnp_str())  # doctest: +NORMALIZE_WHITESPACE
+        F26:n 1 2 (3 (4 7)) (1 < 2[0 0 0] < 5)
+
     Checking what a tally scores
     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -99,7 +145,6 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
 
     .. doctest::
 
-        >>> import montepy
         >>> tally = montepy.Tally.from_input("F4:n 2 (3 4)")
         >>> montepy.Cell(number=3) in tally
         True
