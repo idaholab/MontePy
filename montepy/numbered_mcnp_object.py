@@ -1,8 +1,10 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 from abc import abstractmethod
+from collections.abc import Generator, Iterable
 import copy
 import itertools
+import re
 import weakref
 
 from montepy.mcnp_object import MCNP_Object, InitInput
@@ -84,6 +86,41 @@ class Numbered_MCNP_Object(MCNP_Object):
             collection.check_number(number)
             self._find_impacted_parents()
             collection._update_number(self.number, number, self)
+
+    def _possible_referrers(
+        self, candidates: Iterable[MCNP_Object]
+    ) -> Generator[MCNP_Object, None, None]:
+        """Get the candidates that could refer to this object, fully parsed.
+
+        This is for reverse lookups, e.g. :attr:`montepy.Surface.cells`, so
+        that answering one doesn't fully parse every object in the problem.
+        An unparsed candidate refers to objects by the numbers they had when it
+        was read. So it is skipped, without parsing it, unless this object's
+        :attr:`old_number` is a whole word in its text. If this object wasn't
+        read from an input, no unparsed candidate can refer to it.
+
+        Parameters
+        ----------
+        candidates : Iterable[MCNP_Object]
+            The objects that may refer to this one, e.g. the problem's cells.
+
+        Yields
+        ------
+        MCNP_Object
+            Each candidate that is parsed, or that is fully parsed now since
+            its text may refer to this object.
+        """
+        old_number = self.old_number
+        if old_number is not None and old_number >= 0:
+            pattern = re.compile(rf"\b{old_number}\b")
+        else:
+            pattern = None
+        for candidate in candidates:
+            if hasattr(candidate, "_not_parsed"):
+                if pattern is None or not candidate.search(pattern):
+                    continue
+                candidate.full_parse()
+            yield candidate
 
     def _find_impacted_parents(self):
         """

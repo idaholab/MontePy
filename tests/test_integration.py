@@ -1087,11 +1087,9 @@ def test_lattice_push_to_cells(simple_problem):
 
 def test_universe_problem_parsing(universe_problem):
     problem = copy.deepcopy(universe_problem)
+    universes = {1: 1, 11: 11}
     for cell in problem.cells:
-        if cell.number == 1:
-            assert cell.universe.number == 1
-        else:
-            assert cell.universe.number == 0
+        assert cell.universe.number == universes.get(cell.number, 0)
 
 
 def test_importance_end_repeat(universe_problem):

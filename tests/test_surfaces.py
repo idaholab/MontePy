@@ -1468,3 +1468,24 @@ def test_surface_cells_skips_full_parse_of_non_referencing_cells():
 
     assert not c1.fully_parsed
     assert found == {2, 3}
+
+
+def test_surface_cells_prefilter_uses_only_old_number():
+    # Unparsed cells refer to surfaces by the numbers they were read with,
+    # so a cell whose text only has a renumbered surface's new number isn't
+    # parsed to check it.
+    problem = montepy.read_input("tests/inputs/test_universe.imcnp")
+    surface = problem.surfaces[1000]
+    surface.number = 99  # cells 5 and 99 have "99", but not surface 99
+    list(surface.cells)
+    assert not problem.cells[5].fully_parsed
+    assert not problem.cells[99].fully_parsed
+
+
+def test_surface_cells_prefilter_new_surface_parses_nothing():
+    # No unparsed cell can refer to a surface that wasn't read from the input.
+    problem = montepy.read_input("tests/inputs/test_universe.imcnp")
+    surface = montepy.surfaces.CylinderOnAxis(number=5)
+    problem.surfaces.append(surface)
+    assert list(surface.cells) == []
+    assert not any(cell.fully_parsed for cell in problem.cells)

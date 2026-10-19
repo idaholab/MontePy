@@ -187,18 +187,15 @@ class TestUniverse:
         # cells. They should now pre-filter with a cheap raw-text search
         # first, and only fully parse cells that could plausibly match.
         problem = montepy.read_input(
-            os.path.join(
-                self.default_test_input_path, "test_reverse_lookup_prefilter.imcnp"
-            )
+            os.path.join(self.default_test_input_path, "test_universe.imcnp")
         )
-        c1, c2 = problem.cells[1], problem.cells[2]  # only c1 has u=99
-        assert not c1.fully_parsed and not c2.fully_parsed
+        assert not any(cell.fully_parsed for cell in problem.cells)
 
-        found = {c.number for c in problem.universes[99].cells}
+        found = {c.number for c in problem.universes[11].cells}
 
-        assert c1.fully_parsed
-        assert not c2.fully_parsed
-        assert found == {1}
+        # Only cell 11's text has 11, so it is the only one parsed.
+        assert {cell.number for cell in problem.cells if cell.fully_parsed} == {11}
+        assert found == {11}
 
     def test_detached_universe_returns_generator(self):
         """
@@ -214,6 +211,7 @@ class TestUniverse:
         universe = Universe(5)
         assert universe.number == 5
         assert universe.old_number == 5
+        assert isinstance(universe.old_number, int)
         with pytest.raises(TypeError):
             Universe("hi")
         with pytest.raises(ValueError):

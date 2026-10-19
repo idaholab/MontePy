@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import montepy.types as ty
-import re
 from typing import Generator
 import numpy as np
 
@@ -66,13 +65,6 @@ class Universe(Numbered_MCNP_Object):
     def _generate_default_tree(self, **kwargs):
         pass
 
-    def _search_patterns(self):
-        numbers = {self.number}
-        old_number = self.old_number.value
-        if old_number is not None:
-            numbers.add(old_number)
-        return [re.compile(rf"\b{n}\b") for n in numbers]
-
     @property
     def cells(self) -> Generator[montepy.Cell, None, None]:
         """A generator of the cell objects in this universe.
@@ -83,15 +75,7 @@ class Universe(Numbered_MCNP_Object):
             a generator returning every cell in this universe.
         """
         if self._problem:
-            patterns = self._search_patterns()
-            for cell in self._problem.cells:
-                if hasattr(cell, "_not_parsed"):
-                    # Cheap raw-text pre-filter -- see Cell.tallies for why
-                    # this exists. Avoids forcing a full parse of every
-                    # cell in the problem just to check its universe.
-                    if not any(cell.search(p) for p in patterns):
-                        continue
-                    cell.full_parse()
+            for cell in self._possible_referrers(self._problem.cells):
                 if cell.universe == self:
                     yield cell
 
@@ -108,12 +92,7 @@ class Universe(Numbered_MCNP_Object):
             yield from []
             return
 
-        patterns = self._search_patterns()
-        for cell in self._problem.cells:
-            if hasattr(cell, "_not_parsed"):
-                if not any(cell.search(p) for p in patterns):
-                    continue
-                cell.full_parse()
+        for cell in self._possible_referrers(self._problem.cells):
             if cell.fill:
                 if cell.fill.universes is not None:
                     if np.any(cell.fill.universes.flatten() == self):
@@ -178,9 +157,17 @@ class Universe(Numbered_MCNP_Object):
         self.soft_claim(cells_to_claim)
 
     @property
-    def old_number(self):
-        """Original universe number from the input file."""
-        return self._number
+    def old_number(self) -> int:
+        """Original universe number from the input file.
+
+        .. versionchanged:: 1.6.0b2
+            Returns the number, as documented, instead of its ``ValueNode``.
+
+        Returns
+        -------
+        int
+        """
+        return self._number.value
 
     def _update_values(self):
         pass
