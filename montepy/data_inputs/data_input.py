@@ -105,10 +105,11 @@ class DataInputAbstract(MCNP_Object):
         )
         if self._has_number():
             ret["classifier"].number = self._generate_default_node(
-                int, -1, placeholder=True
+                int, -1, None, True, placeholder=True
             )
-        else:
-            ret["classifier"].prefix.padding = syntax_node.PaddingNode(" ")
+        # The classifier's padding, not its last part's, so that particles
+        # added later go before it.
+        ret["classifier"].padding = syntax_node.PaddingNode(" ")
         ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
         ret["data"] = syntax_node.ListNode("empty data")
         ret["parameters"] = syntax_node.ParametersNode()

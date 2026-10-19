@@ -134,6 +134,11 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
     :class:`EnergyDepositionTally`.
     """
     _KEYS_TO_PRESERVE = {"_multiplier"}
+    _HAS_PARTICLES: bool = True
+    """Whether this tally has a particle designator, e.g. the ``:n`` in ``F4:n``.
+
+    ``+F6`` applies to all particles, so it has none.
+    """
     _SCORED_COLLECTION_ATTR: str | None = None
     """The attribute holding the collection of scored objects, e.g. ``"_cells"``.
 
@@ -325,6 +330,51 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         if self.multiplier is not None:
             return [score for bin_ in self.multiplier.bins for score in bin_.scores]
         return list(self._DEFAULT_SCORES)
+
+    @property
+    @needs_full_ast
+    def particles(self) -> set[montepy.Particle]:
+        """The particles this tally is for, e.g. ``{Particle.NEUTRON}`` for ``F4:n``.
+
+        This is a copy, so to add a particle, set a new set, e.g.
+        ``tally.particles = tally.particles | {montepy.Particle.PHOTON}``.
+
+        .. versionadded:: 1.6.0b2
+
+        Returns
+        -------
+        set[Particle]
+            The particles, or an empty set if there is no particle
+            designator, as for ``+F6``.
+
+        Raises
+        ------
+        ValueError
+            If set to no particles, or set for a tally without a particle
+            designator, such as ``+F6``, which applies to all particles.
+        """
+        node = self._classifier.particles
+        return set(node.particles) if node is not None else set()
+
+    @particles.setter
+    @args_checked
+    @needs_full_cst
+    def particles(self, particles: set[montepy.Particle] | list[montepy.Particle]):
+        if not self._HAS_PARTICLES:
+            raise ValueError(
+                f"A {type(self).__name__} applies to all particles, so it can't "
+                "have a particle designator."
+            )
+        if not particles:
+            raise ValueError("A tally needs at least one particle.")
+        node = self._classifier.particles
+        if node is None:
+            token = ":" + ",".join(p.value.lower() for p in particles)
+            node = syntax_node.ParticleNode("data particles", token)
+            self._classifier.particles = node
+        else:
+            node.particles = particles
+        self._particles = node.particles
 
     @property
     @needs_full_ast
@@ -1322,6 +1372,7 @@ class CollisionHeatingTally(CellTally):
 
     _TALLY_TYPE = TallyType.COLLISION_HEATING
     _DEFAULT_SCORES = (Score.COLLISION_HEATING,)
+    _HAS_PARTICLES = False
 
 
 class ChargeDepositionTally(CellTally):

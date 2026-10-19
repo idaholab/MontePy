@@ -1520,8 +1520,11 @@ class TallyMultiplier(Numbered_MCNP_Object, DataInputAbstract):
             self._class_prefix().upper(), str, padding=None, never_pad=True
         )
         ret["classifier"].number = self._generate_default_node(
-            int, -1, placeholder=True
+            int, -1, None, True, placeholder=True
         )
+        # The classifier's padding, not the number's, so that particles
+        # added later go before it.
+        ret["classifier"].padding = syntax_node.PaddingNode(" ")
         ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
         tally_numbers = syntax_node.ListNode("tally numbers")
         end_node = syntax_node.ValueNode(None, str)

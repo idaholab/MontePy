@@ -776,6 +776,38 @@ class TestTallyBuilders:
             getattr(tally, method)()
         assert tally.groups == []
 
+    def test_add_particle(self):
+        tally = Tally.from_input("f4:n 1 2", jit_parse=False)
+        assert tally.particles == {montepy.Particle.NEUTRON}
+        tally.particles = tally.particles | {montepy.Particle.PHOTON}
+        assert tally.mcnp_str() == "f4:n,p 1 2"
+        expected = {montepy.Particle.NEUTRON, montepy.Particle.PHOTON}
+        assert set(tally.particle_classifiers) == expected
+        assert tally.filters[0].particles == expected
+
+    def test_set_particles_keeps_list_order(self):
+        tally = Tally.from_input("f4:n 1 2", jit_parse=False)
+        tally.particles = [montepy.Particle.PHOTON, montepy.Particle.ELECTRON]
+        assert tally.mcnp_str() == "f4:p,e 1 2"
+
+    def test_set_particles_on_tally_from_scratch(self):
+        tally = CellFluxTally(number=14)
+        tally.add_cell(montepy.Cell(number=1))
+        assert tally.particles == set()
+        tally.particles = {montepy.Particle.NEUTRON}
+        assert tally.mcnp_str().rstrip() == "F14:n 1"
+
+    def test_set_no_particles_raises(self):
+        tally = Tally.from_input("f4:n 1 2", jit_parse=False)
+        with pytest.raises(ValueError):
+            tally.particles = set()
+
+    def test_collision_heating_has_no_particles(self):
+        tally = Tally.from_input("+f6 1", jit_parse=False)
+        assert tally.particles == set()
+        with pytest.raises(ValueError):
+            tally.particles = {montepy.Particle.NEUTRON}
+
     def test_cell_tally_add_group(self, tally_problem):
         f34 = tally_problem.tallies[34]  # cells 1,2,3,5 -- 99 is new
         c_already_present = tally_problem.cells[1]
