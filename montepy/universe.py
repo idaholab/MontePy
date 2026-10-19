@@ -36,7 +36,7 @@ class Universe(Numbered_MCNP_Object):
 
     @staticmethod
     def _parent_collections():
-        return (("cells", "universe", False),)
+        return (("cells", "universe", False), ("tallies", "groups", True))
 
     @args_checked
     def __init__(self, number: ty.NonNegativeInt, *, jit_parse: bool = False):

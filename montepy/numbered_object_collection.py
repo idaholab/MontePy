@@ -7,7 +7,10 @@ import weakref
 
 import montepy
 from montepy.utilities import *
-from montepy.numbered_mcnp_object import Numbered_MCNP_Object
+from montepy.numbered_mcnp_object import (
+    Numbered_MCNP_Object,
+    _NUMBER_MAKING_SHORTCUT,
+)
 from montepy.exceptions import *
 from montepy.utilities import *
 import montepy.types as ty
@@ -275,7 +278,7 @@ class NumberedObjectCollection(ABC):
         for obj in self:
             # possible candidate without full parsing
             # treat no input as a negative find since it will already be parsed
-            if obj.search(search_str):
+            if obj.search(search_str) or obj.search(_NUMBER_MAKING_SHORTCUT):
                 # trigger full parse
                 if isinstance(parent_prop, tuple):
                     parent_obj = obj

@@ -12,6 +12,16 @@ import montepy
 import montepy.types as ty
 from montepy.utilities import *
 
+_NUMBER_MAKING_SHORTCUT = re.compile(
+    r"(?<![\w.])(?:\d*I|\d*I?LOG|[+\-]?\d+\.?\d*(?:E[+\-]?\d+)?M)(?![\w.])", re.I
+)
+"""Finds a shortcut that makes numbers which aren't in the input's text.
+
+E.g., ``1 3I 5`` refers to 2, 3, and 4 without writing them, so a search of
+the text for a number can't rule out an input with ``3I``. These are the
+interpolate (``3I``, ``ILOG``) and multiply (``2M``) shortcuts.
+"""
+
 
 class Numbered_MCNP_Object(MCNP_Object):
     """An abstract class to represent an mcnp object that has a number.
@@ -96,7 +106,8 @@ class Numbered_MCNP_Object(MCNP_Object):
         that answering one doesn't fully parse every object in the problem.
         An unparsed candidate refers to objects by the numbers they had when it
         was read. So it is skipped, without parsing it, unless this object's
-        :attr:`old_number` is a whole word in its text. If this object wasn't
+        :attr:`old_number` is a whole word in its text, or its text has a
+        shortcut that makes numbers, such as ``3I``. If this object wasn't
         read from an input, no unparsed candidate can refer to it.
 
         Parameters
@@ -117,7 +128,10 @@ class Numbered_MCNP_Object(MCNP_Object):
             pattern = None
         for candidate in candidates:
             if hasattr(candidate, "_not_parsed"):
-                if pattern is None or not candidate.search(pattern):
+                if pattern is None or not (
+                    candidate.search(pattern)
+                    or candidate.search(_NUMBER_MAKING_SHORTCUT)
+                ):
                     continue
                 candidate.full_parse()
             yield candidate

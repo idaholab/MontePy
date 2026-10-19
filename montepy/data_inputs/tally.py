@@ -16,6 +16,7 @@ from montepy.data_inputs.tally_group import (
     PathGroup,
     SpatialFilter,
     TallyGroup,
+    _entry_is,
     _parse_tally_numbers,
 )
 from montepy.data_inputs.tally_type import Score, TallyType, TallyUnits, _TallyKey
@@ -133,6 +134,11 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
     :class:`EnergyDepositionTally`.
     """
     _KEYS_TO_PRESERVE = {"_multiplier"}
+    _SCORED_COLLECTION_ATTR: str | None = None
+    """The attribute holding the collection of scored objects, e.g. ``"_cells"``.
+
+    ``None`` for an abstract class.
+    """
 
     @staticmethod
     def _parser():
@@ -373,13 +379,6 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
                     object_ids.add(id(entry))
         return object_ids, numbers
 
-    @staticmethod
-    def _is_same(entry, item) -> bool:
-        """Whether a group entry (an object or a number) is ``item``."""
-        if isinstance(entry, ty.Integral):
-            return entry in (item.number, item.old_number)
-        return entry is item
-
     def _remove_scored(
         self,
         item: montepy.Cell | montepy.Surface,
@@ -414,13 +413,13 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         found = False
         for group in list(self._groups):
             scored = group.levels[0] if isinstance(group, PathGroup) else group
-            if not scored._remove_matching(lambda entry: self._is_same(entry, item)):
+            if not scored._remove_matching(lambda entry: _entry_is(entry, item)):
                 continue
             found = True
             if not scored._items:
                 self._groups.remove(group)
         in_path = any(
-            self._is_same(entry, item)
+            _entry_is(entry, item)
             for group in self._groups
             if isinstance(group, PathGroup)
             for level in group.levels[1:]
@@ -520,6 +519,36 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         """The items (objects or numbers) ``group`` scores: a path's innermost level."""
         scored = group.levels[0] if isinstance(group, PathGroup) else group
         return [entry for entry, _, _ in scored._leaves()]
+
+    def link_to_problem(self, problem, *, deepcopy=False):
+        """Links the tally to the parent problem, and its groups to the problem's objects.
+
+        Every number in the groups, including in a path's outer levels and a
+        ``U=N`` universe, is resolved to the live object, so it follows
+        renumbering.
+
+        Parameters
+        ----------
+        problem : MCNP_Problem
+            The problem to link this tally to.
+        deepcopy : bool
+            If this is occurring during a problem level deepcopy.
+        """
+        super().link_to_problem(problem, deepcopy=deepcopy)
+        attr = self._SCORED_COLLECTION_ATTR
+        if problem is None or attr is None or hasattr(self, "_not_parsed"):
+            return
+        # Rebuild from scratch: a deepcopy (e.g. from clone()) carries stale
+        # copied objects that must be discarded, not merged with the live
+        # ones from `problem`.
+        collection = type(getattr(self, attr))()
+        setattr(self, attr, collection)
+        is_cell = isinstance(collection, Cells)
+        for group in self._groups:
+            group.update_pointers(problem, is_cell=is_cell, tally=self)
+            for obj in self._scored_entries(group):
+                if obj not in collection:
+                    collection.append(obj)
 
     @staticmethod
     def _dispatch_class(
@@ -896,6 +925,8 @@ class SurfaceTally(Tally):
     .. versionadded:: 1.6.0b2
     """
 
+    _SCORED_COLLECTION_ATTR = "_surfaces"
+
     def _init_blank(self):
         super()._init_blank()
         self._surfaces = Surfaces()
@@ -1021,29 +1052,14 @@ class SurfaceTally(Tally):
         self._groups.remove(group)
         self._prune_unreferenced(self._scored_entries(group))
 
-    def link_to_problem(self, problem, *, deepcopy=False):
-        super().link_to_problem(problem, deepcopy=deepcopy)
-        if problem is not None and not hasattr(self, "_not_parsed"):
-            # Rebuild from scratch: a deepcopy (e.g. from clone()) carries
-            # stale copied Surface objects that must be discarded, not
-            # merged with the live ones from `problem`.
-            self._surfaces = Surfaces()
-            for group in self._groups:
-                # Use _surfaces directly to avoid triggering __relink_objs
-                # via the property.
-                group.update_pointers(problem._surfaces, is_cell=False, tally=self)
-                for surface in group.cells_or_surfaces:
-                    try:
-                        self._surfaces[surface.number]
-                    except KeyError:
-                        self._surfaces.append(surface)
-
 
 class CellTally(Tally):
     """Intermediate class for tallies that score in cells (``F4``, ``F6``, ``F7``, ``F8``).
 
     .. versionadded:: 1.6.0b2
     """
+
+    _SCORED_COLLECTION_ATTR = "_cells"
 
     def _init_blank(self):
         super()._init_blank()
@@ -1169,23 +1185,6 @@ class CellTally(Tally):
         """
         self._groups.remove(group)
         self._prune_unreferenced(self._scored_entries(group))
-
-    def link_to_problem(self, problem, *, deepcopy=False):
-        super().link_to_problem(problem, deepcopy=deepcopy)
-        if problem is not None and not hasattr(self, "_not_parsed"):
-            # Rebuild from scratch: a deepcopy (e.g. from clone()) carries
-            # stale copied Cell objects that must be discarded, not merged
-            # with the live ones from `problem`.
-            self._cells = Cells()
-            for group in self._groups:
-                # Use _cells directly to avoid triggering __relink_objs via
-                # the property.
-                group.update_pointers(problem._cells, is_cell=True, tally=self)
-                for cell in group.cells_or_surfaces:
-                    try:
-                        self._cells[cell.number]
-                    except KeyError:
-                        self._cells.append(cell)
 
 
 # ── Concrete subclasses ────────────────────────────────────────────────────────

@@ -302,8 +302,8 @@ class FlatGroup(TallyGroup):
     is_grouped : bool
         ``True`` = parenthesized union (one averaged bin);
         ``False`` = separate bins.
-    universe_spec : Integral, optional
-        Universe number if ``U=N`` syntax was used.
+    universe_spec : Integral | Universe, optional
+        The universe, or its number, if ``U=N`` syntax was used.
     """
 
     __slots__ = (
@@ -312,6 +312,7 @@ class FlatGroup(TallyGroup):
         "_lattice_indices",
         "_is_grouped",
         "_universe_spec",
+        "_universe_node",
         "_node",
         "_number_nodes",
     )
@@ -323,9 +324,10 @@ class FlatGroup(TallyGroup):
         lattice_indices: list[LatticeIndex | None] | None = None,
         *,
         is_grouped: bool,
-        universe_spec: ty.Integral | None = None,
+        universe_spec: ty.Integral | montepy.Universe | None = None,
         node: syntax_node.SyntaxNodeBase | None = None,
         number_nodes: list | None = None,
+        universe_node: syntax_node.ValueNode | None = None,
     ):
         self._items = list(items)
         # A frozen snapshot of the numbers as given here -- deliberately
@@ -337,6 +339,8 @@ class FlatGroup(TallyGroup):
         self._lattice_indices = lattice_indices or [None] * len(self._items)
         self._is_grouped = is_grouped
         self._universe_spec = universe_spec
+        # The ValueNode holding the universe number. None until the tree is built.
+        self._universe_node = universe_node
         self._node = node
         # Parallel to _items: the ValueNode holding each number, or None for
         # a nested union. Empty until the tree is built.
@@ -373,14 +377,23 @@ class FlatGroup(TallyGroup):
         number, if not linked to a problem yet), or a nested union
         :class:`FlatGroup`, e.g. the ``(2 3)`` in ``(1 (2 3))``.
 
+        This is one level only: a nested union is a single member, not
+        expanded. :attr:`cells_or_surfaces` has every cell or surface,
+        including those in nested unions.
+
         .. versionadded:: 1.6.0b2
         """
         return list(self._items)
 
     @property
-    def old_numbers(self):
+    def old_numbers(self) -> list[int]:
         """The cell/surface numbers as originally read or added, including
-        those in nested unions."""
+        those in nested unions.
+
+        Returns
+        -------
+        list[int]
+        """
         return [number for _, number, _ in self._leaves()]
 
     @property
@@ -389,9 +402,24 @@ class FlatGroup(TallyGroup):
         return self._is_grouped
 
     @property
-    def universe_spec(self):
-        """Universe number if ``U=N`` syntax was used, else ``None``."""
+    def universe_spec(self) -> montepy.Universe | int | None:
+        """The universe if ``U=N`` syntax was used, else ``None``.
+
+        This is the :class:`~montepy.Universe` once linked to a problem, so it
+        follows the universe being renumbered, or its number before then.
+
+        Returns
+        -------
+        Universe | int | None
+        """
         return self._universe_spec
+
+    def _universe_number(self) -> int | None:
+        """The number of :attr:`universe_spec`, or ``None``."""
+        spec = self._universe_spec
+        if spec is None or isinstance(spec, ty.Integral):
+            return spec
+        return spec.number
 
     @property
     def lattice_indices(self):
@@ -402,12 +430,18 @@ class FlatGroup(TallyGroup):
         return [index for _, _, index in self._leaves()]
 
     @property
-    def cells_or_surfaces(self):
-        """The resolved :class:`~montepy.Cell`/:class:`~montepy.Surface` objects
-        this group covers, including those in nested unions, once linked to a
-        problem. Empty if not yet linked.
+    def cells_or_surfaces(self) -> list[montepy.Cell | montepy.Surface]:
+        """Every :class:`~montepy.Cell`/:class:`~montepy.Surface` this group
+        covers, flattened, including those in nested unions.
+
+        This only has the objects once linked to a problem; a number that
+        isn't linked yet is left out. :attr:`old_numbers` has every number.
 
         .. versionadded:: 1.6.0b2
+
+        Returns
+        -------
+        list[Cell | Surface]
         """
         return [
             entry
@@ -452,10 +486,15 @@ class FlatGroup(TallyGroup):
         return self._all_of(montepy.Surface)
 
     def update_pointers(
-        self, container, *, is_cell: bool, tally: montepy.data_inputs.tally.Tally
+        self,
+        problem: montepy.MCNP_Problem,
+        *,
+        is_cell: bool,
+        tally: montepy.data_inputs.tally.Tally,
     ) -> None:
         """Resolve any still-raw numbers into live :class:`~montepy.Cell`/
-        :class:`~montepy.Surface` objects.
+        :class:`~montepy.Surface` objects, and a ``U=N`` universe into the live
+        :class:`~montepy.Universe`, so they follow renumbering.
 
         Mirrors :meth:`~montepy.UnitHalfSpace.update_pointers`.
 
@@ -463,24 +502,41 @@ class FlatGroup(TallyGroup):
 
         Parameters
         ----------
-        container : Cells | Surfaces
-            The problem's live collection to resolve numbers against.
+        problem : MCNP_Problem
+            The problem to resolve numbers against.
         is_cell : bool
             Whether entries should resolve to :class:`~montepy.Cell` (``True``)
             or :class:`~montepy.Surface` (``False``).
         tally : Tally
             The tally this group belongs to, used only to give a clear error
             if a number can't be resolved.
+
+        Raises
+        ------
+        BrokenObjectLinkError
+            If a number isn't in the problem.
         """
+        # Use the collections directly to avoid triggering __relink_objs via
+        # the properties.
+        container = problem._cells if is_cell else problem._surfaces
         kind = "Cell" if is_cell else "Surface"
         for i, item in enumerate(self._items):
             if isinstance(item, FlatGroup):
-                item.update_pointers(container, is_cell=is_cell, tally=tally)
+                item.update_pointers(problem, is_cell=is_cell, tally=tally)
             elif isinstance(item, ty.Integral):
                 try:
                     self._items[i] = container[item]
                 except KeyError:
                     raise BrokenObjectLinkError("Tally", tally.number, kind, item)
+        if isinstance(self._universe_spec, ty.Integral):
+            try:
+                # Universes are created when first looked up, so this can't
+                # use problem._universes directly.
+                self._universe_spec = problem.universes[self._universe_spec]
+            except KeyError:
+                raise BrokenObjectLinkError(
+                    "Tally", tally.number, "Universe", self._universe_spec
+                )
 
     def _remove_matching(self, matches) -> bool:
         """Remove every entry, including in nested unions, for which ``matches(entry)``.
@@ -622,7 +678,10 @@ class FlatGroup(TallyGroup):
             universe = syntax_node.ListNode("universe phrase")
             universe.append(_make_value_node(str, "u", padding=None))
             universe.append(syntax_node.PaddingNode("="))
-            universe.append(_make_value_node(int, self._universe_spec, padding=None))
+            self._universe_node = _make_value_node(
+                int, self._universe_number(), padding=None
+            )
+            universe.append(self._universe_node)
             entries.append(universe)
         self._number_nodes = []
         for i, (item, num, idx) in enumerate(
@@ -663,17 +722,13 @@ class FlatGroup(TallyGroup):
                 item._update_node()
             elif num_node is not None and num_node.value != num:
                 num_node.value = num
+        if self._universe_node is not None:
+            number = self._universe_number()
+            if self._universe_node.value != number:
+                self._universe_node.value = number
 
     def __contains__(self, item) -> bool:
-        for entry, number, _ in self._leaves():
-            if isinstance(entry, ty.Integral):
-                if hasattr(item, "old_number") and item.old_number == number:
-                    return True
-                if hasattr(item, "number") and item.number == number:
-                    return True
-            elif entry is item or entry == item:
-                return True
-        return False
+        return any(_entry_is(entry, item) for entry, _, _ in self._leaves())
 
     def __repr__(self):
         return f"FlatGroup({self.old_numbers}, grouped={self._is_grouped})"
@@ -707,45 +762,102 @@ class PathGroup(TallyGroup):
         return list(self._levels)
 
     @property
-    def old_numbers(self):
+    def old_numbers(self) -> list[int]:
+        """The numbers of every level, as originally read or added, innermost
+        level first.
+
+        :attr:`inner_old_numbers` has only the innermost (scored) level's.
+
+        .. versionadded:: 1.6.0b2
+
+        Returns
+        -------
+        list[int]
+        """
+        return [number for level in self._levels for number in level.old_numbers]
+
+    @property
+    def inner_old_numbers(self) -> list[int]:
         """The innermost (scored) level's numbers as originally read or added.
 
         .. versionadded:: 1.6.0b2
+
+        Returns
+        -------
+        list[int]
         """
         if not self._levels:
             return []
         return self._levels[0].old_numbers
 
     @property
-    def cells_or_surfaces(self):
-        """The innermost (scored) level's resolved objects.
+    def cells_or_surfaces(self) -> list[montepy.Cell | montepy.Surface]:
+        """Every :class:`~montepy.Cell`/:class:`~montepy.Surface` in this path,
+        flattened, innermost level first.
 
-        Per the MCNP manual's tally-specification chapter, only the
-        leftmost/innermost entry in a ``<``-chain is actually *tallied*;
-        every outer level is a containment cell (filled with a universe)
-        used only to select which occurrence is meant, never itself
-        scored -- so only the innermost level's objects count as "what
-        this tally covers".
+        The outer levels are always cells. Like
+        :attr:`FlatGroup.cells_or_surfaces`, this only has the objects once
+        linked to a problem. :attr:`inner_cells_or_surfaces` has only the
+        innermost (scored) level's.
 
         .. versionadded:: 1.6.0b2
+
+        Returns
+        -------
+        list[Cell | Surface]
+        """
+        return [obj for level in self._levels for obj in level.cells_or_surfaces]
+
+    @property
+    def inner_cells_or_surfaces(self) -> list[montepy.Cell | montepy.Surface]:
+        """The innermost (scored) level's :class:`~montepy.Cell`/:class:`~montepy.Surface` objects.
+
+        Only the innermost level of a ``<`` path is tallied. Every outer
+        level is a cell, filled with a universe, that only selects which
+        instance of the innermost level is meant (:manual63:`5.9.1.5`).
+
+        .. versionadded:: 1.6.0b2
+
+        Returns
+        -------
+        list[Cell | Surface]
         """
         if not self._levels:
             return []
         return self._levels[0].cells_or_surfaces
 
     def update_pointers(
-        self, container, *, is_cell: bool, tally: montepy.data_inputs.tally.Tally
+        self,
+        problem: montepy.MCNP_Problem,
+        *,
+        is_cell: bool,
+        tally: montepy.data_inputs.tally.Tally,
     ) -> None:
-        """Resolve the innermost (scored) level's numbers into live objects.
+        """Resolve every level's numbers into live objects, so they follow renumbering.
 
-        Outer (containment) levels are deliberately left unresolved --
-        they're never "in" the tally (see ``PathGroup.__contains__``),
-        so there's nothing to gain by tracking live renumbers for them.
+        The innermost level is cells or surfaces, by ``is_cell``. The outer
+        levels are always cells.
 
         .. versionadded:: 1.6.0b2
+
+        Parameters
+        ----------
+        problem : MCNP_Problem
+            The problem to resolve numbers against.
+        is_cell : bool
+            Whether the innermost level resolves to :class:`~montepy.Cell`
+            (``True``) or :class:`~montepy.Surface` (``False``).
+        tally : Tally
+            The tally this path belongs to, used only to give a clear error
+            if a number can't be resolved.
+
+        Raises
+        ------
+        BrokenObjectLinkError
+            If a number isn't in the problem.
         """
-        if self._levels:
-            self._levels[0].update_pointers(container, is_cell=is_cell, tally=tally)
+        for i, level in enumerate(self._levels):
+            level.update_pointers(problem, is_cell=is_cell or i > 0, tally=tally)
 
     @property
     def node(self):
@@ -856,6 +968,21 @@ class PathGroup(TallyGroup):
         return f"PathGroup(levels={len(self._levels)})"
 
 
+def _entry_is(entry, item) -> bool:
+    """Whether a group's entry is ``item``.
+
+    A linked entry is the object itself. An entry that isn't linked to a
+    problem yet is the number it was read as, which is ``item`` if it is the
+    number ``item`` has or was read with.
+    """
+    if isinstance(entry, ty.Integral):
+        return entry in (
+            getattr(item, "number", None),
+            getattr(item, "old_number", None),
+        )
+    return entry is item or entry == item
+
+
 def _is_group_node(node) -> bool:
     return isinstance(node, syntax_node.SyntaxNode) and node.name == "tally group"
 
@@ -907,10 +1034,11 @@ def _make_group_node(items) -> syntax_node.SyntaxNode:
     return node
 
 
-def _parse_universe_spec(universe_node) -> int | None:
+def _parse_universe_spec(universe_node) -> syntax_node.ValueNode | None:
+    """The ValueNode holding the number in a ``U=N`` phrase."""
     for m in universe_node.nodes:
         if isinstance(m, syntax_node.ValueNode) and isinstance(m.value, (int, float)):
-            return int(m.value)
+            return m
     return None
 
 
@@ -919,7 +1047,7 @@ def _parse_entries(node, *, is_grouped) -> FlatGroup:
     items = []
     lattice_indices = []
     number_nodes = []
-    universe_spec = None
+    universe_node = None
 
     def add_run(run):
         for value in run:
@@ -939,7 +1067,7 @@ def _parse_entries(node, *, is_grouped) -> FlatGroup:
         elif (
             isinstance(child, syntax_node.ListNode) and child.name == "universe phrase"
         ):
-            universe_spec = _parse_universe_spec(child)
+            universe_node = _parse_universe_spec(child)
         elif _is_group_node(child):
             if _levels_of(child):
                 raise UnsupportedFeature(
@@ -952,9 +1080,10 @@ def _parse_entries(node, *, is_grouped) -> FlatGroup:
         items,
         lattice_indices,
         is_grouped=is_grouped,
-        universe_spec=universe_spec,
+        universe_spec=int(universe_node.value) if universe_node is not None else None,
         node=node,
         number_nodes=number_nodes,
+        universe_node=universe_node,
     )
 
 

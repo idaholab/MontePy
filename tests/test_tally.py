@@ -968,6 +968,44 @@ class TestGroupRoundTrip:
         getattr(tally_problem, collection)[old].number = new
         assert t.mcnp_str() == expected
 
+    @pytest.mark.parametrize("jit_parse", [True, False])
+    def test_renumber_follows_path_outer_levels(self, jit_parse):
+        # Regression test: a path's outer levels and its U=N weren't linked,
+        # so they kept the numbers they were read with after a renumber.
+        problem = montepy.read_input(
+            "tests/inputs/test_tally.imcnp", jit_parse=jit_parse
+        )
+        problem.cells[2].number = 22
+        problem.cells[5].number = 55
+        problem.universes[1].number = 11
+        assert problem.tallies[104].mcnp_str() == "F104:n  ((u=11) < 22[0 0 0] < 55)"
+        assert problem.tallies[114].mcnp_str() == "F114:n  (u=11 < 22[0 0 0] < 55)"
+        group = problem.tallies[114].groups[0]
+        assert group.levels[0].universe_spec is problem.universes[11]
+
+    def test_renumber_universe_reaches_still_jit_tally(self, tally_problem):
+        tally = tally_problem.tallies[114]
+        assert not tally.fully_parsed
+        tally_problem.universes[1].number = 11
+        assert tally.mcnp_str() == "F114:n  (u=11 < 2[0 0 0] < 5)"
+
+    def test_renumber_reaches_still_jit_tally_through_shortcut(self, tally_problem):
+        # Regression test: "1 3i 5" scores cell 2 without "2" in its text, so
+        # the text search didn't parse it before cell 2 was renumbered, and
+        # it then couldn't find cell 2.
+        tally = tally_problem.tallies[34]  # f34:n (1 3i 5) T
+        assert not tally.fully_parsed
+        tally_problem.cells[2].number = 20
+        numbers = [c.number for c in tally.groups[0].cells_or_surfaces]
+        assert numbers == [1, 20, 3, 4, 5]
+
+    def test_cell_tallies_finds_tally_through_shortcut(self):
+        jit = montepy.read_input("tests/inputs/test_tally.imcnp")
+        full = montepy.read_input("tests/inputs/test_tally.imcnp", jit_parse=False)
+        found = {t.number for t in jit.cells[2].tallies}
+        assert found == {t.number for t in full.cells[2].tallies}
+        assert {34, 44, 54} <= found
+
     def test_include_total_settable(self):
         t = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)
         assert not t.include_total
@@ -1255,6 +1293,14 @@ class TestGroupRoundTrip:
         assert tally_problem.cells[1] in g
         assert tally_problem.cells[2] not in g
         assert tally_problem.cells[5] not in g
+
+    def test_path_group_numbers_and_objects_cover_all_levels(self, tally_problem):
+        group = tally_problem.tallies[194].groups[0]  # F194:n (1 < 2 < 5)
+        cells = tally_problem.cells
+        assert group.old_numbers == [1, 2, 5]
+        assert group.inner_old_numbers == [1]
+        assert group.cells_or_surfaces == [cells[1], cells[2], cells[5]]
+        assert group.inner_cells_or_surfaces == [cells[1]]
 
     def test_remove_group_is_not_quadratic(self):
         # Regression test: remove_group's own cleanup loop used to
