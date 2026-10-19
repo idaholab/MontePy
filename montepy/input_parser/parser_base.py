@@ -505,25 +505,41 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
     def data_prefix(self, p):
         return syntax_node.ValueNode(p[0], str)
 
-    @_(
-        "modifier data_prefix",
-        "data_prefix",
-        "classifier NUMBER",
-        "classifier NULL",
-        "classifier particle_type",
-    )
+    @_("bare_classifier", "bare_classifier particle_type")
     def classifier(self, p):
         """The classifier of a data input.
 
         This represents the first word of the data input.
         E.g.: ``M4``, `IMP:N`, ``F104:p``
 
+        It has at most one particle list, so ``F4:n:p`` is a syntax error.
+
         Returns
         -------
         montepy.input_parser.syntax_node.ClassifierNode
         """
-        if hasattr(p, "classifier"):
-            classifier = p.classifier
+        classifier = p.bare_classifier
+        if hasattr(p, "particle_type"):
+            classifier.particles = p.particle_type
+        return classifier
+
+    @_(
+        "modifier data_prefix",
+        "data_prefix",
+        "bare_classifier NUMBER",
+        "bare_classifier NULL",
+    )
+    def bare_classifier(self, p):
+        """The classifier of a data input, without its particles.
+
+        E.g.: ``M4``, ``IMP``, ``F104``
+
+        Returns
+        -------
+        montepy.input_parser.syntax_node.ClassifierNode
+        """
+        if hasattr(p, "bare_classifier"):
+            classifier = p.bare_classifier
         else:
             classifier = syntax_node.ClassifierNode()
             if hasattr(p, "modifier"):
@@ -541,8 +557,6 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
             else:
                 num = p.NULL
             classifier.number = syntax_node.ValueNode(num, int)
-        if hasattr(p, "particle_type"):
-            classifier.particles = p.particle_type
         return classifier
 
     @_("classifier padding", "classifier")

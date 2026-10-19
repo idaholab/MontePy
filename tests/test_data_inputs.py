@@ -438,3 +438,22 @@ def test_classifier_start_comment():
         "      92235.50c     5.0E-01",
     ]
     data = parse_data("\n".join(lines))
+
+
+@pytest.mark.parametrize(
+    "line, valid",
+    [
+        ("imp:n:p 1", False),
+        ("sdef:n:p erg=1", False),
+        ("imp:n,p 1", True),
+        ("sdef:n erg=1", True),
+    ],
+)
+def test_classifier_has_one_particle_list(line, valid):
+    # Regression test: a second particle list was accepted, and silently
+    # replaced the first, e.g. "imp:n:p" was read as "imp:p".
+    if valid:
+        DataInput(line, jit_parse=False)
+    else:
+        with pytest.raises(ParsingError):
+            DataInput(line, jit_parse=False)

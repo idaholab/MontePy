@@ -238,24 +238,40 @@ class ParamOnlyDataParser(DataParser):
     def spec_data_prefix(self, p):
         return syntax_node.ValueNode(p[0], str)
 
-    @_(
-        "modifier spec_data_prefix",
-        "spec_data_prefix",
-        "spec_classifier NUMBER",
-        "spec_classifier particle_type",
-    )
+    @_("bare_spec_classifier", "bare_spec_classifier particle_type")
     def spec_classifier(self, p):
         """The classifier of a data input.
 
         This represents the first word of the data input.
         E.g.: ``M4``, `IMP:N`, ``F104:p``
 
+        It has at most one particle list, so ``F4:n:p`` is a syntax error.
+
         Returns
         -------
         montepy.input_parser.syntax_node.ClassifierNode
         """
-        if hasattr(p, "spec_classifier"):
-            classifier = p.spec_classifier
+        classifier = p.bare_spec_classifier
+        if hasattr(p, "particle_type"):
+            classifier.particles = p.particle_type
+        return classifier
+
+    @_(
+        "modifier spec_data_prefix",
+        "spec_data_prefix",
+        "bare_spec_classifier NUMBER",
+    )
+    def bare_spec_classifier(self, p):
+        """The classifier of a data input, without its particles.
+
+        E.g.: ``M4``, ``IMP``, ``F104``
+
+        Returns
+        -------
+        montepy.input_parser.syntax_node.ClassifierNode
+        """
+        if hasattr(p, "bare_spec_classifier"):
+            classifier = p.bare_spec_classifier
         else:
             classifier = syntax_node.ClassifierNode()
             if hasattr(p, "modifier"):
@@ -269,8 +285,6 @@ class ParamOnlyDataParser(DataParser):
             classifier.prefix = p.spec_data_prefix
         if hasattr(p, "NUMBER"):
             classifier.number = syntax_node.ValueNode(p.NUMBER, int)
-        if hasattr(p, "particle_type"):
-            classifier.particles = p.particle_type
         return classifier
 
 
