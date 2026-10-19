@@ -717,7 +717,7 @@ You can also build a path group from scratch with
    >>> path_tally.groups[0].inside(problem.cells[3])
    PathGroup(...)
    >>> path_tally.mcnp_str()
-   'f114:n (u=1 < 2[0 0 0] < 5 < 3 )'
+   'f114:n (u=1 < 2[0 0 0] < 5 < 3)'
 
 References
 ----------

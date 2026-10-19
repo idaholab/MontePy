@@ -1248,8 +1248,8 @@ class TestGroupRoundTrip:
     @pytest.mark.parametrize(
         "lattice, written",
         [
-            ([0, 0, 0], "(1 < (2[0 0 0] 3 ))"),
-            ([range(0, 2), 0, 0], "(1 < (2[0:1 0 0] 3 ))"),
+            ([0, 0, 0], "(1 < (2[0 0 0] 3))"),
+            ([range(0, 2), 0, 0], "(1 < (2[0:1 0 0] 3))"),
         ],
     )
     def test_lattice_written_right_after_its_cell(self, lattice, written):
@@ -1259,11 +1259,20 @@ class TestGroupRoundTrip:
         cells = [montepy.Cell(number=i) for i in (1, 2, 3)]
         pg = tally.add_path_group(cells[0])
         pg.inside(cells[1], cells[2], lattice=lattice)
-        assert tally.mcnp_str().endswith(written)
+        assert tally.mcnp_str().rstrip().endswith(written)
         reread = Tally.from_input(tally.mcnp_str())
         assert reread.groups[0].levels[1].lattice_indices[0].elements == (
             tuple(lattice),
         )
+
+    def test_groups_from_scratch_are_spaced(self):
+        # Regression test: the last entry of a union kept its trailing space,
+        # "(3 4 )", and two unions were glued together, "(3 4 )(1 < 5 )".
+        cells = {n: montepy.Cell(number=n) for n in (1, 2, 3, 4, 5)}
+        tally = montepy.CellFluxTally(number=314)
+        tally.add_group(cells[3], [cells[4], cells[2]])
+        tally.add_path_group(cells[1], cells[3]).inside(cells[5])
+        assert tally.mcnp_str().rstrip() == "F314 (3 (4 2)) ((1 3) < 5)"
 
     def test_lattice_after_shortcut_attaches_to_its_last_value(self):
         # Regression test: a lattice index right after a shortcut was dropped.

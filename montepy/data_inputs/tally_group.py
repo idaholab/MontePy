@@ -721,6 +721,8 @@ class FlatGroup(TallyGroup):
             cell.nodes["lattice"] = lattice_node
             entries.append(cell)
         if self._is_grouped:
+            # "(1 2)", not "(1 2 )".
+            _set_trailing_padding(entries[-1], None)
             self._node = _make_group_node(entries)
         else:
             self._node = syntax_node.ListNode("flat group body")
@@ -896,7 +898,10 @@ class PathGroup(TallyGroup):
                     str, "<", padding=" "
                 )
             node.nodes[tally_parser._next_key(node, "level")] = self._level_node(level)
-        node.nodes["end_pad"] = syntax_node.PaddingNode(")")
+        if self._levels:
+            # "(1 < 5)", not "(1 < 5 )".
+            _set_trailing_padding(_last_entry(node), None)
+        node.nodes["end_pad"] = syntax_node.PaddingNode(") ")
         self._node = node
 
     @staticmethod
@@ -927,6 +932,7 @@ class PathGroup(TallyGroup):
             str, "<", padding=" "
         )
         nodes[tally_parser._next_key(self._node, "level")] = self._level_node(level)
+        _set_trailing_padding(_last_entry(self._node), None)
         nodes["end_pad"] = end_pad
 
     def _update_node(self):
@@ -1022,6 +1028,8 @@ def _set_trailing_padding(node, padding) -> None:
         if padding is not None:
             end += padding
         node.nodes["end_pad"] = end
+    elif isinstance(node, syntax_node.ValueNode):
+        node.padding = padding
 
 
 def _is_lattice_cell(node) -> bool:
@@ -1038,14 +1046,26 @@ def _levels_of(group_node) -> list:
 
 
 def _make_group_node(items) -> syntax_node.SyntaxNode:
-    """Build a parenthesized ``"tally group"`` node, as the parser does."""
+    """Build a parenthesized ``"tally group"`` node, as the parser does.
+
+    It is followed by a space, so it isn't glued to the next entry, e.g.
+    ``(1 2)(3)``.
+    """
     node = syntax_node.SyntaxNode(
         "tally group", {"start_pad": syntax_node.PaddingNode("(")}
     )
     for item in items:
         tally_parser._append_tally_item(node, item)
-    node.nodes["end_pad"] = syntax_node.PaddingNode(")")
+    node.nodes["end_pad"] = syntax_node.PaddingNode(") ")
     return node
+
+
+def _last_entry(path_node):
+    """The last entry of the outermost level of a ``<`` path's node."""
+    last_level = [
+        n for k, n in path_node.nodes.items() if k not in ("start_pad", "end_pad")
+    ][-1]
+    return list(last_level.nodes.values())[-1]
 
 
 def _parse_universe_spec(universe_node) -> syntax_node.ValueNode | None:
