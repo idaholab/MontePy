@@ -711,7 +711,7 @@ class TestTallyBuilders:
 
         s_already_present = tally_problem.surfaces[1000]
         s_new = tally_problem.surfaces[1010]
-        f1.add_group([s_already_present, s_new])
+        f1.add_group(s_already_present, s_new)
         assert f1.groups[-1].is_grouped
         assert set(f1.groups[-1].old_numbers) == {
             s_already_present.number,
@@ -753,11 +753,34 @@ class TestTallyBuilders:
         with pytest.raises(montepy.exceptions.BrokenObjectLinkError):
             f34.link_to_problem(tally_problem)
 
+    def test_add_cell_adds_each_as_its_own_bin(self, tally_problem):
+        tally = tally_problem.tallies[34]
+        cells = [tally_problem.cells[n] for n in (7, 8, 99)]
+        groups_before = len(tally.groups)
+        tally.add_cell(*cells)
+        new_groups = tally.groups[groups_before:]
+        assert [g.old_numbers for g in new_groups] == [[7], [8], [99]]
+        assert not any(g.is_grouped for g in new_groups)
+        assert all(c in tally.cells for c in cells)
+
+    def test_add_surface_adds_each_as_its_own_bin(self, tally_problem):
+        tally = tally_problem.tallies[1]
+        surfaces = [tally_problem.surfaces[n] for n in (1005, 1010)]
+        tally.add_surface(*surfaces)
+        assert [g.old_numbers for g in tally.groups[-2:]] == [[1005], [1010]]
+
+    @pytest.mark.parametrize("method", ["add_cell", "add_group"])
+    def test_cell_builders_need_a_cell(self, method):
+        tally = F4Tally()
+        with pytest.raises(ValueError):
+            getattr(tally, method)()
+        assert tally.groups == []
+
     def test_cell_tally_add_group(self, tally_problem):
         f34 = tally_problem.tallies[34]  # cells 1,2,3,5 -- 99 is new
         c_already_present = tally_problem.cells[1]
         c_new = tally_problem.cells[99]
-        f34.add_group([c_already_present, c_new])
+        f34.add_group(c_already_present, c_new)
         assert f34.groups[-1].is_grouped
         assert set(f34.groups[-1].old_numbers) == {
             c_already_present.number,
@@ -932,7 +955,7 @@ class TestGroupRoundTrip:
         c1, c2 = montepy.Cell(), montepy.Cell()
         c1.number = 10
         c2.number = 11
-        t.add_group([c1, c2])
+        t.add_group(c1, c2)
         text = t.mcnp_str()
         assert "10" in text and "11" in text
         assert "(" in text and ")" in text
@@ -1242,7 +1265,7 @@ class TestGroupRoundTrip:
         other = montepy.Cell()
         other.number = 98
         t.add_cell(cell)
-        t.add_group([cell, other])
+        t.add_group(cell, other)
         t.remove_cell(cell)
         assert cell not in t
         assert cell not in t.cells
@@ -1267,7 +1290,7 @@ class TestGroupRoundTrip:
         c1, c2 = montepy.Cell(), montepy.Cell()
         c1.number = 10
         c2.number = 11
-        t.add_group([c1, c2])
+        t.add_group(c1, c2)
         group = t.groups[-1]
         t.remove_group(group)
         text = t.mcnp_str()
@@ -1535,7 +1558,7 @@ class TestRemoveScored:
     def test_remove_group_keeps_items_other_groups_score(self):
         cells = [montepy.Cell(number=n) for n in (1, 2, 3)]
         t = F4Tally()
-        t.add_group(cells[:2])
+        t.add_group(*cells[:2])
         t.add_path_group(cells[1], cells[2])
         t.remove_group(t.groups[0])
         assert cells[0] not in t.cells
@@ -1780,7 +1803,7 @@ class TestNestedUnions:
     def test_add_group_with_nested_union(self):
         c1, c2, c3, c4, c5 = self._cells(1, 2, 3, 4, 5)
         t = F4Tally()
-        t.add_group([c1, [c2, c3], (c4, [c5])])
+        t.add_group(c1, [c2, c3], (c4, [c5]))
         group = t.groups[0]
         assert group.old_numbers == [1, 2, 3, 4, 5]
         assert isinstance(group.members[1], FlatGroup)
@@ -1796,7 +1819,7 @@ class TestNestedUnions:
     def test_add_group_nested_union_is_not_glued(self):
         c1, c2, c3 = self._cells(1, 2, 3)
         t = F4Tally()
-        t.add_group([[c1, c2], c3])
+        t.add_group([c1, c2], c3)
         assert ") 3" in t.mcnp_str()
 
     def test_add_group_nested_surfaces(self):
@@ -1805,7 +1828,7 @@ class TestNestedUnions:
             for n in (1, 2, 3)
         ]
         t = montepy.SurfaceFluxTally()
-        t.add_group([surfaces[0], [surfaces[1], surfaces[2]]])
+        t.add_group(surfaces[0], [surfaces[1], surfaces[2]])
         assert list(t.surfaces.numbers) == [1, 2, 3]
         reread = Tally.from_input(t.mcnp_str())
         assert reread.groups[0].members[1].old_numbers == [2, 3]
@@ -1813,7 +1836,7 @@ class TestNestedUnions:
     def test_remove_from_built_nested_union(self):
         c1, c2, c3 = self._cells(1, 2, 3)
         t = F4Tally()
-        t.add_group([c1, [c2, c3]])
+        t.add_group(c1, [c2, c3])
         t.remove_cell(c2)
         t.remove_cell(c3)
         assert c2 not in t.cells and c3 not in t.cells
@@ -1823,13 +1846,13 @@ class TestNestedUnions:
     def test_add_group_rejects_bad_members(self, members):
         t = F4Tally()
         with pytest.raises((TypeError, ValueError)):
-            t.add_group(members)
+            t.add_group(*members)
         assert t.groups == []
 
     def test_add_group_rejects_wrong_kind(self):
         t = montepy.SurfaceFluxTally()
         with pytest.raises(TypeError):
-            t.add_group(self._cells(1))
+            t.add_group(*self._cells(1))
 
 
 class TestInsideParsedPath:

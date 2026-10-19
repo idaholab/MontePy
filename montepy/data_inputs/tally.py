@@ -944,31 +944,38 @@ class SurfaceTally(Tally):
 
     @args_checked
     @needs_full_cst
-    def add_surface(self, surface: montepy.Surface) -> None:
-        """Add a single surface as a separate scoring bin.
+    def add_surface(self, *surfaces: montepy.Surface) -> None:
+        """Add surfaces, each as its own scoring bin.
 
         Parameters
         ----------
-        surface : Surface
-            The surface to add.
+        *surfaces : Surface
+            The surfaces to add, in order.
+
+        Raises
+        ------
+        ValueError
+            If no surfaces are given.
         """
-        group = FlatGroup([surface], is_grouped=False)
-        self._groups.append(group)
-        if surface not in self._surfaces:
-            self._surfaces.append(surface)
+        if not surfaces:
+            raise ValueError("At least one surface must be given.")
+        for surface in surfaces:
+            self._groups.append(FlatGroup([surface], is_grouped=False))
+            if surface not in self._surfaces:
+                self._surfaces.append(surface)
 
     @args_checked
     @needs_full_cst
-    def add_group(self, surfaces: list | tuple) -> None:
+    def add_group(self, *surfaces: montepy.Surface | list | tuple) -> None:
         """Add surfaces as a single union (averaged) bin.
 
-        A nested list or tuple is a nested union, so ``[s1, [s2, s3]]`` is
+        A list or tuple is a nested union, so ``add_group(s1, [s2, s3])`` is
         ``(1 (2 3))``.
 
         Parameters
         ----------
-        surfaces : list[Surface | list | tuple] | tuple[Surface | list | tuple, ...]
-            The surfaces to group, in order, or nested lists or tuples of them.
+        *surfaces : Surface | list | tuple
+            The surfaces to group, in order, or lists or tuples of them.
 
         Raises
         ------
@@ -1078,31 +1085,38 @@ class CellTally(Tally):
 
     @args_checked
     @needs_full_cst
-    def add_cell(self, cell: montepy.Cell) -> None:
-        """Add a single cell as a separate scoring bin.
+    def add_cell(self, *cells: montepy.Cell) -> None:
+        """Add cells, each as its own scoring bin.
 
         Parameters
         ----------
-        cell : Cell
-            The cell to add.
+        *cells : Cell
+            The cells to add, in order.
+
+        Raises
+        ------
+        ValueError
+            If no cells are given.
         """
-        group = FlatGroup([cell], is_grouped=False)
-        self._groups.append(group)
-        if cell not in self._cells:
-            self._cells.append(cell)
+        if not cells:
+            raise ValueError("At least one cell must be given.")
+        for cell in cells:
+            self._groups.append(FlatGroup([cell], is_grouped=False))
+            if cell not in self._cells:
+                self._cells.append(cell)
 
     @args_checked
     @needs_full_cst
-    def add_group(self, cells: list | tuple) -> None:
+    def add_group(self, *cells: montepy.Cell | list | tuple) -> None:
         """Add cells as a single union (averaged) bin.
 
-        A nested list or tuple is a nested union, so ``[c1, [c2, c3]]`` is
+        A list or tuple is a nested union, so ``add_group(c1, [c2, c3])`` is
         ``(1 (2 3))``.
 
         Parameters
         ----------
-        cells : list[Cell | list | tuple] | tuple[Cell | list | tuple, ...]
-            The cells to group, in order, or nested lists or tuples of them.
+        *cells : Cell | list | tuple
+            The cells to group, in order, or lists or tuples of them.
 
         Raises
         ------

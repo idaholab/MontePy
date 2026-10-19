@@ -287,18 +287,17 @@ surfaces to it.
 .. testcode::
 
    new_tally = montepy.CellFluxTally(number=104)
-   new_tally.add_cell(problem.cells[1])
-   new_tally.add_cell(problem.cells[2])
+   new_tally.add_cell(problem.cells[1], problem.cells[2])
    problem.tallies.append(new_tally)
 
-:func:`~montepy.CellTally.add_cell` adds a cell as its own separate
+:func:`~montepy.CellTally.add_cell` adds each cell as its own separate
 bin.
 If you want a group of cells averaged into a single bin instead, use
 :func:`~montepy.CellTally.add_group`:
 
 .. testcode::
 
-   new_tally.add_group([problem.cells[1], problem.cells[3]])
+   new_tally.add_group(problem.cells[1], problem.cells[3])
 
 .. doctest::
 
@@ -308,12 +307,12 @@ If you want a group of cells averaged into a single bin instead, use
    [2] False
    [1, 3] True
 
-A nested list (or tuple) in ``add_group`` is a nested union:
+A list (or tuple) given to ``add_group`` is a nested union:
 
 .. doctest::
 
    >>> nested_tally = montepy.CellFluxTally(number=114)
-   >>> nested_tally.add_group([problem.cells[1], [problem.cells[2], problem.cells[3]]])
+   >>> nested_tally.add_group(problem.cells[1], [problem.cells[2], problem.cells[3]])
    >>> nested_tally.groups[0].old_numbers
    [1, 2, 3]
    >>> nested_tally.groups[0].members[1]
