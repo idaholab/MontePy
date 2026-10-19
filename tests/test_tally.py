@@ -483,10 +483,33 @@ class TestTallyObject:
         with pytest.raises(montepy.exceptions.ParsingError):
             parse_data(Input([line], BlockType.DATA))
 
-    def test_from_input_rejects_classifier_only_full_parser_accepts(self):
-        # The full parser accepts "f4:n:p" by silently dropping the "n";
-        # from_input must not dispatch on that recovered classifier.
-        with pytest.raises(montepy.exceptions.MalformedInputError):
+    @pytest.mark.parametrize(
+        "line, tally_type",
+        [
+            ("f6:n 1", "ENERGY_DEPOSITION"),
+            ("*f6:n 1", "ENERGY_DEPOSITION_JERKS"),
+            ("+f6:n 1", "COLLISION_HEATING"),
+        ],
+    )
+    def test_tally_type_without_full_parse(self, line, tally_type):
+        # tally_type and tally_units come from the classifier, so they don't
+        # need a full parse, but must still be right for a "*" or "+" tally.
+        tally = Tally.from_input(line)
+        assert tally.tally_type is TallyType[tally_type]
+        assert tally.tally_units is TallyType[tally_type].units
+        assert not tally.fully_parsed
+
+    def test_scores_fully_parses_multiplier(self, tally_problem):
+        tally = tally_problem.tallies[4]
+        multiplier = tally.multiplier
+        assert not multiplier.fully_parsed
+        assert tally.scores == [score for b in multiplier.bins for score in b.scores]
+        assert multiplier.fully_parsed
+
+    def test_from_input_rejects_two_particle_lists(self):
+        # Regression test: the full parser accepted "f4:n:p" by silently
+        # dropping the "n".
+        with pytest.raises(montepy.exceptions.ParsingError):
             parse_data(Input(["f4:n:p 1"], BlockType.DATA))
 
     def test_clone_as_non_tally_type_raises_type_error(self, tally_problem):

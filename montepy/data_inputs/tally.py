@@ -45,20 +45,29 @@ def _get_type_digit(num: ty.Integral) -> ty.Integral:
     return num % _TALLY_TYPE_MODULUS
 
 
-def _is_detector_input(input) -> bool:
-    """Whether ``input`` is a detector (``F5``) tally, or an ``FM`` card for one.
+def _is_detector_input(classifier: syntax_node.ClassifierNode | None) -> bool:
+    """Whether a classifier is of a detector (``F5``) tally, or an ``FM`` card for one.
 
-    Neither is supported yet. ``False`` if the classifier can't be read, so
-    the tally or multiplier class reports the error.
+    Neither is supported yet.
+
+    Parameters
+    ----------
+    classifier : ClassifierNode | None
+        The light-parsed classifier of the input, or ``None`` if it couldn't
+        be read.
+
+    Returns
+    -------
+    bool
+        Whether it is a detector input. ``False`` if the classifier couldn't
+        be read, so the tally or multiplier class reports the error.
     """
-    try:
-        classifier = DataInputAbstract._peek_light_parse(input).nodes["classifier"]
-        return (
-            classifier.prefix.value.upper() in {"F", "FM"}
-            and classifier.number.value % _TALLY_TYPE_MODULUS == _DETECTOR_MODULO
-        )
-    except Exception:
+    if classifier is None or classifier.number is None:
         return False
+    return (
+        classifier.prefix.value.upper() in {"F", "FM"}
+        and classifier.number.value % _TALLY_TYPE_MODULUS == _DETECTOR_MODULO
+    )
 
 
 def _link_multiplier_to_tally(self, fm):
@@ -144,6 +153,7 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
     def _jit_light_init(self, input):
         super()._jit_light_init(input)
         self._old_number = self._input_number
+        self._parse_tally_type()
 
     def _parse_tree(self):
         super()._parse_tree()
@@ -236,13 +246,11 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         pass
 
     @property
-    @needs_full_ast
     def tally_type(self) -> TallyType | None:
         """The MCNP tally type (e.g. ``TallyType.CELL_FLUX`` for ``F4``)."""
         return self._tally_type
 
     @property
-    @needs_full_ast
     def tally_units(self) -> TallyUnits | None:
         """The units of this tally's result, e.g. ``TallyUnits.MEV_PER_G`` for ``F6``.
 
@@ -552,18 +560,49 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         """
         try:
             classifier = Tally._peek_light_parse(input).nodes["classifier"]
-            if classifier.number is None:
-                raise ValueError("Tally classifier has no number.")
-        except (AttributeError, KeyError, ValueError, AssertionError) as e:
+        except (AttributeError, KeyError, ValueError, AssertionError):
+            classifier = None
+        return Tally._from_classifier(input, classifier, jit_parse=jit_parse)
+
+    @staticmethod
+    def _from_classifier(
+        input, classifier: syntax_node.ClassifierNode | None, *, jit_parse: bool = True
+    ) -> Tally:
+        """Create the :class:`Tally` subclass for an input from its classifier.
+
+        This lets :func:`~montepy.data_inputs.data_parser.parse_data` reuse the
+        classifier it already light-parsed, rather than light-parsing again.
+
+        Parameters
+        ----------
+        input : Input | str
+            The raw MCNP input object.
+        classifier : ClassifierNode | None
+            The light-parsed classifier of ``input``, or ``None`` if the
+            light parser couldn't read it.
+        jit_parse : bool
+            Whether to defer full parsing.
+
+        Returns
+        -------
+        Tally
+            An instance of the correct subclass for the tally type.
+
+        Raises
+        ------
+        ParsingError
+            If the classifier is invalid.
+        MalformedInputError
+            If the classifier has no number, or isn't a valid tally type.
+        """
+        if classifier is None or classifier.number is None:
             # The light parser reports a malformed classifier with a bare
-            # exception and no context. Fully parse only to raise a
-            # ParsingError pointing at the offending token.
-            Tally(input, jit_parse=False)
-            # The full parser is more lenient (e.g. it accepts "f4:n:p" by
-            # dropping the "n"), so don't trust a classifier it recovers.
-            raise MalformedInputError(
-                input, f"Could not read the tally classifier of: {input}"
-            ) from e
+            # exception and no context, or reads no number. The full parser
+            # raises a ParsingError pointing at the offending token instead,
+            # or reads a classifier the light parser couldn't.
+            classifier = Tally(input, jit_parse=False)._classifier
+        if classifier.number is None:
+            raise MalformedInputError(input, f"The tally has no number: {input}")
         # An empty modifier node means there is no modifier.
         modifier = classifier.modifier.value or None
         subclass = Tally._dispatch_class(
