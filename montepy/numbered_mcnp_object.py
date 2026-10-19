@@ -1,14 +1,26 @@
 # Copyright 2024-2025, Battelle Energy Alliance, LLC All Rights Reserved.
 from __future__ import annotations
 from abc import abstractmethod
+from collections.abc import Generator, Iterable
 import copy
 import itertools
+import re
 import weakref
 
 from montepy.mcnp_object import MCNP_Object, InitInput
 import montepy
 import montepy.types as ty
 from montepy.utilities import *
+
+_NUMBER_MAKING_SHORTCUT = re.compile(
+    r"(?<![\w.])(?:\d*I|\d*I?LOG|[+\-]?\d+\.?\d*(?:E[+\-]?\d+)?M)(?![\w.])", re.I
+)
+"""Finds a shortcut that makes numbers which aren't in the input's text.
+
+E.g., ``1 3I 5`` refers to 2, 3, and 4 without writing them, so a search of
+the text for a number can't rule out an input with ``3I``. These are the
+interpolate (``3I``, ``ILOG``) and multiply (``2M``) shortcuts.
+"""
 
 
 class Numbered_MCNP_Object(MCNP_Object):
@@ -34,7 +46,7 @@ class Numbered_MCNP_Object(MCNP_Object):
 
     def __init__(
         self,
-        input: InitInput,
+        input: InitInput = None,
         number: ty.NonNegativeInt = None,
         *,
         jit_parse: bool = True,
@@ -85,6 +97,45 @@ class Numbered_MCNP_Object(MCNP_Object):
             self._find_impacted_parents()
             collection._update_number(self.number, number, self)
 
+    def _possible_referrers(
+        self, candidates: Iterable[MCNP_Object]
+    ) -> Generator[MCNP_Object, None, None]:
+        """Get the candidates that could refer to this object, fully parsed.
+
+        This is for reverse lookups, e.g. :attr:`montepy.Surface.cells`, so
+        that answering one doesn't fully parse every object in the problem.
+        An unparsed candidate refers to objects by the numbers they had when it
+        was read. So it is skipped, without parsing it, unless this object's
+        :attr:`old_number` is a whole word in its text, or its text has a
+        shortcut that makes numbers, such as ``3I``. If this object wasn't
+        read from an input, no unparsed candidate can refer to it.
+
+        Parameters
+        ----------
+        candidates : Iterable[MCNP_Object]
+            The objects that may refer to this one, e.g. the problem's cells.
+
+        Yields
+        ------
+        MCNP_Object
+            Each candidate that is parsed, or that is fully parsed now since
+            its text may refer to this object.
+        """
+        old_number = self.old_number
+        if old_number is not None and old_number >= 0:
+            pattern = re.compile(rf"\b{old_number}\b")
+        else:
+            pattern = None
+        for candidate in candidates:
+            if hasattr(candidate, "_not_parsed"):
+                if pattern is None or not (
+                    candidate.search(pattern)
+                    or candidate.search(_NUMBER_MAKING_SHORTCUT)
+                ):
+                    continue
+                candidate.full_parse()
+            yield candidate
+
     def _find_impacted_parents(self):
         """
         Find parent objects (e.g., cells for surfaces) to fully parse when this number changes to prevent breaking.
@@ -96,9 +147,20 @@ class Numbered_MCNP_Object(MCNP_Object):
             collection.search_parent_objs_by_child(self, parent_prop, is_container)
 
     @staticmethod
-    @abstractmethod
-    def _parent_collections():
-        pass
+    def _parent_collections() -> tuple[tuple[str, str | tuple[str, ...], bool], ...]:
+        """The collections of objects that can refer to this object.
+
+        Each entry is ``(collection_name, parent_prop, is_container)``: the name of the
+        problem's collection, the property of its objects that refers to this object, and
+        whether that property is a container of such objects.
+        The parents are fully parsed before this object's number changes.
+
+        Returns
+        -------
+        tuple[tuple[str, str | tuple[str, ...], bool], ...]
+            The parent collections, or an empty tuple if nothing refers to this object.
+        """
+        return ()
 
     @property
     @abstractmethod
@@ -209,8 +271,8 @@ class Numbered_MCNP_Object(MCNP_Object):
 
         Returns
         -------
-        type(self)
-            a cloned copy of this object.
+        Numbered_MCNP_Object
+            a cloned copy of this object, of the same class.
         """
         ret = copy.deepcopy(self)
         if self._problem:

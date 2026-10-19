@@ -60,6 +60,30 @@ def test_transform_in_degrees():
     assert transform.is_in_degrees
 
 
+@pytest.mark.parametrize("in_str", ["tr5 " + "1.0 " * 3 + "0.0 " * 9, None])
+def test_transform_toggle_degrees_writes_modifier(in_str):
+    import warnings
+
+    trans = Transform(in_str) if in_str else Transform(number=5)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        trans.is_in_degrees = True
+        assert trans.format_for_mcnp_input((6, 3, 0))[0].startswith("*")
+        trans.is_in_degrees = False
+        assert not trans.format_for_mcnp_input((6, 3, 0))[0].startswith("*")
+
+
+def test_transform_prefix_modifier_correct_immediately_after_jit_parse():
+    # Regression test: JitDataParser used to unconditionally discard a
+    # leading modifier token instead of capturing it into
+    # classifier.modifier, so prefix_modifier read None until something
+    # else (e.g. is_in_degrees) triggered a full parse. Check it directly,
+    # with no full-parse trigger in between, to catch that regression.
+    in_str = "*tr5 " + "1.0 " * 3 + "0.0 " * 9
+    transform = Transform(in_str, jit_parse=True)
+    assert transform.prefix_modifier.value == "*"
+
+
 def test_transform_blank_init():
     transform = Transform()
     assert transform.number == -1
@@ -230,3 +254,18 @@ def test_link_to_collection_already_linked_raises():
     other_collection = Transforms()
     with pytest.raises(IllegalState):
         transform._link_to_collection(other_collection)
+
+
+@pytest.mark.parametrize("number", [5, 104, 12345])
+@pytest.mark.parametrize("set_later", [False, True])
+def test_from_scratch_number_formatting(number, set_later):
+    import warnings
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        if set_later:
+            trans = Transform()
+            trans.number = number
+        else:
+            trans = Transform(number=number)
+        assert trans.format_for_mcnp_input((6, 3, 0))[0].startswith(f"TR{number} 0")

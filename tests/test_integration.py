@@ -497,6 +497,22 @@ def test_reverse_pointers(simple_problem):
     cells = list(problem.materials[1].cells)
     assert problem.cells[1] in cells
     assert len(cells) == 1
+
+
+def test_cells_complementing_this_skips_full_parse_of_non_referencing_cells():
+    # Cell.cells_complementing_this used to scan every cell in the problem
+    # and force a full parse of each one just to check its complements --
+    # catastrophic for a problem with many still-JIT cells. It should now
+    # pre-filter with a cheap raw-text search first, and only fully parse
+    # cells that could plausibly match.
+    problem = montepy.read_input("tests/inputs/test_tally.imcnp")
+    c1, c2, c3 = problem.cells[1], problem.cells[2], problem.cells[3]
+    assert not c1.fully_parsed and not c2.fully_parsed and not c3.fully_parsed
+
+    found = {c.number for c in problem.cells[99].cells_complementing_this}
+
+    assert not c1.fully_parsed and not c2.fully_parsed and not c3.fully_parsed
+    assert found == {5}
     cells = list(problem.surfaces[1005].cells)
     assert problem.cells[2] in problem.surfaces[1005].cells
     assert len(cells) == 2
@@ -1071,11 +1087,9 @@ def test_lattice_push_to_cells(simple_problem):
 
 def test_universe_problem_parsing(universe_problem):
     problem = copy.deepcopy(universe_problem)
+    universes = {1: 1, 11: 11}
     for cell in problem.cells:
-        if cell.number == 1:
-            assert cell.universe.number == 1
-        else:
-            assert cell.universe.number == 0
+        assert cell.universe.number == universes.get(cell.number, 0)
 
 
 def test_importance_end_repeat(universe_problem):
@@ -1122,6 +1136,17 @@ def test_fill_transform_setter(universe_problem):
     cell.fill.transform = transform
     del cell.fill.transform
     assert cell.fill.transform is None
+
+
+def test_fill_toggle_degrees_keeps_one_modifier(universe_problem):
+    problem = copy.deepcopy(universe_problem)
+    fill = problem.cells[5].fill
+    for _ in range(2):
+        fill.transform.is_in_degrees = True
+        assert fill.format_for_mcnp_input((6, 2, 0))[0].startswith("*fill=")
+        fill.transform.is_in_degrees = False
+        assert fill.format_for_mcnp_input((6, 2, 0))[0].startswith("fill=")
+    assert fill._tree["classifier"].modifier.value == ""
 
 
 def test_fill_cell_format(simple_problem, universe_problem):

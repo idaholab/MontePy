@@ -88,6 +88,9 @@ class Fill(CellModifierInput):
 
     def _generate_default_cell_tree(self):
         classifier = syntax_node.ClassifierNode()
+        classifier.modifier = self._generate_default_node(
+            str, "", None, True, placeholder=True
+        )
         classifier.prefix = self._generate_default_node(
             str, self._class_prefix().upper(), None, never_pad=True
         )
@@ -168,8 +171,7 @@ class Fill(CellModifierInput):
                         "Transform number must be a positive integer. {words[0]} was given."
                     )
             elif len(trans_data) > 1:
-                modifier = value["classifier"].modifier
-                if modifier and "*" in modifier.value:
+                if "*" in value["classifier"].modifier.value:
                     in_key = "*TR1"
                 else:
                     in_key = "TR1"
@@ -654,10 +656,8 @@ class Fill(CellModifierInput):
         return (self._axis_size(0), self._axis_size(1), self._axis_size(2))
 
     def _update_cell_values(self):
-        if self._transform and self.transform.is_in_degrees:
-            self._tree["classifier"].modifier = "*"
-        else:
-            self._tree["classifier"].modifier = None
+        in_degrees = self._transform and self.transform.is_in_degrees
+        self._tree["classifier"].modifier.value = "*" if in_degrees else ""
         self._update_cell_transform_values()
         self._update_cell_universes()
         self._update_multi_index_limits()

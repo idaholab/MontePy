@@ -94,6 +94,9 @@ class DataInputAbstract(MCNP_Object):
         ret = {}
         ret["start_pad"] = syntax_node.PaddingNode()
         ret["classifier"] = syntax_node.ClassifierNode()
+        ret["classifier"].modifier = self._generate_default_node(
+            str, "", None, True, placeholder=True
+        )
         ret["classifier"].prefix = syntax_node.ValueNode(
             self._class_prefix().upper(),
             str,
@@ -101,9 +104,12 @@ class DataInputAbstract(MCNP_Object):
             never_pad=self._has_number(),
         )
         if self._has_number():
-            ret["classifier"].number = self._generate_default_node(int, -1)
-        else:
-            ret["classifier"].prefix.padding = syntax_node.PaddingNode(" ")
+            ret["classifier"].number = self._generate_default_node(
+                int, -1, None, True, placeholder=True
+            )
+        # The classifier's padding, not its last part's, so that particles
+        # added later go before it.
+        ret["classifier"].padding = syntax_node.PaddingNode(" ")
         ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)
         ret["data"] = syntax_node.ListNode("empty data")
         ret["parameters"] = syntax_node.ParametersNode()
@@ -216,10 +222,14 @@ class DataInputAbstract(MCNP_Object):
 
         Returns
         -------
-        str
+        ValueNode
             the prefix modifier that was parsed if any. None if
             otherwise.
         """
+        # The parser gives every classifier a modifier node, which is empty
+        # when there is no modifier.
+        if self._modifier is None or not self._modifier.value:
+            return None
         return self._modifier
 
     @property
@@ -400,10 +410,11 @@ class DataInput(DataInputAbstract):
         .. versionadded:: 0.3.0
         """
         PARAM_PARSER = ParamOnlyDataParser
-        TALLY_PARSER = montepy.input_parser.tally_parser.TallyParser
+        # No "f" or "fm": Tally and TallyMultiplier have their own parsers. The
+        # only plain DataInputs left with those prefixes are detector (F5)
+        # tallies and their FM cards, whose syntax the tally parsers don't
+        # cover (e.g. non-integer detector coordinates).
         PARSER_PREFIX_MAP = {
-            "f": TALLY_PARSER,
-            "fm": TALLY_PARSER,
             "fs": montepy.input_parser.tally_seg_parser.TallySegmentParser,
             "sdef": PARAM_PARSER,
         }

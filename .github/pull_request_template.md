@@ -28,6 +28,8 @@ Fixes # (issue number)
 
   - [ ] Yes
       - Model(s) used:
+      - Harness used:
+      - Reasoning effort:
   - [ ] No
 
 <details open> 

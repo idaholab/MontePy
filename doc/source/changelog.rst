@@ -10,6 +10,19 @@ MontePy Changelog
 =============
 
 
+#Next Version#
+--------------
+
+**Features Added**
+
+* Added a :class:`~montepy.Tally`/:class:`~montepy.TallyMultiplier` object model for reading, creating, and editing MCNP tally (``F``) and tally multiplier (``FM``) inputs (:issue:`11`).
+
+**Bugs Fixed**
+
+* Fixed :attr:`~montepy.Surface.cells` and :attr:`~montepy.Cell.cells_complementing_this` finding nothing after the surface or cell was renumbered (:pull:`1005`).
+* Fixed a data input with two particle lists, such as ``IMP:N:P``, being read as if it only had the last one, instead of raising a :class:`~montepy.exceptions.ParsingError` (:pull:`1005`).
+
+
 1.6.0b1
 --------------
 

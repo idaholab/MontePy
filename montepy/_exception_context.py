@@ -1,5 +1,7 @@
 from abc import ABC, ABCMeta, abstractmethod
 import functools
+
+from montepy import _wrapping
 import inspect
 
 from montepy.exceptions import *
@@ -12,7 +14,7 @@ class _ExceptionContextAdder(ABCMeta):
     def _wrap_attr_call(func):
         """Wraps the function, and returns the modified function."""
 
-        @functools.wraps(func)
+        @_wrapping.wraps(func)
         def wrapped(*args, **kwargs):
             from montepy.mcnp_object import MCNP_Object
 

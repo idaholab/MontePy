@@ -7,7 +7,10 @@ import weakref
 
 import montepy
 from montepy.utilities import *
-from montepy.numbered_mcnp_object import Numbered_MCNP_Object
+from montepy.numbered_mcnp_object import (
+    Numbered_MCNP_Object,
+    _NUMBER_MAKING_SHORTCUT,
+)
 from montepy.exceptions import *
 from montepy.utilities import *
 import montepy.types as ty
@@ -135,7 +138,7 @@ class NumberedObjectCollection(ABC):
 
     Parameters
     ----------
-    obj_class : type
+    obj_class : type[Numbered_MCNP_Object]
         the class of numbered objects being collected
     objects : list
         the list of cells to start with if needed
@@ -275,7 +278,7 @@ class NumberedObjectCollection(ABC):
         for obj in self:
             # possible candidate without full parsing
             # treat no input as a negative find since it will already be parsed
-            if obj.search(search_str):
+            if obj.search(search_str) or obj.search(_NUMBER_MAKING_SHORTCUT):
                 # trigger full parse
                 if isinstance(parent_prop, tuple):
                     parent_obj = obj
@@ -425,8 +428,8 @@ class NumberedObjectCollection(ABC):
 
         Returns
         -------
-        type(self)
-            a cloned copy of this object.
+        NumberedObjectCollection
+            a cloned copy of this object, of the same class.
         """
         if starting_number is None:
             starting_number = self.starting_number
@@ -1088,8 +1091,8 @@ class NumberedObjectCollection(ABC):
 
         Parameters
         ----------
-        others : Self
-            the other collections to compare to.
+        other : Self
+            the other collection to compare to.
 
         Returns
         -------
@@ -1106,8 +1109,8 @@ class NumberedObjectCollection(ABC):
 
         Parameters
         ----------
-        others : Self
-            the other collections to compare to.
+        other : Self
+            the other collection to compare to.
         """
         self ^= other
         return self

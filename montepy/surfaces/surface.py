@@ -240,7 +240,11 @@ class Surface(Numbered_MCNP_Object, metaclass=_SurfaceClassFactory):
 
     @staticmethod
     def _parent_collections():
-        return (("cells", "surfaces", True), ("surfaces", "periodic_surface", False))
+        return (
+            ("cells", "surfaces", True),
+            ("surfaces", "periodic_surface", False),
+            ("tallies", "groups", True),
+        )
 
     @args_checked
     def __init__(
@@ -595,7 +599,7 @@ class Surface(Numbered_MCNP_Object, metaclass=_SurfaceClassFactory):
         collections.abc.Generator
         """
         if self._problem:
-            for cell in self._problem.cells:
+            for cell in self._possible_referrers(self._problem.cells):
                 if self in cell.surfaces:
                     yield cell
 

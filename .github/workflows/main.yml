@@ -2,9 +2,9 @@ name: CI testing
 
 on: 
   pull_request:
-    branches: ["*dev*", alpha-test*]
+    branches: ["*dev*", "*-test*"]
   push: 
-     branches: ["*dev*", main, alpha-test*]
+     branches: ["*dev*", "main", "*-test*"]
 
 jobs:
   build:
@@ -105,7 +105,7 @@ jobs:
           path: coverage.xml
       - name: Coveralls GitHub Action
         if: ${{ matrix.python-version == '3.14' && matrix.numpy-version == '2.4' && (success() || failure() )}}
-        uses: coverallsapp/github-action@5cbfd81b66ca5d10c19b062c04de0199c215fb6e
+        uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329
         with:
           file: coverage.xml
           fail-on-error: false
@@ -235,7 +235,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Check for changes
-        uses: dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d
         id: changes
         with:
           filters: |

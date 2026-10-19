@@ -13,6 +13,7 @@
 import importlib.metadata
 import os
 import sys
+from sphinx import addnodes
 
 sys.path.insert(0, os.path.abspath("../.."))
 sys.path.insert(0, os.path.abspath("_extension"))
@@ -280,15 +281,6 @@ suppress_warnings = [
     # classes at the top-level montepy namespace (e.g. montepy.AxisPlane); safe
     # to suppress because the re-exports are intentional.
     "autosummary.import_cycle",
-    # "more than one target" warnings arise because montepy.utilities re-exports
-    # all exceptions from montepy.exceptions, causing every exception class to be
-    # registered under both modules.  Also suppresses the ShortcutNode.type /
-    # ValueNode.type ambiguity (two attributes share the same short name).
-    "ref.python",
-    # Forward-reference failures from get_type_hints() when a name is available
-    # at runtime (via from __future__ import annotations) but not at import time
-    # in Sphinx's evaluation context (e.g. MCNP_Object in cells.grab_input).
-    "sphinx_autodoc_typehints.forward_reference",
 ]
 
 # -- Intersphinx mapping -----------------------------------------------------
@@ -405,5 +397,24 @@ def _add_meta_descriptions(app, docname, source):
         pass
 
 
+def _builtin_type_refs(app, doctree):
+    """Resolve a ``type`` class reference to the builtin, not ``*.type`` attributes.
+
+    Type annotations (e.g. ``type[Tally]``) give their references a
+    ``refspecific`` attribute, which makes Sphinx search for any object ending
+    in ``.type`` and find both ``ShortcutNode.type`` and ``ValueNode.type``.
+    Without it, the reference falls through to the builtin via intersphinx.
+    """
+    for node in doctree.findall(addnodes.pending_xref):
+        if (
+            node.get("refdomain") == "py"
+            and node.get("reftype") == "class"
+            and node.get("reftarget") == "type"
+            and "refspecific" in node.attributes
+        ):
+            del node["refspecific"]
+
+
 def setup(app):
     app.connect("source-read", _add_meta_descriptions)
+    app.connect("doctree-read", _builtin_type_refs)

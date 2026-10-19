@@ -156,7 +156,7 @@ class _MatCompWrapper:
         self._parent[idx] = new_val
 
 
-class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
+class Material(Numbered_MCNP_Object, data_input.DataInputAbstract):
     """A class to represent an MCNP material.
 
     Examples
@@ -315,7 +315,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         jit_parse: bool = True,
         **kwargs,
     ):
-        Numbered_MCNP_Object.__init__(self, input, number, jit_parse=jit_parse)
+        super().__init__(input, number, jit_parse=jit_parse)
 
     def _init_blank(self):
         self._components = []
@@ -375,9 +375,10 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
 
     def _generate_default_tree(self, number=-1):
         classifier = syntax_node.ClassifierNode()
-        number = self._generate_default_node(int, number)
-        classifier.number = number
-        classifier.number.never_pad = True
+        # The classifier's padding separates the number from the data.
+        classifier.number = self._generate_default_node(
+            int, number, padding=None, never_pad=True, placeholder=True
+        )
         classifier.prefix = syntax_node.ValueNode("M", str, never_pad=True)
         classifier.padding = syntax_node.PaddingNode(" ")
         mats = syntax_node.MaterialsNode("mat stuff")
@@ -1366,7 +1367,7 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             an iterator of the Cell objects which use this.
         """
         if self._problem:
-            for cell in self._problem.cells:
+            for cell in self._possible_referrers(self._problem.cells):
                 if cell.material == self:
                     yield cell
 

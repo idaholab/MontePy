@@ -1055,6 +1055,8 @@ def test_shortcut_expansion_invalid(test):
         ("1 1 2i 4:5 6 ", [1, 1, 2, 3, 4, 5, 6], "1 1 2I 4 :5 6"),
         ("1 ilog 100 ", [1, 10, 100], "1 1ILOG 100"),
         ("1 1r ilog 100 ", [1, 1, 10, 100], "1 1R 1ILOG 100"),
+        # Floating point error gives 9.99..., which must round, not truncate.
+        ("1 2ilog 1000 ", [1, 10, 100, 1000], None),
         # secretly test iterator
         ("#1", [1], None),
         ("#(1 2 3)", [1, 2, 3], None),
@@ -1073,6 +1075,14 @@ def test_shortcut_geometry_expansion(test, answer, form_ans):
         assert parsed.format().rstrip() == form_ans
     else:
         assert parsed.format().rstrip() == test.upper().rstrip()
+
+
+@pytest.mark.parametrize("test", ["1 2i 5 ", "1 2ilog 10 "])
+def test_shortcut_geometry_non_integral_raises(test):
+    # Geometry numbers are int, so these can't expand validly.
+    parser = ShortcutGeometryTestFixture()
+    with pytest.raises(ValueError, match="non-integer"):
+        parser.parse(Input([test], BlockType.CELL).tokenize())
 
 
 @pytest.mark.parametrize(
@@ -1268,6 +1278,35 @@ class TestShortcutListIntegration:
         list_node.update_with_new_values(values)
         assert list(list_node) == values
         assert len(list_node._shortcuts[1].nodes) == 1
+
+    @pytest.mark.parametrize(
+        "in_str, changes, answer",
+        [
+            # A changed value used to leave a degenerate "0i"/"0r" behind,
+            # with the values that left the shortcut glued together.
+            ("1 3i 5", {2: 9}, "1 2.0 9.0 4.0 5"),
+            ("1 2r 5", {1: 7}, "1 7 1 5"),
+            # An interpolate left ending on an expanded value needs padding.
+            ("1 3i 5", {4: 9}, "1 2i 4.0 9"),
+            ("1 3i 5 6", {4: 9}, "1 2i 4.0 9 6"),
+            # Shortcuts that still fit are kept.
+            ("1 2r 5", {2: 7}, "1 r 7 5"),
+            ("1 2m", {1: 7}, "1 7m"),
+            ("1 3i 5", {}, "1 3i 5"),
+        ],
+    )
+    def test_shortcut_list_changed_value_dissolves_shortcut(
+        _, parser, in_str, changes, answer
+    ):
+        list_node = parser.parse(Input([in_str], BlockType.DATA).tokenize())
+        values = list(list_node)
+        expected = [v.value for v in values]
+        for i, new in changes.items():
+            values[i].value = new
+            expected[i] = new
+        list_node.update_with_new_values(values)
+        assert [v.value for v in list_node] == pytest.approx(expected)
+        assert list_node.format() == answer
 
     def test_shortcut_list_interpolate(_, parser):
         # try with log interpolate

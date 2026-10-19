@@ -148,7 +148,7 @@ class Cell(Numbered_MCNP_Object):
 
     @staticmethod
     def _parent_collections():
-        return (("cells", "complements", True),)
+        return (("cells", "complements", True), ("tallies", "groups", True))
 
     _parser = CellParser
     _JitParser = JitCellParser
@@ -712,6 +712,21 @@ class Cell(Numbered_MCNP_Object):
         return self._surfaces
 
     @property
+    def tallies(self):
+        """Generator of tallies in the parent problem that score this cell.
+
+        Yields
+        ------
+        Tally
+
+        .. versionadded:: 1.6.0b2
+        """
+        if self._problem:
+            for t in self._possible_referrers(self._problem.tallies):
+                if self in t:
+                    yield t
+
+    @property
     @needs_full_ast
     def parameters(self) -> dict[str, str]:
         """A dictionary of the additional parameters for the object.
@@ -760,10 +775,9 @@ class Cell(Numbered_MCNP_Object):
         collections.abc.Generator[Cell, None, None]
         """
         if self._problem:
-            for cell in self._problem.cells:
-                if cell != self:
-                    if self in cell.complements:
-                        yield cell
+            for cell in self._possible_referrers(self._problem.cells):
+                if cell != self and self in cell.complements:
+                    yield cell
 
     @args_checked
     @needs_full_cst
@@ -862,9 +876,6 @@ class Cell(Numbered_MCNP_Object):
         """
         super().link_to_problem(problem)
         if not hasattr(self, "_not_parsed"):
-            if not deepcopy:
-                self._complements.link_to_problem(problem)
-                self._surfaces.link_to_problem(problem)
             for attr, _ in Cell._INPUTS_TO_PROPERTY.values():
                 input = getattr(self, attr, None)
                 if input:

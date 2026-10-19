@@ -36,7 +36,7 @@ class Universe(Numbered_MCNP_Object):
 
     @staticmethod
     def _parent_collections():
-        return (("cells", "universe", False),)
+        return (("cells", "universe", False), ("tallies", "groups", True))
 
     @args_checked
     def __init__(self, number: ty.NonNegativeInt, *, jit_parse: bool = False):
@@ -75,7 +75,7 @@ class Universe(Numbered_MCNP_Object):
             a generator returning every cell in this universe.
         """
         if self._problem:
-            for cell in self._problem.cells:
+            for cell in self._possible_referrers(self._problem.cells):
                 if cell.universe == self:
                     yield cell
 
@@ -92,7 +92,7 @@ class Universe(Numbered_MCNP_Object):
             yield from []
             return
 
-        for cell in self._problem.cells:
+        for cell in self._possible_referrers(self._problem.cells):
             if cell.fill:
                 if cell.fill.universes is not None:
                     if np.any(cell.fill.universes.flatten() == self):
@@ -157,9 +157,17 @@ class Universe(Numbered_MCNP_Object):
         self.soft_claim(cells_to_claim)
 
     @property
-    def old_number(self):
-        """Original universe number from the input file."""
-        return self._number
+    def old_number(self) -> int:
+        """Original universe number from the input file.
+
+        .. versionchanged:: 1.6.0b2
+            Returns the number, as documented, instead of its ``ValueNode``.
+
+        Returns
+        -------
+        int
+        """
+        return self._number.value
 
     def _update_values(self):
         pass

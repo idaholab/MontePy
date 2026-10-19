@@ -740,6 +740,7 @@ class Nuclide:
         Parameters
         ----------
         identifier : str | int | element | Nucleus | Nuclide
+            the name to parse.
 
         Returns
         -------

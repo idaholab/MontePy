@@ -698,8 +698,8 @@ class PaddingNode(SyntaxNodeBase):
 
         Parameters
         ----------
-        node : str, CommentNode
-            node
+        val : str, CommentNode
+            the node to append.
         is_comment : bool
             whether or not the node is a comment.
         """
@@ -984,7 +984,7 @@ class ValueNode(SyntaxNodeBase):
     ----------
     token : str
         the original token for the ValueNode.
-    token_type : type
+    token_type : type[int] | type[float] | type[str]
         the type for the ValueNode.
     padding : PaddingNode
         the padding for this node.
@@ -1091,11 +1091,11 @@ class ValueNode(SyntaxNodeBase):
 
         Parameters
         ----------
-        enum_class : type
+        enum_class : type[enum.Enum]
             the class for the enum to use.
         allow_none : bool
             Whether or not to allow None as a value.
-        format_type : type
+        format_type : type[int] | type[float] | type[str]
             the base data type to format this ValueNode as.
         switch_to_upper : bool
             Whether or not to convert a string to upper case before
@@ -1505,7 +1505,7 @@ class ValueNode(SyntaxNodeBase):
 
         Returns
         -------
-        type
+        type[int] | type[float] | type[str] | type[enum.Enum]
             the class for the value of this node.
         """
         return self._type
@@ -1757,6 +1757,9 @@ class ListNode(SyntaxNodeBase):
             self._nodes = []
             return
         new_vals_cache = {id(v): v for v in new_vals}
+        # A shortcut's values are created never_pad; one that ends up on its
+        # own needs normal padding again.
+        shortcut_values = {id(n) for sc in self._shortcuts for n in sc.nodes}
         # bind shortcuts to single site in new values
         for shortcut in self._shortcuts:
             for node in shortcut.nodes:
@@ -1785,6 +1788,58 @@ class ListNode(SyntaxNodeBase):
         ):
             self._nodes.pop()
             self._shortcuts.pop()
+        self._dissolve_degenerate_shortcuts()
+        for node in self._nodes:
+            if isinstance(node, ValueNode) and id(node) in shortcut_values:
+                node.never_pad = False
+        self._pad_shortcut_ends()
+
+    def _pad_shortcut_ends(self):
+        """Give a shortcut that now ends without whitespace an end padding.
+
+        A changed value can leave a shortcut ending on one of its expanded
+        values, which has no padding (e.g. ``1 3i 5`` becoming ``1 2i 4``
+        before a new ``9``), so it would be glued to the next value.
+        """
+        last = None
+        for node, following in zip(self._nodes, self._nodes[1:]):
+            leading = last if isinstance(last, ShortcutNode) else None
+            if (
+                isinstance(node, ShortcutNode)
+                and node.end_padding is None
+                and not isinstance(following, PaddingNode)
+                and not node.format(leading)[-1:].isspace()
+            ):
+                node.end_padding = PaddingNode(" ")
+            last = node
+
+    def _has_changed_values(self) -> bool:
+        """Whether any value in this list differs from what was parsed.
+
+        Jumps (no value) don't count as changed.
+        """
+        return any(v.value is not None and v._value_changed for v in self)
+
+    def _dissolve_degenerate_shortcuts(self):
+        """Replace any shortcut left encoding no values with its plain values.
+
+        A changed value can leave a shortcut holding too few values to
+        expand, which would otherwise be written as e.g. ``1 0r`` or
+        ``1 0i 2``.
+        """
+        nodes = []
+        last = None
+        for node in self._nodes:
+            leading = last if isinstance(last, ShortcutNode) else None
+            if isinstance(node, ShortcutNode) and node._is_degenerate(leading):
+                self._shortcuts.remove(node)
+                nodes.extend(node.nodes)
+                if node.nodes:
+                    last = node.nodes[-1]
+            else:
+                nodes.append(node)
+                last = node
+        self._nodes = nodes
 
     def _expand_shortcuts(self, new_vals, new_vals_cache):
         """Expands the existing shortcuts, and tries to "zip out" and consume their neighbors.
@@ -1854,8 +1909,8 @@ class ListNode(SyntaxNodeBase):
 
         Parameters
         ----------
-        node : ValueNode, ShortcutNode
-            node
+        val : ValueNode, ShortcutNode
+            the node to append.
         from_parsing : bool
             If this is being append from the parsers, and not elsewhere.
         """
@@ -2224,7 +2279,7 @@ class ShortcutNode(ListNode):
         if last_val.value is None:
             raise ValueError(f"Multiply cannot follow a jump. Given: {list(p)}")
         self._nodes.append(copy.deepcopy(last_val))
-        self.nodes[-1].value *= mult_val
+        self.nodes[-1].value = self._to_data_type(self.nodes[-1].value * mult_val)
 
     def _expand_jump(self, p):
         try:
@@ -2276,13 +2331,75 @@ class ShortcutNode(ListNode):
                 new_val = begin + spacing * (i + 1)
             self.append(
                 ValueNode(
-                    str(self._data_type(new_val)), self._data_type, never_pad=True
+                    str(self._to_data_type(new_val)), self._data_type, never_pad=True
                 )
             )
         self._begin = begin
         self._end = end
         self._spacing = spacing
         self.append(p.number_phrase)
+
+    def _to_data_type(self, value):
+        """Convert an expanded value to this shortcut's data type.
+
+        For ``int``, the value is rounded rather than truncated, so floating
+        point error (e.g. ``1 2ilog 1000`` giving 99.99...) can't silently
+        produce the wrong integer, and a non-integral value is an error.
+
+        Parameters
+        ----------
+        value : float
+            the expanded value.
+
+        Returns
+        -------
+        int | float
+        """
+        if self._data_type is int:
+            rounded = round(value)
+            if not math.isclose(value, rounded, rel_tol=rel_tol, abs_tol=abs_tol):
+                raise ValueError(
+                    f"Shortcut expands to non-integer value {value}, but integers "
+                    "are required here."
+                )
+            return rounded
+        return self._data_type(value)
+
+    def _is_degenerate(self, leading_node=None) -> bool:
+        """Whether this shortcut, as currently filled, encodes no values.
+
+        Mirrors the counts :meth:`format` computes, so ``leading_node`` is
+        the preceding node only when that is also a shortcut, as in
+        :meth:`ListNode.format`.
+
+        Parameters
+        ----------
+        leading_node : ShortcutNode, optional
+            the shortcut immediately before this one, if any.
+
+        Returns
+        -------
+        bool
+            True if this would format as e.g. ``0r``, ``0i``, or a
+            multiply with nothing to multiply.
+        """
+        if len(self.nodes) == 0:
+            return True
+        if self._type == Shortcuts.REPEAT:
+            num_extra = 0 if self._can_use_last_node(leading_node) else 1
+            return len(self.nodes) - num_extra < 1
+        if self._type in {Shortcuts.INTERPOLATE, Shortcuts.LOG_INTERPOLATE}:
+            begin = self._begin
+            if self._type == Shortcuts.LOG_INTERPOLATE:
+                begin = 10**begin
+            if self._can_use_last_node(leading_node, begin):
+                num_extra = 2 if hasattr(self, "_has_pseudo_start") else 1
+            else:
+                num_extra = 2
+            return len(self.nodes) - num_extra < 1
+        if self._type == Shortcuts.MULTIPLY:
+            return len(self.nodes) == 1 and leading_node is None
+        return False
 
     def _can_consume_node(self, node, direction, last_edge_shortcut=False):
         """If it's possible to consume this node.
@@ -2615,6 +2732,23 @@ class ClassifierNode(SyntaxNodeBase):
     def particles(self, part):
         self.append(part)
         self._particles = part
+
+    @staticmethod
+    def _empty_modifier() -> ValueNode:
+        """Make the modifier node for a classifier without a modifier.
+
+        A classifier always has a modifier node, so that one can be added later.
+        This node has no token, so adding a modifier, e.g. ``F6`` to ``+F6``, isn't
+        a line expansion.
+
+        Returns
+        -------
+        ValueNode
+            An empty modifier that is never padded.
+        """
+        node = ValueNode(None, str, never_pad=True)
+        node.value = ""
+        return node
 
     @property
     def modifier(self):
