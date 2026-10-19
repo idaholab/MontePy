@@ -1589,6 +1589,31 @@ class TestStarModifier:
         assert new.mcnp_str().startswith("f7:n")
 
     @pytest.mark.parametrize(
+        "line, new_type, expected",
+        [
+            # Another class, by type
+            ("f4:n 1", "ENERGY_DEPOSITION_JERKS", "*f6:n 1"),
+            ("f4:n 1", "FISSION_ENERGY_DEPOSITION_JERKS", "*f7:n 1"),
+            # The same class, by type
+            ("f6:n 1", "ENERGY_DEPOSITION_JERKS", "*f16:n 1"),
+            ("*f6:n 1", "ENERGY_DEPOSITION", "f16:n 1"),
+            # A class gives its default type, even for the same class
+            ("*f6:n 1", montepy.EnergyDepositionTally, "f16:n 1"),
+        ],
+    )
+    def test_clone_as_keeps_requested_type(self, line, new_type, expected):
+        t = Tally.from_input(line)
+        if isinstance(new_type, str):
+            new_type = TallyType[new_type]
+        new = t.clone_as(new_type)
+        expected_type = (
+            new_type if isinstance(new_type, TallyType) else new_type._TALLY_TYPE
+        )
+        assert new.tally_type is expected_type
+        assert new.tally_units is expected_type.units
+        assert new.mcnp_str() == expected
+
+    @pytest.mark.parametrize(
         "line, target",
         [("+f6:n 1", "EnergyDepositionTally"), ("*f6:n 1", "CellFluxTally")],
     )

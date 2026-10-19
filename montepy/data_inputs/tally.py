@@ -781,6 +781,9 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         new_type : TallyType | type[Tally]
             The target tally type, either as a :class:`TallyType` member or
             as a :class:`Tally` subclass (e.g. ``montepy.EnergyDepositionTally``).
+            A subclass gives its default type, so ``EnergyDepositionTally`` is
+            ``F6`` (MeV/g); use ``TallyType.ENERGY_DEPOSITION_JERKS`` for ``*F6``
+            (jerks/g).
         starting_number : Integral, optional
             The starting number to request for the new object's number.
         step : Integral, optional
@@ -802,8 +805,10 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             # defined by hand in lockstep in this module), so this can never
             # miss.
             target_cls = _TALLY_TYPE_MAP[new_type]
+            target_type = new_type
         elif isinstance(new_type, type) and issubclass(new_type, Tally):
             target_cls = new_type
+            target_type = new_type._TALLY_TYPE
         else:
             raise TypeError(
                 f"new_type must be a TallyType or a Tally subclass, got {new_type!r}."
@@ -817,16 +822,16 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             )
 
         if target_cls is type(self):
-            return self.clone(starting_number, step, clone_multiplier=clone_multiplier)
+            ret = self.clone(starting_number, step, clone_multiplier=clone_multiplier)
+            ret._tally_type = target_type
+            return ret
 
         multiplier = self.multiplier
         ret = copy.deepcopy(self)
         ret.__class__ = target_cls
-        ret._tally_type = target_cls._TALLY_TYPE
+        ret._tally_type = target_type
         ret._multiplier = None
-        new_number = self._next_number_for_type(
-            target_cls._TALLY_TYPE, starting_number, step
-        )
+        new_number = self._next_number_for_type(target_type, starting_number, step)
         if self._problem:
             ret.link_to_problem(self._problem)
             ret.number = new_number
