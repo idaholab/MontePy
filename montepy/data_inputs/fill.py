@@ -88,7 +88,9 @@ class Fill(CellModifierInput):
 
     def _generate_default_cell_tree(self):
         classifier = syntax_node.ClassifierNode()
-        classifier.modifier = syntax_node.ClassifierNode._empty_modifier()
+        classifier.modifier = self._generate_default_node(
+            str, "", None, True, placeholder=True
+        )
         classifier.prefix = self._generate_default_node(
             str, self._class_prefix().upper(), None, never_pad=True
         )
