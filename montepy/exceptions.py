@@ -219,12 +219,10 @@ class OnlyInPathError(ValueError):
     isn't ``in`` the tally, and editing a path's containment levels isn't
     supported.
 
-    .. versionadded:: 1.6.0b4
+    .. versionadded:: 1.6.0b2
     """
 
-    def __init__(self, message):
-        self.message = message
-        super().__init__(self.message)
+    pass
 
 
 class PathContainmentWarning(UserWarning):
@@ -234,8 +232,10 @@ class PathContainmentWarning(UserWarning):
     For example, removing cell 3 from ``F4 3 (1 < 3)`` leaves
     ``F4 (1 < 3)``.
 
-    .. versionadded:: 1.6.0b4
+    .. versionadded:: 1.6.0b2
     """
+
+    pass
 
 
 class LineExpansionWarning(Warning):

@@ -34,7 +34,7 @@ class Numbered_MCNP_Object(MCNP_Object):
 
     def __init__(
         self,
-        input: InitInput,
+        input: InitInput = None,
         number: ty.NonNegativeInt = None,
         *,
         jit_parse: bool = True,
@@ -96,9 +96,20 @@ class Numbered_MCNP_Object(MCNP_Object):
             collection.search_parent_objs_by_child(self, parent_prop, is_container)
 
     @staticmethod
-    @abstractmethod
-    def _parent_collections():
-        pass
+    def _parent_collections() -> tuple[tuple[str, str | tuple[str, ...], bool], ...]:
+        """The collections of objects that can refer to this object.
+
+        Each entry is ``(collection_name, parent_prop, is_container)``: the name of the
+        problem's collection, the property of its objects that refers to this object, and
+        whether that property is a container of such objects.
+        The parents are fully parsed before this object's number changes.
+
+        Returns
+        -------
+        tuple[tuple[str, str | tuple[str, ...], bool], ...]
+            The parent collections, or an empty tuple if nothing refers to this object.
+        """
+        return ()
 
     @property
     @abstractmethod

@@ -47,7 +47,7 @@ class TallyUnits(Enum):
     (:manual63:`5.9.1`). They are per source particle, and assume the source
     is in particles.
 
-    .. versionadded:: 1.6.0b4
+    .. versionadded:: 1.6.0b2
     """
 
     PARTICLES = "particles"
@@ -66,39 +66,25 @@ class TallyType(Enum):
     input uses (e.g. the last digit of an F-card's number, or a leading
     ``+`` for a modified variant like ``+F6``).
 
+    Every valid combination is a member, even when two map to the same
+    :class:`~montepy.Tally` class, as ``F6`` and ``*F6`` do.
+
     .. versionadded:: 1.6.0b2
-    .. versionchanged:: 1.6.0b3
-        Values changed from a bare digit to a ``(mnemonic, modulo, modifier)``
-        tuple, so a modifier-prefixed variant (e.g. ``+F6`` collision
-        heating vs. plain ``F6`` energy deposition) can be a distinct member
-        that still shares its digit with the unmodified card -- and so this
-        enum can eventually grow to cover non-``F``-card tallies (e.g.
-        ``FMESH``) without another redesign.
-    .. versionchanged:: 1.6.0b4
-        Added the ``*`` variants (e.g. ``*F4``). Every valid combination is a
-        member, even when two map to the same :class:`~montepy.Tally`
-        class, as ``F6`` and ``*F6`` do.
     """
 
     CURRENT = _TallyKey("F", 1)
     ENERGY_CURRENT = _TallyKey("F", 1, "*")
-    """.. versionadded:: 1.6.0b4"""
     SURFACE_FLUX = _TallyKey("F", 2)
     SURFACE_ENERGY_FLUX = _TallyKey("F", 2, "*")
-    """.. versionadded:: 1.6.0b4"""
     CELL_FLUX = _TallyKey("F", 4)
     CELL_ENERGY_FLUX = _TallyKey("F", 4, "*")
-    """.. versionadded:: 1.6.0b4"""
     ENERGY_DEPOSITION = _TallyKey("F", 6)
     ENERGY_DEPOSITION_JERKS = _TallyKey("F", 6, "*")
-    """.. versionadded:: 1.6.0b4"""
     COLLISION_HEATING = _TallyKey("F", 6, "+")
     FISSION_ENERGY_DEPOSITION = _TallyKey("F", 7)
     FISSION_ENERGY_DEPOSITION_JERKS = _TallyKey("F", 7, "*")
-    """.. versionadded:: 1.6.0b4"""
     ENERGY_DETECTOR_PULSE = _TallyKey("F", 8)
     DETECTOR_ENERGY_DEPOSITION = _TallyKey("F", 8, "*")
-    """.. versionadded:: 1.6.0b4"""
     CHARGE_DEPOSITION = _TallyKey("F", 8, "+")
 
     @property
@@ -120,7 +106,7 @@ class TallyType(Enum):
     def units(self) -> TallyUnits:
         """The units of this tally type's result.
 
-        .. versionadded:: 1.6.0b4
+        .. versionadded:: 1.6.0b2
         """
         return _UNITS[self]
 
@@ -153,13 +139,9 @@ class Score(Enum):
     FISSION_ENERGY_DEPOSITION = 7
     PULSE_HEIGHT = 8
     COLLISION_HEATING = 9
-    """.. versionadded:: 1.6.0b3"""
     CHARGE_DEPOSITION = 10
-    """.. versionadded:: 1.6.0b3"""
     ENERGY_CURRENT = 11
-    """.. versionadded:: 1.6.0b4"""
     ENERGY_FLUX = 12
-    """.. versionadded:: 1.6.0b4"""
 
 
 _UNITS = {

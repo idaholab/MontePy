@@ -504,14 +504,13 @@ class TestTallyObject:
         with pytest.raises(ValueError):
             f34.clone_as(CustomTally)
 
-    def test_str_and_repr_on_uninitialized_tally(self):
+    def test_repr_on_uninitialized_tally(self):
         # __new__ bypasses __init__ entirely, leaving no _number/_groups --
-        # exactly the partially-constructed state __str__/__repr__'s except
-        # branches exist to report gracefully.
+        # exactly the partially-constructed state __repr__'s except branch
+        # exists to report gracefully.
         from montepy.data_inputs.tally import Tally
 
         t = Tally.__new__(Tally)
-        assert str(t) == "Tally: (unparsed)"
         assert repr(t) == "TALLY: (unparsed)"
 
     def test_all_fixture_tallies_fully_parse(self, tally_problem):

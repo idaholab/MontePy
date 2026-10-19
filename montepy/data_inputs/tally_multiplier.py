@@ -11,9 +11,7 @@ from montepy.data_inputs.tally_multiplier_type import (
     SpecialMultiplier,
 )
 from montepy.exceptions import MalformedInputWarning
-from montepy.input_parser import syntax_node
-from montepy.input_parser.tally_parser import TallyMultiplierParser, _set_end_flag
-from montepy.mcnp_object import InitInput
+from montepy.input_parser import syntax_node, tally_parser
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 import montepy.types as ty
 from montepy.utilities import *
@@ -70,7 +68,7 @@ class ReactionExpression:
     def node(self) -> syntax_node.ListNode:
         """The syntax node for this reaction expression.
 
-        .. versionadded:: 1.6.0b3
+        .. versionadded:: 1.6.0b2
         """
         self._ensure_has_node()
         return self._node
@@ -919,7 +917,7 @@ class AttenuatorSet:
     def node(self) -> syntax_node.ListNode:
         """The syntax node for this attenuator set.
 
-        .. versionadded:: 1.6.0b3
+        .. versionadded:: 1.6.0b2
         """
         self._ensure_has_node()
         return self._node
@@ -1015,7 +1013,7 @@ class MultiplierSet:
     def node(self) -> syntax_node.ListNode:
         """The syntax node for this multiplier set.
 
-        .. versionadded:: 1.6.0b3
+        .. versionadded:: 1.6.0b2
         """
         self._ensure_has_node()
         if (
@@ -1104,7 +1102,7 @@ class SpecialMultiplierSet:
     def node(self) -> syntax_node.ListNode:
         """The syntax node for this special multiplier set.
 
-        .. versionadded:: 1.6.0b3
+        .. versionadded:: 1.6.0b2
         """
         self._ensure_has_node()
         return self._node
@@ -1237,7 +1235,7 @@ class MultiplierBin:
         that's decided by :class:`TallyMultiplier`, which knows about
         sibling bins).
 
-        .. versionadded:: 1.6.0b3
+        .. versionadded:: 1.6.0b2
         """
         self._ensure_has_node()
         items = list(self._terms)
@@ -1487,7 +1485,7 @@ class TallyMultiplier(Numbered_MCNP_Object, DataInputAbstract):
 
     @staticmethod
     def _parser():
-        return TallyMultiplierParser()
+        return tally_parser.TallyMultiplierParser()
 
     def _init_blank(self):
         super()._init_blank()
@@ -1532,16 +1530,6 @@ class TallyMultiplier(Numbered_MCNP_Object, DataInputAbstract):
         ret["parameters"] = syntax_node.ParametersNode()
         self._tree = syntax_node.SyntaxNode("blank data tree", ret)
 
-    @args_checked
-    def __init__(
-        self,
-        input: InitInput = None,
-        number: ty.PositiveInt = None,
-        *,
-        jit_parse: bool = True,
-    ):
-        super().__init__(input, number, jit_parse=jit_parse)
-
     @staticmethod
     def _class_prefix() -> str:
         return "fm"
@@ -1553,10 +1541,6 @@ class TallyMultiplier(Numbered_MCNP_Object, DataInputAbstract):
     @staticmethod
     def _has_classifier() -> int:
         return 1
-
-    @staticmethod
-    def _parent_collections():
-        return ()
 
     def _parse_multiplier_body(self):
         if self._input is None:
@@ -1707,7 +1691,7 @@ class TallyMultiplier(Numbered_MCNP_Object, DataInputAbstract):
         # Only rewrite the flag when it changed, so an untouched lowercase
         # "t" or "c" is kept as written.
         if self._flag != self._parsed_flag:
-            _set_end_flag(self._tree["data"], self._flag)
+            tally_parser._set_end_flag(self._tree["data"], self._flag)
             self._parsed_flag = self._flag
 
     @property

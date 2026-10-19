@@ -27,16 +27,7 @@ from montepy.exceptions import (
     PathContainmentWarning,
     UnsupportedFeature,
 )
-from montepy.input_parser import syntax_node
-from montepy.input_parser.tally_parser import (
-    TallyParser,
-    _append_tally_item,
-    _is_run,
-    _iter_runs,
-    _next_key,
-    _set_end_flag,
-)
-from montepy.mcnp_object import InitInput
+from montepy.input_parser import syntax_node, tally_parser
 from montepy.numbered_mcnp_object import Numbered_MCNP_Object
 from montepy.surface_collection import Surfaces
 import montepy.types as ty
@@ -49,8 +40,8 @@ _DETECTOR_MODULO = 5
 _VALID_MODULI = {t.modulo for t in TallyType if t.modulo is not None}
 
 
-def _digit_of(num: ty.Integral) -> ty.Integral:
-    """The tally type digit (last digit) of a tally number."""
+def _get_type_digit(num: ty.Integral) -> ty.Integral:
+    """Get the tally type digit (last digit) of a tally number."""
     return num % _TALLY_TYPE_MODULUS
 
 
@@ -77,11 +68,13 @@ def _link_multiplier_to_tally(self, fm):
 
 
 class Tally(Numbered_MCNP_Object, DataInputAbstract):
-    """Base class for MCNP F-card tallies (``F1``, ``F2``, ``F4``, ``F6``,
-    ``F7``, ``F8``).
+    """Base class for all MCNP tallies.
 
-    Detector (``F5``) tallies are not supported yet; they are read as plain
-    data inputs.
+    Each :class:`~montepy.TallyType` is a subclass of this; see
+    :class:`CellTally` and :class:`SurfaceTally`. The tallies currently
+    supported are the cell and surface ``F`` tallies: ``F1``, ``F2``, ``F4``,
+    ``F6``, ``F7``, and ``F8``, with their ``*`` and ``+`` variants. Other
+    tallies, such as detector (``F5``) tallies, are read as plain data inputs.
 
     Use :meth:`from_input` as a factory to create the appropriate subclass
     when reading from a file.
@@ -117,16 +110,24 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
     """
 
     _POINTER_ATTRS = set()
-    _DEFAULT_SCORES = ()
-    _TALLY_TYPE = None
-    # Every TallyType this class is used for, in addition to _TALLY_TYPE (its
-    # default). E.g. F6 and *F6 only differ in units, so both are F6Tally.
-    _OTHER_TALLY_TYPES = ()
+    _DEFAULT_SCORES: tuple[Score, ...] = ()
+    """What :attr:`scores` reports when no multiplier is linked."""
+    _TALLY_TYPE: TallyType | None = None
+    """The tally type of this class, which a new tally of this class gets.
+
+    ``None`` for an abstract class.
+    """
+    _OTHER_TALLY_TYPES: tuple[TallyType, ...] = ()
+    """Every other tally type that is this class, which :attr:`tally_units` can switch to.
+
+    E.g. ``F6`` and ``*F6`` only differ in units, so both are an
+    :class:`EnergyDepositionTally`.
+    """
     _KEYS_TO_PRESERVE = {"_multiplier"}
 
     @staticmethod
     def _parser():
-        return TallyParser()
+        return tally_parser.TallyParser()
 
     def _init_blank(self):
         super()._init_blank()
@@ -170,16 +171,6 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             },
         )
 
-    @args_checked
-    def __init__(
-        self,
-        input: InitInput = None,
-        number: ty.PositiveInt = None,
-        *,
-        jit_parse: bool = True,
-    ):
-        super().__init__(input, number, jit_parse=jit_parse)
-
     @staticmethod
     def _class_prefix() -> str:
         return "f"
@@ -192,10 +183,6 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
     def _has_classifier() -> ty.PositiveInt:
         return 1
 
-    @staticmethod
-    def _parent_collections():
-        return ()
-
     def _parse_tally_body(self):
         if self._input is None:
             return
@@ -203,7 +190,7 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         # Is this digit valid for *any* tally type -- the concrete subclass
         # is already fixed by dispatch, so this only catches a hand-built
         # Tally() bypassing from_input with a bogus digit.
-        digit = _digit_of(num)
+        digit = _get_type_digit(num)
         if digit not in _VALID_MODULI:
             raise MalformedInputError(self._input, f"Invalid tally type digit: {digit}")
         self._parse_tally_type()
@@ -235,11 +222,11 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         # Unlike _parse_tally_body's check, this is specific to *this*
         # subclass's own digit, not just any valid one.
         tally_type = getattr(type(self), "_TALLY_TYPE", None)
-        if tally_type is not None and _digit_of(number) != tally_type.modulo:
+        if tally_type is not None and _get_type_digit(number) != tally_type.modulo:
             raise ValueError(
                 f"Cannot change tally type via number setter; "
                 f"expected last digit {tally_type.modulo}, "
-                f"got {_digit_of(number)}."
+                f"got {_get_type_digit(number)}."
             )
         super()._number_validator(number)
         if self._multiplier is not None:
@@ -266,7 +253,7 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         jerks/g. A different quantity, such as the energy flux of ``*F4``,
         is a different class instead (:class:`~montepy.CellEnergyFluxTally`).
 
-        .. versionadded:: 1.6.0b4
+        .. versionadded:: 1.6.0b2
 
         Raises
         ------
@@ -318,7 +305,7 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
     def scores(self) -> list[Score] | list[tally_multiplier.MultiplierScore]:
         """The physical quantities this tally scores, e.g. ``[Score.FLUX]`` for ``F4``.
 
-        This is just the quantity implied by the tally type digit, unless an
+        This is just the quantity implied by the tally type, unless an
         ``FM`` tally-multiplier card is linked (see :attr:`multiplier`), in
         which case this returns one :class:`~montepy.data_inputs.tally_multiplier.MultiplierScore`
         per output bin the multiplier defines instead.
@@ -351,14 +338,20 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
                 return True
         return False
 
-    def _referenced_objects_and_numbers(self) -> tuple[set, set]:
-        """The objects (by identity)/numbers still referenced by
-        ``self._groups``, matching ``__contains__``'s per-group semantics
-        (only a ``PathGroup``'s innermost level counts). Computed once in
-        O(groups), for pruning a bookkeeping collection without re-scanning
-        every group once per candidate item. Objects are tracked by
-        ``id()`` since ``Surface`` overrides ``__eq__`` without
-        ``__hash__``, making it unhashable.
+    def _referenced_objects_and_numbers(self) -> tuple[set[int], set[int]]:
+        """Get the objects and numbers that the groups of this tally score.
+
+        As with ``in``, only the innermost level of a :class:`PathGroup` counts.
+        These are found in one pass over the groups, so that pruning
+        :attr:`cells`/:attr:`surfaces` doesn't scan every group once per item.
+
+        Returns
+        -------
+        tuple[set[int], set[int]]
+            The ``id()`` of each scored object, and each scored number that isn't linked
+            to an object yet.
+            Objects are tracked by ``id()`` since :class:`~montepy.Surface` is unhashable:
+            it overrides ``__eq__`` without ``__hash__``.
         """
         object_ids = set()
         numbers = set()
@@ -381,13 +374,37 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             return entry in (item.number, item.old_number)
         return entry is item
 
-    def _remove_scored(self, item, noun: str) -> None:
+    def _remove_scored(
+        self,
+        item: montepy.Cell | montepy.Surface,
+        kind: type[montepy.Cell] | type[montepy.Surface],
+    ) -> None:
         """Remove every scored occurrence of ``item``, for ``remove_cell``/``remove_surface``.
 
         ``item`` is removed from each bin, union, and innermost path level it
         is in, so it is no longer ``in`` this tally. A bin, union, or path
         left with nothing to score is removed.
+
+        Parameters
+        ----------
+        item : Cell | Surface
+            The cell or surface to remove.
+        kind : type[Cell] | type[Surface]
+            The class of objects this tally scores, for the error messages.
+
+        Raises
+        ------
+        OnlyInPathError
+            If ``item`` is only an outer level of a path, so it isn't scored.
+        ValueError
+            If ``item`` isn't in this tally.
+
+        Warns
+        -----
+        PathContainmentWarning
+            If ``item`` is still an outer level of a path after it's removed.
         """
+        name = kind.__name__
         found = False
         for group in list(self._groups):
             scored = group.levels[0] if isinstance(group, PathGroup) else group
@@ -406,14 +423,14 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         if not found:
             if in_path:
                 raise OnlyInPathError(
-                    f"{noun.capitalize()} {item.number} is only a containment level "
-                    f"of a path in {self}, not a scored {noun}, so it can't be "
+                    f"{name} {item.number} is only a containment level "
+                    f"of a path in {self}, not a scored {name.lower()}, so it can't be "
                     "removed."
                 )
-            raise ValueError(f"{noun.capitalize()} {item.number} is not in {self}.")
+            raise ValueError(f"{name} {item.number} is not in {self}.")
         if in_path:
             warnings.warn(
-                f"{noun.capitalize()} {item.number} was removed from {self}, but is "
+                f"{name} {item.number} was removed from {self}, but is "
                 "still a containment level of one of its paths.",
                 PathContainmentWarning,
             )
@@ -443,10 +460,30 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             ):
                 collection.remove(obj)
 
-    def _add_union(self, members, kind: type) -> None:
-        """Add ``members`` as one union bin, a nested list or tuple being a nested union.
+    def _add_union(
+        self,
+        members: list | tuple,
+        kind: type[montepy.Cell] | type[montepy.Surface],
+    ) -> None:
+        """Add ``members`` as one union bin, for ``add_group``.
 
-        Each ``kind`` object is also added to :attr:`cells`/:attr:`surfaces`.
+        A nested list or tuple is a nested union, so ``[c1, [c2, c3]]`` is
+        ``(1 (2 3))``. Each object is also added to :attr:`cells`/:attr:`surfaces`
+        if it isn't there yet.
+
+        Parameters
+        ----------
+        members : list | tuple
+            The objects to group, in order, or nested lists or tuples of them.
+        kind : type[Cell] | type[Surface]
+            The class of objects this tally scores. Every object must be one.
+
+        Raises
+        ------
+        TypeError
+            If a member isn't a ``kind`` object, list, or tuple.
+        ValueError
+            If the union, or a nested union, is empty.
         """
 
         def build(members):
@@ -513,7 +550,7 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         Returns
         -------
         Tally
-            An instance of the correct subclass for the tally type digit.
+            An instance of the correct subclass for the tally type.
         """
         try:
             classifier = Tally._peek_light_parse(input).nodes["classifier"]
@@ -538,6 +575,7 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         return subclass(input, jit_parse=jit_parse)
 
     def _update_values(self):
+        # A parsed classifier with no modifier (e.g. "F4:n") has no node for one.
         if self._classifier.modifier is None:
             self._classifier.modifier = self._generate_default_node(
                 str, "", padding=None
@@ -551,7 +589,7 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         )
         # Otherwise a removed modifier (e.g. "+F6" cloned as an F6) is padded
         # to its old width, leaving " F6".
-        modifier.never_pad = modifier.value == ""
+        modifier.never_pad = True
         bins = self._tree["data"]["tally"]
         # Patches each group's value nodes, including a shortcut's values.
         group_nodes = [group.node for group in self._groups]
@@ -562,14 +600,16 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         # Re-zip a run's shortcuts around its patched values. An unchanged run
         # is left alone, since re-zipping can also absorb neighboring values
         # (e.g. "1 3i 5 6" -> "1 4i 6"), changing the user's text.
-        for run in _iter_runs(bins):
+        for run in tally_parser._iter_runs(bins):
             if run._has_changed_values():
                 run.update_with_new_values(list(run))
         if self._include_total != self._parsed_include_total:
             # Only rewrite when this actually changed -- preserves the
             # original node (and its casing, e.g. a parsed lowercase "t")
             # untouched for a tally whose include_total was never set.
-            _set_end_flag(self._tree["data"], "T" if self._include_total else None)
+            tally_parser._set_end_flag(
+                self._tree["data"], "T" if self._include_total else None
+            )
             self._parsed_include_total = self._include_total
 
     def _rebuild_bins(self, bins, group_nodes):
@@ -579,7 +619,10 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         that run keeps its shortcuts and re-zips around the remaining values.
         """
         old_run_of = {
-            id(v): run for run in bins.nodes.values() if _is_run(run) for v in run
+            id(v): run
+            for run in bins.nodes.values()
+            if tally_parser._is_run(run)
+            for v in run
         }
         entries = []  # [run, values] for a run of numbers, else a node
         used_runs = set()
@@ -609,9 +652,9 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
                     a is not b for a, b in zip(values, current)
                 ):
                     run.update_with_new_values(values)
-                bins.nodes[_next_key(bins, "run")] = run
+                bins.nodes[tally_parser._next_key(bins, "run")] = run
             else:
-                _append_tally_item(bins, entry)
+                tally_parser._append_tally_item(bins, entry)
         self._groups_in_tree = list(self._groups)
 
     @staticmethod
@@ -731,8 +774,8 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
     ) -> Tally:
         """Clone this tally as a different tally type, keeping the same scoring geometry.
 
-        For example, this can turn an ``F4`` cell-flux tally into an ``F6``
-        energy-deposition tally scoring the same cells:
+        For example, this can turn a cell flux tally into an energy deposition
+        tally scoring the same cells:
 
         .. code-block:: python
 
@@ -740,9 +783,9 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             # or, equivalently:
             heating = flux_tally.clone_as(montepy.TallyType.ENERGY_DEPOSITION)
 
-        Only conversions within the same tally category are allowed:
-        ``F1``/``F2`` (surface-based) convert freely among each other, as do
-        ``F4``/``F6``/``F7``/``F8`` (cell-based).
+        A :class:`CellTally` can only be cloned as another cell tally, and a
+        :class:`SurfaceTally` as another surface tally, since the scoring
+        geometry is made of cells or surfaces respectively.
 
         Parameters
         ----------
@@ -757,8 +800,8 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             Whether to also clone this tally's linked ``FM`` multiplier (see
             :attr:`multiplier`) and link it to the new tally. This defaults
             to ``False``, since a multiplier written for one tally type
-            often doesn't make sense for another; e.g. MCNP doesn't allow an
-            ``FM`` card on an ``F8`` tally.
+            often doesn't make sense for another; e.g. MCNP doesn't allow a
+            multiplier on an energy-detector pulse tally.
 
         Returns
         -------
@@ -805,12 +848,6 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             multiplier.clone(ret)
         return ret
 
-    def __str__(self):
-        try:
-            return f"{type(self).__name__}: {self.number}"
-        except Exception:
-            return f"{type(self).__name__}: (unparsed)"
-
     def __repr__(self):
         try:
             ttype = getattr(self, "_tally_type", None)
@@ -838,7 +875,8 @@ class SurfaceTally(Tally):
 
     @property
     def _scored_collection(self) -> Surfaces:
-        return self._surfaces
+        """The collection the scored objects are kept in: :attr:`surfaces`."""
+        return self.surfaces
 
     @args_checked
     @needs_full_cst
@@ -862,9 +900,6 @@ class SurfaceTally(Tally):
 
         A nested list or tuple is a nested union, so ``[s1, [s2, s3]]`` is
         ``(1 (2 3))``.
-
-        .. versionchanged:: 1.6.0b4
-            Nested lists or tuples make nested unions.
 
         Parameters
         ----------
@@ -935,7 +970,7 @@ class SurfaceTally(Tally):
             If the surface is still a containment level of a path after it
             was removed from where it was scored.
         """
-        self._remove_scored(surface, "surface")
+        self._remove_scored(surface, montepy.Surface)
 
     @args_checked
     @needs_full_cst
@@ -989,7 +1024,8 @@ class CellTally(Tally):
 
     @property
     def _scored_collection(self) -> Cells:
-        return self._cells
+        """The collection the scored objects are kept in: :attr:`cells`."""
+        return self.cells
 
     @args_checked
     @needs_full_cst
@@ -1013,9 +1049,6 @@ class CellTally(Tally):
 
         A nested list or tuple is a nested union, so ``[c1, [c2, c3]]`` is
         ``(1 (2 3))``.
-
-        .. versionchanged:: 1.6.0b4
-            Nested lists or tuples make nested unions.
 
         Parameters
         ----------
@@ -1086,7 +1119,7 @@ class CellTally(Tally):
             If the cell is still a containment level of a path after it was
             removed from where it was scored.
         """
-        self._remove_scored(cell, "cell")
+        self._remove_scored(cell, montepy.Cell)
 
     @args_checked
     @needs_full_cst
@@ -1138,7 +1171,7 @@ class SurfaceCurrentTally(SurfaceTally):
 class SurfaceEnergyCurrentTally(SurfaceTally):
     """``*F1``: surface energy current tally, in MeV.
 
-    .. versionadded:: 1.6.0b4
+    .. versionadded:: 1.6.0b2
     """
 
     _TALLY_TYPE = TallyType.ENERGY_CURRENT
@@ -1158,7 +1191,7 @@ class SurfaceFluxTally(SurfaceTally):
 class SurfaceEnergyFluxTally(SurfaceTally):
     """``*F2``: average surface energy flux tally, in MeV/cm2.
 
-    .. versionadded:: 1.6.0b4
+    .. versionadded:: 1.6.0b2
     """
 
     _TALLY_TYPE = TallyType.SURFACE_ENERGY_FLUX
@@ -1178,7 +1211,7 @@ class CellFluxTally(CellTally):
 class CellEnergyFluxTally(CellTally):
     """``*F4``: cell energy flux tally, in MeV/cm2.
 
-    .. versionadded:: 1.6.0b4
+    .. versionadded:: 1.6.0b2
     """
 
     _TALLY_TYPE = TallyType.CELL_ENERGY_FLUX
@@ -1227,7 +1260,7 @@ class DetectorEnergyDepositionTally(CellTally):
     """``*F8``: energy deposition in a detector, in MeV, rather than the pulse
     height of the plain F8 tally.
 
-    .. versionadded:: 1.6.0b4
+    .. versionadded:: 1.6.0b2
     """
 
     _TALLY_TYPE = TallyType.DETECTOR_ENERGY_DEPOSITION
@@ -1238,7 +1271,7 @@ class CollisionHeatingTally(CellTally):
     """``+F6``: collision heating tally, distinct from the plain F6 energy
     deposition tally.
 
-    .. versionadded:: 1.6.0b3
+    .. versionadded:: 1.6.0b2
     """
 
     _TALLY_TYPE = TallyType.COLLISION_HEATING
@@ -1249,7 +1282,7 @@ class ChargeDepositionTally(CellTally):
     """``+F8``: charge deposition tally, distinct from the plain F8 pulse
     height tally.
 
-    .. versionadded:: 1.6.0b3
+    .. versionadded:: 1.6.0b2
     """
 
     _TALLY_TYPE = TallyType.CHARGE_DEPOSITION

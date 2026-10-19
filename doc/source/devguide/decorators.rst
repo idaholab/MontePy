@@ -59,5 +59,5 @@ whose name ends in ``.type``, so a plain ``type`` (e.g. ``type[Tally]``) would b
 between the two.
 ``doc/source/conf.py`` has a ``doctree-read`` hook that resolves such a ``type`` reference to the
 builtin instead.
-Still, prefer naming the actual class in a docstring type, e.g. ``type[MCNP_Lexer]`` rather than
-``type``.
+Even so, a docstring type should name the actual class, e.g. ``type[MCNP_Lexer]``, rather than a
+bare ``type``.

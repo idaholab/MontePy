@@ -13,8 +13,7 @@ from abc import ABC, abstractmethod
 
 import montepy
 from montepy.exceptions import BrokenObjectLinkError, UnsupportedFeature
-from montepy.input_parser import syntax_node
-from montepy.input_parser.tally_parser import _append_tally_item, _is_run, _next_key
+from montepy.input_parser import syntax_node, tally_parser
 import montepy.types as ty
 from montepy.utilities import *
 
@@ -113,7 +112,7 @@ class LatticeIndex:
     def elements(self) -> tuple[tuple[int | tuple[int, int], ...], ...]:
         """The lattice elements, each a tuple of indices or (start, end) ranges.
 
-        .. versionadded:: 1.6.0b4
+        .. versionadded:: 1.6.0b2
         """
         return self._elements
 
@@ -124,7 +123,7 @@ class LatticeIndex:
         Inverse of :meth:`parse_input_node`. Indices within an element are
         space-separated, and elements are separated by ``", "``.
 
-        .. versionadded:: 1.6.0b4
+        .. versionadded:: 1.6.0b2
         """
         node = syntax_node.ListNode("lattice phrase")
         node.append(syntax_node.PaddingNode("["))
@@ -145,11 +144,21 @@ class LatticeIndex:
         node.append(syntax_node.PaddingNode("]"))
         return node
 
-    @staticmethod
-    def parse_input_node(lattice_node) -> LatticeIndex:
+    @classmethod
+    def parse_input_node(cls, lattice_node: syntax_node.ListNode) -> LatticeIndex:
         """Parse a ``ListNode("lattice phrase")`` into a :class:`LatticeIndex`.
 
-        .. versionadded:: 1.6.0b4
+        .. versionadded:: 1.6.0b2
+
+        Parameters
+        ----------
+        lattice_node : ListNode
+            The lattice phrase from a tally's syntax tree, e.g. ``[0:1 0 0]``.
+
+        Returns
+        -------
+        LatticeIndex
+            The lattice index, with ranges as ``(start, stop)`` tuples.
         """
         elements = [[]]
         for n in lattice_node.nodes:
@@ -167,7 +176,7 @@ class LatticeIndex:
                 n.value, (int, float)
             ):
                 elements[-1].append(int(n.value))
-        return LatticeIndex(elements)
+        return cls(elements)
 
     def __repr__(self):
         return f"LatticeIndex({self._elements})"
@@ -189,6 +198,8 @@ class Filter(ABC):
 
     .. versionadded:: 1.6.0b2
     """
+
+    pass
 
 
 class ParticleFilter(Filter):
@@ -279,9 +290,6 @@ class FlatGroup(TallyGroup):
 
     .. versionadded:: 1.6.0b2
 
-    .. versionchanged:: 1.6.0b4
-        A member can be a nested union ``FlatGroup``.
-
     Parameters
     ----------
     items : list[Integral | montepy.Cell | montepy.Surface | FlatGroup]
@@ -365,7 +373,7 @@ class FlatGroup(TallyGroup):
         number, if not linked to a problem yet), or a nested union
         :class:`FlatGroup`, e.g. the ``(2 3)`` in ``(1 (2 3))``.
 
-        .. versionadded:: 1.6.0b4
+        .. versionadded:: 1.6.0b2
         """
         return list(self._items)
 
@@ -389,7 +397,7 @@ class FlatGroup(TallyGroup):
     def lattice_indices(self):
         """The :class:`LatticeIndex` for each number, parallel to :attr:`old_numbers`.
 
-        .. versionadded:: 1.6.0b3
+        .. versionadded:: 1.6.0b2
         """
         return [index for _, _, index in self._leaves()]
 
@@ -399,7 +407,7 @@ class FlatGroup(TallyGroup):
         this group covers, including those in nested unions, once linked to a
         problem. Empty if not yet linked.
 
-        .. versionadded:: 1.6.0b3
+        .. versionadded:: 1.6.0b2
         """
         return [
             entry
@@ -420,7 +428,7 @@ class FlatGroup(TallyGroup):
         """The :class:`~montepy.Cell` objects this group covers, or ``None``
         if this group isn't (fully resolved to be) cell-based.
 
-        .. versionadded:: 1.6.0b4
+        .. versionadded:: 1.6.0b2
 
         Returns
         -------
@@ -434,7 +442,7 @@ class FlatGroup(TallyGroup):
         """The :class:`~montepy.Surface` objects this group covers, or
         ``None`` if this group isn't (fully resolved to be) surface-based.
 
-        .. versionadded:: 1.6.0b4
+        .. versionadded:: 1.6.0b2
 
         Returns
         -------
@@ -451,7 +459,7 @@ class FlatGroup(TallyGroup):
 
         Mirrors :meth:`~montepy.UnitHalfSpace.update_pointers`.
 
-        .. versionadded:: 1.6.0b4
+        .. versionadded:: 1.6.0b2
 
         Parameters
         ----------
@@ -502,7 +510,7 @@ class FlatGroup(TallyGroup):
 
         A shortcut it was part of is re-zipped around the remaining values.
 
-        .. versionadded:: 1.6.0b4
+        .. versionadded:: 1.6.0b2
         """
         item = self._items.pop(index)
         del self._old_numbers[index]
@@ -557,7 +565,7 @@ class FlatGroup(TallyGroup):
         for key, child in list(self._node.nodes.items()):
             cell = child if _is_lattice_cell(child) else None
             run = cell.nodes[("run", 0)] if cell is not None else child
-            if not _is_run(run):
+            if not tally_parser._is_run(run):
                 continue
             values = list(run)
             if not any(v is num_node for v in values):
@@ -597,7 +605,7 @@ class FlatGroup(TallyGroup):
         current numbers) is returned. If this was created from scratch, a
         new node is generated the first time this is accessed.
 
-        .. versionadded:: 1.6.0b3
+        .. versionadded:: 1.6.0b2
         """
         self._ensure_has_node()
         self._update_node()
@@ -635,7 +643,7 @@ class FlatGroup(TallyGroup):
                 entries.append(num_node)
                 continue
             cell = syntax_node.SyntaxNode("lattice cell", {})
-            _append_tally_item(cell, num_node)
+            tally_parser._append_tally_item(cell, num_node)
             lattice_node = idx.node
             lattice_node.append(syntax_node.PaddingNode(" "))
             cell.nodes["lattice"] = lattice_node
@@ -702,7 +710,7 @@ class PathGroup(TallyGroup):
     def old_numbers(self):
         """The innermost (scored) level's numbers as originally read or added.
 
-        .. versionadded:: 1.6.0b4
+        .. versionadded:: 1.6.0b2
         """
         if not self._levels:
             return []
@@ -719,7 +727,7 @@ class PathGroup(TallyGroup):
         scored -- so only the innermost level's objects count as "what
         this tally covers".
 
-        .. versionadded:: 1.6.0b4
+        .. versionadded:: 1.6.0b2
         """
         if not self._levels:
             return []
@@ -734,7 +742,7 @@ class PathGroup(TallyGroup):
         they're never "in" the tally (see ``PathGroup.__contains__``),
         so there's nothing to gain by tracking live renumbers for them.
 
-        .. versionadded:: 1.6.0b4
+        .. versionadded:: 1.6.0b2
         """
         if self._levels:
             self._levels[0].update_pointers(container, is_cell=is_cell, tally=tally)
@@ -743,7 +751,7 @@ class PathGroup(TallyGroup):
     def node(self):
         """The syntax node for this path group.
 
-        .. versionadded:: 1.6.0b3
+        .. versionadded:: 1.6.0b2
         """
         self._ensure_has_node()
         self._update_node()
@@ -759,10 +767,10 @@ class PathGroup(TallyGroup):
         )
         for i, level in enumerate(self._levels):
             if i != 0:
-                node.nodes[_next_key(node, "sep")] = _make_value_node(
+                node.nodes[tally_parser._next_key(node, "sep")] = _make_value_node(
                     str, "<", padding=" "
                 )
-            node.nodes[_next_key(node, "level")] = self._level_node(level)
+            node.nodes[tally_parser._next_key(node, "level")] = self._level_node(level)
         node.nodes["end_pad"] = syntax_node.PaddingNode(")")
         self._node = node
 
@@ -773,10 +781,10 @@ class PathGroup(TallyGroup):
         level._update_node()
         level_node = syntax_node.SyntaxNode("tally level", {})
         if _is_group_node(level._node):
-            _append_tally_item(level_node, level._node)
+            tally_parser._append_tally_item(level_node, level._node)
         else:
             for entry in level._node.nodes:
-                _append_tally_item(level_node, entry)
+                tally_parser._append_tally_item(level_node, entry)
             # The level now edits its entries where they are in this path.
             level._node = level_node
         return level_node
@@ -790,8 +798,10 @@ class PathGroup(TallyGroup):
         if not last_level.format()[-1:].isspace():
             # Keep the new "<" from being glued to the old outermost level.
             _set_trailing_padding(last_entry, syntax_node.PaddingNode(" "))
-        nodes[_next_key(self._node, "sep")] = _make_value_node(str, "<", padding=" ")
-        nodes[_next_key(self._node, "level")] = self._level_node(level)
+        nodes[tally_parser._next_key(self._node, "sep")] = _make_value_node(
+            str, "<", padding=" "
+        )
+        nodes[tally_parser._next_key(self._node, "level")] = self._level_node(level)
         nodes["end_pad"] = end_pad
 
     def _update_node(self):
@@ -852,7 +862,7 @@ def _is_group_node(node) -> bool:
 
 def _set_trailing_padding(node, padding) -> None:
     """Replace the padding at the end of a tree entry with ``padding`` (or none)."""
-    if _is_run(node) and node.nodes:
+    if tally_parser._is_run(node) and node.nodes:
         last = node.nodes[-1]
         if isinstance(last, syntax_node.ShortcutNode):
             last.end_padding = padding or syntax_node.PaddingNode("")
@@ -892,7 +902,7 @@ def _make_group_node(items) -> syntax_node.SyntaxNode:
         "tally group", {"start_pad": syntax_node.PaddingNode("(")}
     )
     for item in items:
-        _append_tally_item(node, item)
+        tally_parser._append_tally_item(node, item)
     node.nodes["end_pad"] = syntax_node.PaddingNode(")")
     return node
 
@@ -920,7 +930,7 @@ def _parse_entries(node, *, is_grouped) -> FlatGroup:
             number_nodes.append(value)
 
     for child in node.nodes.values():
-        if _is_run(child):
+        if tally_parser._is_run(child):
             add_run(child)
         elif _is_lattice_cell(child):
             add_run(child.nodes[("run", 0)])
@@ -984,7 +994,7 @@ def _parse_tally_group_node(group_node) -> TallyGroup:
 def _parse_tally_numbers(tally_numbers_node) -> list[TallyGroup]:
     groups = []
     for node in tally_numbers_node.nodes.values():
-        if _is_run(node):
+        if tally_parser._is_run(node):
             for value in node:
                 if value.value is None:
                     continue

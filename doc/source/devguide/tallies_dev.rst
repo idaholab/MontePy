@@ -28,7 +28,7 @@ Adding a Cell or Surface Tally Type
    .. code-block:: python
 
        CELL_ENERGY_FLUX = _TallyKey("F", 4, "*")
-       """.. versionadded:: 1.6.0b4"""
+       """.. versionadded:: 2.1.0"""
 
 #. **Add a** :class:`~montepy.Score` **member**, if it reports a quantity no existing score
    describes. This is what :attr:`~montepy.Tally.scores` reports when there is no multiplier.
@@ -41,7 +41,7 @@ Adding a Cell or Surface Tally Type
        class CellEnergyFluxTally(CellTally):
            """``*F4``: cell energy flux tally, in MeV/cm2.
 
-           .. versionadded:: 1.6.0b4
+           .. versionadded:: 2.1.0
            """
 
            _TALLY_TYPE = TallyType.CELL_ENERGY_FLUX
