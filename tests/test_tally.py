@@ -833,6 +833,21 @@ class TestPlusModifierTallies:
         # The empty modifier isn't padded to the width of the old "+".
         assert back.mcnp_str().startswith("F")
 
+    @pytest.mark.parametrize(
+        "cls, prefix", [(F4Tally, "F"), (CollisionHeatingTally, "+F")]
+    )
+    @pytest.mark.parametrize("number", [None, 104, 12344])
+    def test_from_scratch_number_formatting(self, cls, prefix, number):
+        if number is not None:
+            number = number - number % 10 + cls._TALLY_TYPE.modulo
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            tally = cls() if number is None else cls(number=number)
+            # An unnumbered tally is the smallest number of its type.
+            expected = cls._TALLY_TYPE.modulo if number is None else number
+            assert tally.number == expected
+            assert tally.mcnp_str().rstrip() == f"{prefix}{expected}"
+
     @pytest.mark.parametrize("jit_parse", [True, False])
     def test_parsed_tally_without_modifier_writes(self, jit_parse):
         tally = Tally.from_input("F4:n 1", jit_parse=jit_parse)

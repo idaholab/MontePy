@@ -102,7 +102,9 @@ class DataInputAbstract(MCNP_Object):
             never_pad=self._has_number(),
         )
         if self._has_number():
-            ret["classifier"].number = self._generate_default_node(int, -1)
+            ret["classifier"].number = self._generate_default_node(
+                int, -1, placeholder=True
+            )
         else:
             ret["classifier"].prefix.padding = syntax_node.PaddingNode(" ")
         ret["keyword"] = syntax_node.ValueNode(None, str, padding=None)

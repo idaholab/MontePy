@@ -888,3 +888,19 @@ class TestDefaultLib:
 
     def test_dl_str(_, dl):
         str(dl)
+
+
+@pytest.mark.parametrize("number", [5, 104, 12345])
+@pytest.mark.parametrize("set_later", [False, True])
+def test_from_scratch_number_formatting(number, set_later):
+    import warnings
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        if set_later:
+            mat = Material()
+            mat.number = number
+        else:
+            mat = Material(number=number)
+        mat.add_nuclide("1001.80c", 1.0)
+        assert mat.format_for_mcnp_input((6, 3, 0))[0].startswith(f"M{number} 1001")

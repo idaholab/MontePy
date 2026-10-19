@@ -155,12 +155,13 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
     def _generate_default_tree(self, **kwargs):
         super()._generate_default_tree()
         classifier = self._tree["classifier"]
-        # The base's -1 placeholder leaves stray padding once a 3+ digit
-        # number is assigned (Material has the same bug, e.g. "M104  1001.80c").
-        classifier.number = self._generate_default_node(int, 1)
         tally_type = getattr(type(self), "_TALLY_TYPE", None)
-        if tally_type is not None and tally_type.modifier:
-            classifier.modifier.value = tally_type.modifier
+        if tally_type is not None:
+            # Until a number is set, use the smallest one of this type, so the
+            # tally is still written as its own type.
+            classifier.number.value = tally_type.modulo
+            if tally_type.modifier:
+                classifier.modifier.value = tally_type.modifier
         self._tree.nodes["data"] = syntax_node.SyntaxNode(
             "tally list",
             {

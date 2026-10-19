@@ -376,9 +376,10 @@ class Material(Numbered_MCNP_Object, data_input.DataInputAbstract):
 
     def _generate_default_tree(self, number=-1):
         classifier = syntax_node.ClassifierNode()
-        number = self._generate_default_node(int, number)
-        classifier.number = number
-        classifier.number.never_pad = True
+        # The classifier's padding separates the number from the data.
+        classifier.number = self._generate_default_node(
+            int, number, padding=None, never_pad=True, placeholder=True
+        )
         classifier.prefix = syntax_node.ValueNode("M", str, never_pad=True)
         classifier.padding = syntax_node.PaddingNode(" ")
         mats = syntax_node.MaterialsNode("mat stuff")

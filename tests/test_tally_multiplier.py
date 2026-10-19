@@ -806,3 +806,11 @@ class TestBinRoundTrip:
         assert "99" in text
         assert "26" not in text
         assert built.material == 99
+
+
+@pytest.mark.parametrize("number", [4, 104, 12344])
+def test_from_scratch_number_formatting(number):
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        fm = TallyMultiplier(number=number)
+        assert fm.format_for_mcnp_input((6, 3, 0))[0].startswith(f"FM{number}")

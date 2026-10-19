@@ -254,3 +254,18 @@ def test_link_to_collection_already_linked_raises():
     other_collection = Transforms()
     with pytest.raises(IllegalState):
         transform._link_to_collection(other_collection)
+
+
+@pytest.mark.parametrize("number", [5, 104, 12345])
+@pytest.mark.parametrize("set_later", [False, True])
+def test_from_scratch_number_formatting(number, set_later):
+    import warnings
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        if set_later:
+            trans = Transform()
+            trans.number = number
+        else:
+            trans = Transform(number=number)
+        assert trans.format_for_mcnp_input((6, 3, 0))[0].startswith(f"TR{number} 0")
