@@ -876,9 +876,6 @@ class Cell(Numbered_MCNP_Object):
         """
         super().link_to_problem(problem)
         if not hasattr(self, "_not_parsed"):
-            if not deepcopy:
-                self._complements.link_to_problem(problem)
-                self._surfaces.link_to_problem(problem)
             for attr, _ in Cell._INPUTS_TO_PROPERTY.values():
                 input = getattr(self, attr, None)
                 if input:

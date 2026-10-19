@@ -1489,3 +1489,26 @@ def test_surface_cells_prefilter_new_surface_parses_nothing():
     problem.surfaces.append(surface)
     assert list(surface.cells) == []
     assert not any(cell.fully_parsed for cell in problem.cells)
+
+
+@pytest.mark.parametrize("jit_parse", [True, False])
+def test_renumbered_surface_still_found_in_cells(jit_parse):
+    # Regression test: a cell's surfaces were linked to the problem, so ``in``
+    # trusted their number cache, which still had the surface under its old
+    # number, and Surface.cells found nothing after a renumber.
+    problem = montepy.read_input(
+        "tests/inputs/test_universe.imcnp", jit_parse=jit_parse
+    )
+    surface = problem.surfaces[1000]
+    surface.number = 99
+    assert {c.number for c in surface.cells} == {1, 3, 11}
+    assert surface in problem.cells[1].surfaces
+
+
+def test_renumbered_surface_in_standalone_cell():
+    surface = montepy.surfaces.CylinderOnAxis(number=7)
+    surface.radius = 1.0
+    cell = montepy.Cell(number=1)
+    cell.geometry = -surface
+    surface.number = 8
+    assert surface in cell.surfaces

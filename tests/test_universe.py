@@ -197,6 +197,15 @@ class TestUniverse:
         assert {cell.number for cell in problem.cells if cell.fully_parsed} == {11}
         assert found == {11}
 
+    def test_renumbered_cell_still_found_in_complements(self):
+        problem = montepy.read_input(
+            os.path.join(self.default_test_input_path, "test_universe.imcnp")
+        )
+        cell = problem.cells[99]
+        cell.number = 98
+        assert [c.number for c in cell.cells_complementing_this] == [5]
+        assert cell in problem.cells[5].complements
+
     def test_detached_universe_returns_generator(self):
         """
         Case 1: Universe with no associated problem
