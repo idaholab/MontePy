@@ -47,16 +47,21 @@ class LatticeIndex:
     * ``[i1 j1 k1, i2 j2 k2]``: a comma-separated list of individual elements.
 
     :attr:`elements` holds one tuple per comma-separated element. Each entry
-    in it is an ``int`` for a single index, or an ``(i1, i2)`` tuple for a
-    range.
+    in it is an ``int`` for a single index, or a :class:`range` for a range.
+    ``i1:i2`` includes ``i2``, so it is ``range(i1, i2 + 1)``.
 
     .. versionadded:: 1.6.0b2
 
     Parameters
     ----------
-    elements : list[list[Integral | tuple[Integral, Integral]]]
+    elements : list[list[Integral | range]]
         One list per comma-separated element. Each entry is either a single
-        lattice index, or a ``(start, stop)`` range (``i1:i2``).
+        lattice index, or a range of them (``i1:i2``) with a step of 1.
+
+    Raises
+    ------
+    ValueError
+        If a range is empty, or its step isn't 1, since MCNP can't write it.
 
     Examples
     --------
@@ -72,13 +77,13 @@ class LatticeIndex:
         >>> tally.groups[0].levels[1].lattice_indices[0].elements
         ((0, 0, 0),)
 
-    A range becomes a ``(start, stop)`` tuple:
+    A range becomes a :class:`range`, which includes the last index:
 
     .. doctest::
 
         >>> tally = montepy.Tally.from_input("F4:n (1 < 2[-1:1 0:1 0] < 3)")
         >>> tally.groups[0].levels[1].lattice_indices[0].elements
-        (((-1, 1), (0, 1), 0),)
+        ((range(-1, 2), range(0, 2), 0),)
 
     A single number is the element's position in the ``FILL`` array:
 
@@ -103,16 +108,24 @@ class LatticeIndex:
     __slots__ = ("_elements",)
 
     @args_checked
-    def __init__(
-        self, elements: list[list[ty.Integral | tuple[ty.Integral, ty.Integral]]]
-    ):
+    def __init__(self, elements: list[list[ty.Integral | range]]):
+        for element in elements:
+            for dim in element:
+                if isinstance(dim, range) and (dim.step != 1 or not dim):
+                    raise ValueError(
+                        f"A lattice range must be non-empty with a step of 1. {dim} given."
+                    )
         self._elements = tuple(tuple(element) for element in elements)
 
     @property
-    def elements(self) -> tuple[tuple[int | tuple[int, int], ...], ...]:
-        """The lattice elements, each a tuple of indices or (start, end) ranges.
+    def elements(self) -> tuple[tuple[int | range, ...], ...]:
+        """The lattice elements, each a tuple of indices or ranges of them.
 
         .. versionadded:: 1.6.0b2
+
+        Returns
+        -------
+        tuple[tuple[int | range, ...], ...]
         """
         return self._elements
 
@@ -133,11 +146,11 @@ class LatticeIndex:
             for j, dim in enumerate(element):
                 if j != 0:
                     node.append(syntax_node.PaddingNode(" "))
-                if isinstance(dim, tuple):
+                if isinstance(dim, range):
                     item = syntax_node.ListNode("lattice range")
-                    item.append(_make_value_node(int, dim[0], padding=None))
+                    item.append(_make_value_node(int, dim.start, padding=None))
                     item.append(syntax_node.PaddingNode(":"))
-                    item.append(_make_value_node(int, dim[1], padding=None))
+                    item.append(_make_value_node(int, dim.stop - 1, padding=None))
                     node.append(item)
                 else:
                     node.append(_make_value_node(int, dim, padding=None))
@@ -158,7 +171,7 @@ class LatticeIndex:
         Returns
         -------
         LatticeIndex
-            The lattice index, with ranges as ``(start, stop)`` tuples.
+            The lattice index, with ranges as :class:`range` objects.
         """
         elements = [[]]
         for n in lattice_node.nodes:
@@ -171,7 +184,7 @@ class LatticeIndex:
                     m.value for m in n.nodes if isinstance(m, syntax_node.ValueNode)
                 ]
                 if len(vals) >= 2:
-                    elements[-1].append((int(vals[0]), int(vals[1])))
+                    elements[-1].append(range(int(vals[0]), int(vals[1]) + 1))
             elif isinstance(n, syntax_node.ValueNode) and isinstance(
                 n.value, (int, float)
             ):
@@ -924,7 +937,7 @@ class PathGroup(TallyGroup):
     def inside(
         self,
         *cells_or_surfaces: montepy.Cell | montepy.Surface,
-        lattice: list[ty.Integral | tuple[ty.Integral, ty.Integral]] | None = None,
+        lattice: list[ty.Integral | range] | None = None,
     ) -> PathGroup:
         """Append an outer level and return self for chaining.
 
@@ -932,8 +945,9 @@ class PathGroup(TallyGroup):
         ----------
         cells_or_surfaces : Cell | Surface
             Objects at this level.
-        lattice : list[Integral | tuple[Integral, Integral]], optional
-            The indices of one lattice element (e.g. ``[0, 0, 0]``) for the
+        lattice : list[Integral | range], optional
+            The indices of one lattice element (e.g. ``[0, 0, 0]``), or ranges
+            of them (e.g. ``[range(0, 2), 0, 0]`` for ``[0:1 0 0]``), for the
             first object at this level.
 
         Returns

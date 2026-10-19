@@ -1217,7 +1217,7 @@ class TestGroupRoundTrip:
         "lattice, written",
         [
             ([0, 0, 0], "(1 < (2[0 0 0] 3 ))"),
-            ([(0, 1), 0, 0], "(1 < (2[0:1 0 0] 3 ))"),
+            ([range(0, 2), 0, 0], "(1 < (2[0:1 0 0] 3 ))"),
         ],
     )
     def test_lattice_written_right_after_its_cell(self, lattice, written):
@@ -1364,8 +1364,8 @@ class TestReprAndEquality:
     branches need explicit exercising."""
 
     def test_lattice_index(self):
-        li = LatticeIndex([[1, (2, 3)]])
-        assert li.elements == ((1, (2, 3)),)
+        li = LatticeIndex([[1, range(2, 4)]])
+        assert li.elements == ((1, range(2, 4)),)
         assert "LatticeIndex" in repr(li)
 
     @pytest.mark.parametrize(
@@ -1373,10 +1373,10 @@ class TestReprAndEquality:
         [
             ("[0 0 0]", ((0, 0, 0),)),
             ("[5]", ((5,),)),
-            ("[-1:1 0:1 0]", (((-1, 1), (0, 1), 0),)),
+            ("[-1:1 0:1 0]", ((range(-1, 2), range(0, 2), 0),)),
             ("[0 0 0, 0 1 0]", ((0, 0, 0), (0, 1, 0))),
             ("[0 0 0,0 1 0]", ((0, 0, 0), (0, 1, 0))),
-            ("[0:1 0 0, 2 0:1 0]", (((0, 1), 0, 0), (2, (0, 1), 0))),
+            ("[0:1 0 0, 2 0:1 0]", ((range(0, 2), 0, 0), (2, range(0, 2), 0))),
         ],
     )
     def test_lattice_index_elements(self, lattice, elements):
@@ -1386,8 +1386,13 @@ class TestReprAndEquality:
         # Rebuilding from the data model must give back the same elements.
         assert LatticeIndex.parse_input_node(li.node).elements == elements
 
+    @pytest.mark.parametrize("bad", [range(0, 4, 2), range(2, 2), range(3, 1)])
+    def test_lattice_index_rejects_unwritable_range(self, bad):
+        with pytest.raises(ValueError):
+            LatticeIndex([[bad, 0, 0]])
+
     def test_lattice_index_node_writes_commas(self):
-        li = LatticeIndex([[0, 0, 0], [(0, 1), 1, 0]])
+        li = LatticeIndex([[0, 0, 0], [range(0, 2), 1, 0]])
         assert li.node.format() == "[0 0 0, 0:1 1 0]"
 
     def test_tally_group_is_abstract(self):
