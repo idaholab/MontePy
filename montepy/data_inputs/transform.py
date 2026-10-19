@@ -76,11 +76,7 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         i = 0
         if len(words) < 3:
             raise MalformedInputError(input, f"Not enough entries were provided")
-        modifier = self._modifier
-        if modifier and "*" in modifier.value:
-            self._is_in_degrees = True
-        else:
-            self._is_in_degrees = False
+        self._is_in_degrees = "*" in self._modifier.value
 
         # parse displacement
         values = []
@@ -213,16 +209,8 @@ class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
         pass
 
     def _update_values(self):
-        # update in degrees
-        if self._classifier.modifier is None:
-            self._classifier.modifier = self._generate_default_node(
-                str, "", padding=None
-            )
-        # avoid parsing mid-update
-        if self._is_in_degrees:
-            self._classifier.modifier.value = "*"
-        else:
-            self._classifier.modifier.value = ""
+        # update in degrees; use _is_in_degrees to avoid parsing mid-update
+        self._classifier.modifier.value = "*" if self._is_in_degrees else ""
         # update displacement vector
         new_values = []
         list_iter = iter(self.data)

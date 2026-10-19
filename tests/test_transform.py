@@ -60,6 +60,19 @@ def test_transform_in_degrees():
     assert transform.is_in_degrees
 
 
+@pytest.mark.parametrize("in_str", ["tr5 " + "1.0 " * 3 + "0.0 " * 9, None])
+def test_transform_toggle_degrees_writes_modifier(in_str):
+    import warnings
+
+    trans = Transform(in_str) if in_str else Transform(number=5)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        trans.is_in_degrees = True
+        assert trans.format_for_mcnp_input((6, 3, 0))[0].startswith("*")
+        trans.is_in_degrees = False
+        assert not trans.format_for_mcnp_input((6, 3, 0))[0].startswith("*")
+
+
 def test_transform_prefix_modifier_correct_immediately_after_jit_parse():
     # Regression test: JitDataParser used to unconditionally discard a
     # leading modifier token instead of capturing it into

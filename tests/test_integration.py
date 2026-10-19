@@ -1140,6 +1140,17 @@ def test_fill_transform_setter(universe_problem):
     assert cell.fill.transform is None
 
 
+def test_fill_toggle_degrees_keeps_one_modifier(universe_problem):
+    problem = copy.deepcopy(universe_problem)
+    fill = problem.cells[5].fill
+    for _ in range(2):
+        fill.transform.is_in_degrees = True
+        assert fill.format_for_mcnp_input((6, 2, 0))[0].startswith("*fill=")
+        fill.transform.is_in_degrees = False
+        assert fill.format_for_mcnp_input((6, 2, 0))[0].startswith("fill=")
+    assert fill._tree["classifier"].modifier.value == ""
+
+
 def test_fill_cell_format(simple_problem, universe_problem):
     problem = copy.deepcopy(universe_problem)
     fill = problem.cells[5].fill

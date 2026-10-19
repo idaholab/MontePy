@@ -2733,6 +2733,23 @@ class ClassifierNode(SyntaxNodeBase):
         self.append(part)
         self._particles = part
 
+    @staticmethod
+    def _empty_modifier() -> ValueNode:
+        """Make the modifier node for a classifier without a modifier.
+
+        A classifier always has a modifier node, so that one can be added later.
+        This node has no token, so adding a modifier, e.g. ``F6`` to ``+F6``, isn't
+        a line expansion.
+
+        Returns
+        -------
+        ValueNode
+            An empty modifier that is never padded.
+        """
+        node = ValueNode(None, str, never_pad=True)
+        node.value = ""
+        return node
+
     @property
     def modifier(self):
         """The modifier for this classifier if any.

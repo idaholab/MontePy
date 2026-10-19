@@ -159,9 +159,8 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         # number is assigned (Material has the same bug, e.g. "M104  1001.80c").
         classifier.number = self._generate_default_node(int, 1)
         tally_type = getattr(type(self), "_TALLY_TYPE", None)
-        modifier = tally_type.modifier if tally_type is not None else None
-        # As in a parsed tree, the modifier node is there even when empty.
-        classifier.modifier = syntax_node.ValueNode(modifier or "", str, never_pad=True)
+        if tally_type is not None and tally_type.modifier:
+            classifier.modifier.value = tally_type.modifier
         self._tree.nodes["data"] = syntax_node.SyntaxNode(
             "tally list",
             {

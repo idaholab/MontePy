@@ -1513,6 +1513,7 @@ class TallyMultiplier(Numbered_MCNP_Object, DataInputAbstract):
         ret = {}
         ret["start_pad"] = syntax_node.PaddingNode()
         ret["classifier"] = syntax_node.ClassifierNode()
+        ret["classifier"].modifier = syntax_node.ClassifierNode._empty_modifier()
         ret["classifier"].prefix = syntax_node.ValueNode(
             self._class_prefix().upper(), str, padding=None, never_pad=True
         )

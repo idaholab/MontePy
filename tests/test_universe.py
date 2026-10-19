@@ -331,6 +331,7 @@ class TestFill:
         list_node = syntax_node.ListNode("num")
         list_node.append(syntax_node.ValueNode("5", float))
         classifier = syntax_node.ClassifierNode()
+        classifier.modifier = syntax_node.ClassifierNode._empty_modifier()
         classifier.prefix = syntax_node.ValueNode("fill", str)
         tree = syntax_node.SyntaxNode(
             "fill",
