@@ -258,9 +258,10 @@ class ParamOnlyDataParser(DataParser):
             classifier = p.spec_classifier
         else:
             classifier = syntax_node.ClassifierNode()
+            # Always have a modifier node, even an empty one, so it can be edited.
+            modifier = p.modifier if hasattr(p, "modifier") else ""
+            classifier.modifier = syntax_node.ValueNode(modifier, str, never_pad=True)
 
-        if hasattr(p, "modifier"):
-            classifier.modifier = syntax_node.ValueNode(p.modifier, str)
         if hasattr(p, "spec_data_prefix"):
             classifier.prefix = p.spec_data_prefix
         if hasattr(p, "NUMBER"):
@@ -292,8 +293,9 @@ class JitDataParser:
             }:
                 mnemonic = syntax_node.ValueNode(token.value, str)
                 classifier = syntax_node.ClassifierNode()
-                if modifier is not None:
-                    classifier.modifier = syntax_node.ValueNode(modifier, str)
+                classifier.modifier = syntax_node.ValueNode(
+                    modifier or "", str, never_pad=True
+                )
                 classifier.prefix = mnemonic
                 number = None
                 particles = None

@@ -408,6 +408,19 @@ def test_data_clone():
     new_data = data_input.clone()
 
 
+@pytest.mark.parametrize("jit_parse", [True, False])
+@pytest.mark.parametrize("prefix, expected", [("", None), ("*", "*")])
+def test_classifier_always_has_modifier_node(jit_parse, prefix, expected):
+    in_str = f"{prefix}tr5 " + "1.0 " * 3 + "0.0 " * 9
+    trans = transform.Transform(in_str, jit_parse=jit_parse)
+    if not jit_parse:
+        assert trans._tree["classifier"].modifier.value == (expected or "")
+    if expected is None:
+        assert trans.prefix_modifier is None
+    else:
+        assert trans.prefix_modifier.value == expected
+
+
 def test_classifier_start_comment():
     lines = [
         "c ******************************************************************************",

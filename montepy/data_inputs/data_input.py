@@ -216,10 +216,14 @@ class DataInputAbstract(MCNP_Object):
 
         Returns
         -------
-        str
+        ValueNode
             the prefix modifier that was parsed if any. None if
             otherwise.
         """
+        # The parser gives every classifier a modifier node, which is empty
+        # when there is no modifier.
+        if self._modifier is None or not self._modifier.value:
+            return None
         return self._modifier
 
     @property

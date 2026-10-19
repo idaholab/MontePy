@@ -830,7 +830,21 @@ class TestPlusModifierTallies:
         heat = Tally.from_input("+F6:n 1 2 3", jit_parse=False)
         back = heat.clone_as(EnergyDepositionTally)
         assert isinstance(back, EnergyDepositionTally)
-        assert "+" not in back.mcnp_str()
+        # The empty modifier isn't padded to the width of the old "+".
+        assert back.mcnp_str().startswith("F")
+
+    @pytest.mark.parametrize("jit_parse", [True, False])
+    def test_parsed_tally_without_modifier_writes(self, jit_parse):
+        tally = Tally.from_input("F4:n 1", jit_parse=jit_parse)
+        tally.add_cell(montepy.Cell(number=5))
+        assert tally.mcnp_str().startswith("F4:n 1 5")
+
+    @pytest.mark.parametrize(
+        "cls", [CellFluxTally, CollisionHeatingTally, montepy.CellEnergyFluxTally]
+    )
+    def test_from_scratch_tally_has_modifier_node(self, cls):
+        tally = cls(number=cls._TALLY_TYPE.modulo)
+        assert tally._classifier.modifier.value == (cls._TALLY_TYPE.modifier or "")
 
     def test_clone_as_bare_tally_type_works(self):
         flux = F4Tally(Input(["f4:n 1 2 3"], BlockType.DATA), jit_parse=False)

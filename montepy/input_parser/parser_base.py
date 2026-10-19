@@ -526,9 +526,10 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
             classifier = p.classifier
         else:
             classifier = syntax_node.ClassifierNode()
+            # Always have a modifier node, even an empty one, so it can be edited.
+            modifier = p.modifier if hasattr(p, "modifier") else ""
+            classifier.modifier = syntax_node.ValueNode(modifier, str, never_pad=True)
 
-        if hasattr(p, "modifier"):
-            classifier.modifier = syntax_node.ValueNode(p.modifier, str)
         if hasattr(p, "data_prefix"):
             classifier.prefix = p.data_prefix
         if hasattr(p, "NUMBER") or hasattr(p, "NULL"):

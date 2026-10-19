@@ -159,10 +159,9 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         # number is assigned (Material has the same bug, e.g. "M104  1001.80c").
         classifier.number = self._generate_default_node(int, 1)
         tally_type = getattr(type(self), "_TALLY_TYPE", None)
-        if tally_type is not None and tally_type.modifier:
-            classifier.modifier = syntax_node.ValueNode(
-                tally_type.modifier, str, padding=None
-            )
+        modifier = tally_type.modifier if tally_type is not None else None
+        # As in a parsed tree, the modifier node is there even when empty.
+        classifier.modifier = syntax_node.ValueNode(modifier or "", str, never_pad=True)
         self._tree.nodes["data"] = syntax_node.SyntaxNode(
             "tally list",
             {
@@ -207,10 +206,9 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         """Pick which of this class's tally types the classifier's modifier is."""
         if self._TALLY_TYPE is None:
             return
-        modifier_node = self._classifier.modifier
-        modifier = modifier_node.value if modifier_node is not None else None
+        modifier = self._classifier.modifier.value
         for tally_type in (self._TALLY_TYPE, *self._OTHER_TALLY_TYPES):
-            if (tally_type.modifier or "") == (modifier or ""):
+            if (tally_type.modifier or "") == modifier:
                 self._tally_type = tally_type
                 return
         raise MalformedInputError(
@@ -566,8 +564,8 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
             raise MalformedInputError(
                 input, f"Could not read the tally classifier of: {input}"
             ) from e
-        modifier_node = classifier.modifier
-        modifier = modifier_node.value if modifier_node is not None else None
+        # An empty modifier node means there is no modifier.
+        modifier = classifier.modifier.value or None
         subclass = Tally._dispatch_class(
             input, classifier.number.value, modifier, classifier.prefix.value.upper()
         )
@@ -575,21 +573,12 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         return subclass(input, jit_parse=jit_parse)
 
     def _update_values(self):
-        # A parsed classifier with no modifier (e.g. "F4:n") has no node for one.
-        if self._classifier.modifier is None:
-            self._classifier.modifier = self._generate_default_node(
-                str, "", padding=None
-            )
         tally_type = self._tally_type
-        modifier = self._classifier.modifier
-        modifier.value = (
+        self._classifier.modifier.value = (
             tally_type.modifier
             if tally_type is not None and tally_type.modifier
             else ""
         )
-        # Otherwise a removed modifier (e.g. "+F6" cloned as an F6) is padded
-        # to its old width, leaving " F6".
-        modifier.never_pad = True
         bins = self._tree["data"]["tally"]
         # Patches each group's value nodes, including a shortcut's values.
         group_nodes = [group.node for group in self._groups]
