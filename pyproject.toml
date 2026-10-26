@@ -42,7 +42,7 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
-	"coverage[toml]>=6.3.2", 
+	"coverage[toml]>=7.0", 
 	"hypothesis",
 	"pytest", 
 	"pytest-profiling",
