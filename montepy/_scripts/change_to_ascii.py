@@ -66,7 +66,7 @@ def strip_characters(args):
                 new_line = []
                 # find the bad characters character by character
                 for char in utf8_line:
-                    if ord(char) > 128:
+                    if ord(char) > 127:
                         new_line.append(replacer)
                     else:
                         new_line.append(char)
