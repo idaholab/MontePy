@@ -86,14 +86,16 @@ class CommentCollection(Sequence):
         Raises
         ------
         TypeError
-            if ``pattern`` is not a str, or a pattern compiled from a str.
+            if ``pattern`` is not a str or a compiled regex.
         """
         if isinstance(pattern, re.Pattern):
-            if not isinstance(pattern.pattern, str):
-                raise TypeError(
-                    f"pattern must be a str, or a pattern compiled from a str. {pattern} given."
-                )
-            matcher = pattern.search
+            if isinstance(pattern.pattern, bytes):
+
+                def matcher(contents):
+                    return pattern.search(contents.encode())
+
+            else:
+                matcher = pattern.search
         elif isinstance(pattern, str):
 
             def matcher(contents):
@@ -101,6 +103,6 @@ class CommentCollection(Sequence):
 
         else:
             raise TypeError(
-                f"pattern must be a str, or a pattern compiled from a str. {pattern} given."
+                f"pattern must be a str, or a compiled pattern. {pattern} given."
             )
         return CommentCollection(c for c in self._comments if matcher(c.contents))
