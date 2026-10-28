@@ -18,7 +18,12 @@ def ascii_files():
         new_files[input_file] = {}
         for flag in {"-w", "-d"}:
             new_file = f"{input_file}{flag}.imcnp"
-            run_script([flag, os.path.join("tests", "inputs", input_file), new_file])
+            result = run_script(
+                [flag, os.path.join("tests", "inputs", input_file), new_file]
+            )
+            # a crash truncates the output file, and the zip below would then
+            # stop at the short file and compare only the lines that got written
+            assert result.returncode == 0
             new_files[input_file][flag] = new_file
     yield new_files
     for group in new_files.values():
@@ -45,19 +50,19 @@ def test_ascii_script(ascii_files, flag):
                     if flag == "-w":
                         try:
                             for char in in_line.decode():
-                                if ord(char) <= 128:
+                                if ord(char) <= 127:
                                     new_line.append(char)
                                 else:
                                     new_line.append(" ")
                         except UnicodeError:
                             for char in in_line:
-                                if char <= 128:
+                                if char <= 127:
                                     new_line.append(chr(char))
                                 else:
                                     new_line.append(" ")
                     else:
                         for char in in_line:
-                            if char <= 128:
+                            if char <= 127:
                                 new_line.append(chr(char))
                     assert "".join(new_line) == out_line.decode("ascii")
 
