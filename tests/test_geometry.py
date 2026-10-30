@@ -836,3 +836,48 @@ def test_unit_halfspace_iter():
     leaves = list(leaf)
     assert len(leaves) == 1
     assert leaves[0] is leaf
+
+
+@pytest.mark.parametrize(
+    "cell_input, expected",
+    [
+        ("1 0 -123 234 imp:n=1 u=2", "-123 234"),
+        ("1 0 (-1 2 : 3) #(4 5) #6 imp:n=1", "(-1 2 : 3) #(4 5) #6"),
+        ("1 0 -1:2 imp:n=1", "-1:2"),
+        ("1 10 -1.0 -1 imp:n=1", "-1"),
+    ],
+)
+def test_halfspace_mcnp_str_parsed(cell_input, expected):
+    cell = montepy.Cell(cell_input)
+    assert cell.geometry.mcnp_str() == expected
+    assert cell.geometry.format_for_mcnp_input((6, 3, 0)) == [expected]
+
+
+def test_halfspace_mcnp_str_generated():
+    cyl = montepy.CylinderOnAxis()
+    cyl.number = 10
+    plane = montepy.AxisPlane()
+    plane.number = 20
+    assert (-cyl).mcnp_str() == "-10"
+    assert (-cyl & (+plane | -plane)).mcnp_str() == "-10 (20 : -20)"
+
+
+def test_halfspace_mcnp_str_follows_cell_changes():
+    cell = montepy.Cell("1 0 -1 imp:n=1")
+    cyl = montepy.CylinderOnAxis()
+    cyl.number = 3
+    plane = montepy.AxisPlane()
+    plane.number = 4
+    cell.geometry = -cyl & +plane
+    assert cell.geometry.mcnp_str() == "-3 4"
+    assert cell.mcnp_str().startswith("1 0 -3 4")
+
+
+def test_halfspace_mcnp_str_wraps_long_lines():
+    numbers = range(1000, 1040)
+    cell = montepy.Cell("1 0 " + " ".join(f"-{n}" for n in numbers) + " imp:n=1")
+    with pytest.warns(montepy.exceptions.LineExpansionWarning):
+        lines = cell.geometry.format_for_mcnp_input((6, 3, 0))
+    assert len(lines) > 1
+    assert all(len(line) <= 128 for line in lines)
+    assert cell.geometry.mcnp_str().split() == [f"-{n}" for n in numbers]

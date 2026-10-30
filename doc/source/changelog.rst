@@ -12,6 +12,10 @@ MontePy Changelog
 
 #Next Version#
 --------------
+**Features Added**
+
+* Added ``HalfSpace.mcnp_str`` and ``HalfSpace.format_for_mcnp_input`` to print just a cell's geometry as it would appear in an MCNP input (:issue:`942`).
+
 **Bugs Fixed**
 
 * Fixed ``change_to_ascii`` raising ``UnicodeEncodeError`` on U+0080 instead of stripping it (:issue:`1018`).
