@@ -9,6 +9,7 @@ from montepy.exceptions import *
 from montepy.input_parser import input_syntax_reader
 from montepy.input_parser.mcnp_input import Input, Jump, Message, ReadInput, Title
 from montepy.input_parser.block_type import BlockType
+from montepy.input_parser.tokens import CellLexer, DataLexer, MCNP_Lexer
 from montepy.input_parser.input_file import MCNP_InputFile
 from montepy.input_parser.parser_base import MCNP_Parser
 from montepy.input_parser.shortcuts import Shortcuts
@@ -983,6 +984,10 @@ tests = {
     "1 R R": [1, 1, 1],
     "1 2i 4 3m": [1, 2, 3, 4, 12],
     # unofficial
+    "2 1.5m": [2, 3],
+    "2 .5m": [2, 1],
+    "2 -.5m 2.m": [2, -1, -2],
+    # unofficial
     "1 i 3": [1, 2, 3],
     # unofficial
     "1 ilog 100": [1, 10, 100],
@@ -1124,6 +1129,8 @@ def test_shortcut_flatten(test, length, indices):
         ("1 5M", "1 5M"),
         ("1 5m", "1 5m"),
         ("1 5m 2r", "1 5m 2r"),
+        ("1 1.5m", "1 1.5m"),
+        ("1 .5m", "1 .5m"),
         ("2j ", "2j "),
         ("2j", "2j"),
         ("2J ", "2J "),
@@ -1742,3 +1749,10 @@ class DataInputTestFixture(montepy.data_inputs.data_input.DataInputAbstract):
 
     def _has_classifier(self):
         return self._has_classifier1
+
+
+@pytest.mark.parametrize("text", ["1.5m", "2.m", "-0.5m", ".5m", "-.5m"])
+def test_decimal_multiply_lexes_as_shortcut(text):
+    for lexer in [MCNP_Lexer, DataLexer, CellLexer]:
+        tokens = [(t.type, t.value) for t in lexer().tokenize(f"2 {text}")]
+        assert tokens[-1] == ("NUM_MULTIPLY", text)

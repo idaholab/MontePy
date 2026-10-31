@@ -15,6 +15,7 @@ MontePy Changelog
 **Bugs Fixed**
 
 * Fixed ``change_to_ascii`` raising ``UnicodeEncodeError`` on U+0080 instead of stripping it (:issue:`1018`).
+* Fixed decimal multiply shortcuts (e.g., ``1.5m`` or ``.5m``) failing to parse (:issue:`1019`).
 
 1.5.0
 --------------
