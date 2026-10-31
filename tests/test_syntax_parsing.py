@@ -1148,6 +1148,13 @@ def test_shortcut_format(in_str, answer):
     assert shortcut.format() == ""
 
 
+@pytest.mark.parametrize("text", ["1.5m", "2.m", "-0.5m", ".5m", "-.5m"])
+def test_decimal_multiply_lexes_as_shortcut(text):
+    for lexer in [MCNP_Lexer, DataLexer, CellLexer]:
+        tokens = [(t.type, t.value) for t in lexer().tokenize(f"2 {text}")]
+        assert tokens[-1] == ("NUM_MULTIPLY", text)
+
+
 @pytest.mark.parametrize(
     "testee, outcome",
     [("(", False), (1.0, True), (0.0, True), ("s", False), (5.0, False)],
@@ -1749,10 +1756,3 @@ class DataInputTestFixture(montepy.data_inputs.data_input.DataInputAbstract):
 
     def _has_classifier(self):
         return self._has_classifier1
-
-
-@pytest.mark.parametrize("text", ["1.5m", "2.m", "-0.5m", ".5m", "-.5m"])
-def test_decimal_multiply_lexes_as_shortcut(text):
-    for lexer in [MCNP_Lexer, DataLexer, CellLexer]:
-        tokens = [(t.type, t.value) for t in lexer().tokenize(f"2 {text}")]
-        assert tokens[-1] == ("NUM_MULTIPLY", text)
