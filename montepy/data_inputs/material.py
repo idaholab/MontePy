@@ -262,12 +262,15 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
         80p
         00c
 
-    See Also
-    --------
+    MCNP Manual references
+    ----------------------
 
-    * :manual631:`5.6.1`
-    * :manual63:`5.6.1`
-    * :manual62:`106`
+    .. mcnp-manuals::
+
+       :632: 5.6.1
+       :631: 5.6.1
+       :63: 5.6.1
+       :62: 106
 
 
     .. versionchanged:: 1.0.0

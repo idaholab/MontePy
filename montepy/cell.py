@@ -72,12 +72,15 @@ class Cell(Numbered_MCNP_Object):
 
         complement = ~cell
 
-    See Also
-    --------
+    MCNP Manual references
+    ----------------------
 
-    * :manual631sec:`5.2`
-    * :manual63sec:`5.2`
-    * :manual62:`55`
+    .. mcnp-manuals::
+
+       :632sec: 5.2
+       :631sec: 5.2
+       :63sec: 5.2
+       :62: 55
 
 
     .. versionchanged:: 1.0.0
