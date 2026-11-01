@@ -1478,6 +1478,20 @@ class TallyMultiplier(Numbered_MCNP_Object, DataInputAbstract):
     :class:`~montepy.data_inputs.tally.Tally` of the same number -- see
     :attr:`parent_tally`.
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632: 5.9.7
+       :631: 5.9.7
+       :63: 5.9.7
+       :62: 264
+       :4c: 342
+       :4b: 303
+       :3a: 236
+       :2: 156
+
     .. versionadded:: 1.6.0b2
     """
 

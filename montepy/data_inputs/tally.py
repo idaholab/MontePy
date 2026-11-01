@@ -161,6 +161,21 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
         >>> montepy.Cell(number=5) in tally
         False
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632: 5.9.1
+       :631: 5.9.1
+       :63: 5.9.1
+       :62: 235
+       :4c: 329
+       :4b: 291
+       :3a: 228
+       :2: 152
+       :1: 29
+
     .. versionadded:: 1.6.0b2
     """
 
@@ -1017,6 +1032,18 @@ class Tally(Numbered_MCNP_Object, DataInputAbstract):
 class SurfaceTally(Tally):
     """Intermediate class for tallies that score on surfaces (``F1``, ``F2``).
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.9.1.1
+       :631sub: 5.9.1.1
+       :63sub: 5.9.1.1
+       :62: 237
+       :4c: 330
+       :4b: 292
+
     .. versionadded:: 1.6.0b2
     """
 
@@ -1157,6 +1184,24 @@ class SurfaceTally(Tally):
 
 class CellTally(Tally):
     """Intermediate class for tallies that score in cells (``F4``, ``F6``, ``F7``, ``F8``).
+
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.9.1.1
+       :632sub: 5.9.1.4
+       :631sub: 5.9.1.1
+       :631sub: 5.9.1.4
+       :63sub: 5.9.1.1
+       :63sub: 5.9.1.4
+       :62: 237
+       :62: 248
+       :4c: 330
+       :4c: 333
+       :4b: 292
+       :4b: 295
 
     .. versionadded:: 1.6.0b2
     """
@@ -1302,6 +1347,18 @@ class CellTally(Tally):
 class SurfaceCurrentTally(SurfaceTally):
     """``F1``: surface current tally.
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.9.1.1
+       :631sub: 5.9.1.1
+       :63sub: 5.9.1.1
+       :62: 237
+       :4c: 330
+       :4b: 292
+
     .. versionadded:: 1.6.0b2
     """
 
@@ -1311,6 +1368,18 @@ class SurfaceCurrentTally(SurfaceTally):
 
 class SurfaceEnergyCurrentTally(SurfaceTally):
     """``*F1``: surface energy current tally, in MeV.
+
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.9.1.1
+       :631sub: 5.9.1.1
+       :63sub: 5.9.1.1
+       :62: 237
+       :4c: 330
+       :4b: 292
 
     .. versionadded:: 1.6.0b2
     """
@@ -1322,6 +1391,18 @@ class SurfaceEnergyCurrentTally(SurfaceTally):
 class SurfaceFluxTally(SurfaceTally):
     """``F2``: average surface flux tally.
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.9.1.1
+       :631sub: 5.9.1.1
+       :63sub: 5.9.1.1
+       :62: 237
+       :4c: 330
+       :4b: 292
+
     .. versionadded:: 1.6.0b2
     """
 
@@ -1331,6 +1412,18 @@ class SurfaceFluxTally(SurfaceTally):
 
 class SurfaceEnergyFluxTally(SurfaceTally):
     """``*F2``: average surface energy flux tally, in MeV/cm2.
+
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.9.1.1
+       :631sub: 5.9.1.1
+       :63sub: 5.9.1.1
+       :62: 237
+       :4c: 330
+       :4b: 292
 
     .. versionadded:: 1.6.0b2
     """
@@ -1342,6 +1435,18 @@ class SurfaceEnergyFluxTally(SurfaceTally):
 class CellFluxTally(CellTally):
     """``F4``: cell flux tally.
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.9.1.1
+       :631sub: 5.9.1.1
+       :63sub: 5.9.1.1
+       :62: 237
+       :4c: 330
+       :4b: 292
+
     .. versionadded:: 1.6.0b2
     """
 
@@ -1351,6 +1456,18 @@ class CellFluxTally(CellTally):
 
 class CellEnergyFluxTally(CellTally):
     """``*F4``: cell energy flux tally, in MeV/cm2.
+
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.9.1.1
+       :631sub: 5.9.1.1
+       :63sub: 5.9.1.1
+       :62: 237
+       :4c: 330
+       :4b: 292
 
     .. versionadded:: 1.6.0b2
     """
@@ -1364,6 +1481,18 @@ class EnergyDepositionTally(CellTally):
 
     Also ``*F6``, the same tally in jerks/g instead of MeV/g; see
     :attr:`~montepy.Tally.tally_units`.
+
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.9.1.1
+       :631sub: 5.9.1.1
+       :63sub: 5.9.1.1
+       :62: 237
+       :4c: 330
+       :4b: 292
 
     .. versionadded:: 1.6.0b2
     """
@@ -1379,6 +1508,18 @@ class FissionEnergyDepositionTally(CellTally):
     Also ``*F7``, the same tally in jerks/g instead of MeV/g; see
     :attr:`~montepy.Tally.tally_units`.
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.9.1.1
+       :631sub: 5.9.1.1
+       :63sub: 5.9.1.1
+       :62: 237
+       :4c: 330
+       :4b: 292
+
     .. versionadded:: 1.6.0b2
     """
 
@@ -1389,6 +1530,18 @@ class FissionEnergyDepositionTally(CellTally):
 
 class EnergyDetectorPulseTally(CellTally):
     """``F8``: energy-detector pulse height tally.
+
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.9.1.4
+       :631sub: 5.9.1.4
+       :63sub: 5.9.1.4
+       :62: 248
+       :4c: 333
+       :4b: 295
 
     .. versionadded:: 1.6.0b2
     """
@@ -1401,6 +1554,18 @@ class DetectorEnergyDepositionTally(CellTally):
     """``*F8``: energy deposition in a detector, in MeV, rather than the pulse
     height of the plain F8 tally.
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.9.1.4
+       :631sub: 5.9.1.4
+       :63sub: 5.9.1.4
+       :62: 248
+       :4c: 333
+       :4b: 295
+
     .. versionadded:: 1.6.0b2
     """
 
@@ -1411,6 +1576,18 @@ class DetectorEnergyDepositionTally(CellTally):
 class CollisionHeatingTally(CellTally):
     """``+F6``: collision heating tally, distinct from the plain F6 energy
     deposition tally.
+
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.9.1.1
+       :631sub: 5.9.1.1
+       :63sub: 5.9.1.1
+       :62: 237
+       :4c: 330
+       :4b: 292
 
     .. versionadded:: 1.6.0b2
     """
@@ -1423,6 +1600,18 @@ class CollisionHeatingTally(CellTally):
 class ChargeDepositionTally(CellTally):
     """``+F8``: charge deposition tally, distinct from the plain F8 pulse
     height tally.
+
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.9.1.4
+       :631sub: 5.9.1.4
+       :63sub: 5.9.1.4
+       :62: 248
+       :4c: 333
+       :4b: 295
 
     .. versionadded:: 1.6.0b2
     """
