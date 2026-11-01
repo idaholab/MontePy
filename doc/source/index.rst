@@ -71,20 +71,13 @@ See Also
   * `MCNP 6.3.1 <https://mcnp.lanl.gov/pdf_files/TechReport_2024_LANL_LA-UR-24-24602Rev.1_KuleszaAdamsEtAl.pdf>`_
   * `MCNP 6.3.0 <https://mcnp.lanl.gov/pdf_files/TechReport_2022_LANL_LA-UR-22-30006Rev.1_KuleszaAdamsEtAl.pdf>`_
   * `MCNP 6.2 <https://mcnp.lanl.gov/pdf_files/TechReport_2017_LANL_LA-UR-17-29981_WernerArmstrongEtAl.pdf>`_
-  * `MCNP5 <https://mcnp.lanl.gov/pdf_files/TechReport_2003_LANL_LA-UR-03-1987Revised212008_SweezyBoothEtAl.pdf>`_ (Volume I: overview and theory only. The input syntax is in Volume II, which is not publicly available.)
+  * `MCNP 5 <https://mcnp.lanl.gov/pdf_files/TechReport_2003_LANL_LA-UR-03-1987Revised212008_SweezyBoothEtAl.pdf>`_ (Volume I: overview and theory only. The input syntax is in Volume II, which is not publicly available.)
   * `MCNPX <https://mcnp.lanl.gov/pdf_files/TechReport_2002_LANL_LA-UR-02-2607_Waters.pdf>`_ (version 2.3.0: documents only the changes to MCNP, so it does not describe the base input cards.)
-  * `MCNP4C <https://mcnp.lanl.gov/pdf_files/TechReport_2000_LANL_LA-13709-M_Briesmeisterothers.pdf>`_
-  * `MCNP4B <https://mcnp.lanl.gov/pdf_files/TechReport_1997_LANL_LA-12625-M_Briesmeisterothers.pdf>`_
-  * `MCNP3A <https://mcnp.lanl.gov/pdf_files/TechReport_1986_LANL_LA-7396-MRev.2_BriesmeisterBoothEtAl.pdf>`_
-  * `MCNP2 <https://mcnp.lanl.gov/pdf_files/TechReport_1979_LANL_LA-7396-MRev.1_LGT.pdf>`_
-  * `MCNP1 <https://mcnp.lanl.gov/pdf_files/TechReport_1978_LANL_LA-7396-M_LGT.pdf>`_
-  * `MCNP5 <https://mcnp.lanl.gov/pdf_files/TechReport_2003_LANL_LA-UR-03-1987Revised212008_SweezyBoothEtAl.pdf>`_
-  * `MCNPX <https://mcnp.lanl.gov/pdf_files/TechReport_2002_LANL_LA-UR-02-2607_Waters.pdf>`_
-  * `MCNP4C <https://mcnp.lanl.gov/pdf_files/TechReport_2000_LANL_LA-13709-M_Briesmeisterothers.pdf>`_
-  * `MCNP4B <https://mcnp.lanl.gov/pdf_files/TechReport_1997_LANL_LA-12625-M_Briesmeisterothers.pdf>`_
-  * `MCNP3A <https://mcnp.lanl.gov/pdf_files/TechReport_1986_LANL_LA-7396-MRev.2_BriesmeisterBoothEtAl.pdf>`_
-  * `MCNP2 <https://mcnp.lanl.gov/pdf_files/TechReport_1979_LANL_LA-7396-MRev.1_LGT.pdf>`_
-  * `MCNP1 <https://mcnp.lanl.gov/pdf_files/TechReport_1978_LANL_LA-7396-M_LGT.pdf>`_
+  * `MCNP 4C <https://mcnp.lanl.gov/pdf_files/TechReport_2000_LANL_LA-13709-M_Briesmeisterothers.pdf>`_
+  * `MCNP 4B <https://mcnp.lanl.gov/pdf_files/TechReport_1997_LANL_LA-12625-M_Briesmeisterothers.pdf>`_
+  * `MCNP 3A <https://mcnp.lanl.gov/pdf_files/TechReport_1986_LANL_LA-7396-MRev.2_BriesmeisterBoothEtAl.pdf>`_
+  * `MCNP 2 <https://mcnp.lanl.gov/pdf_files/TechReport_1979_LANL_LA-7396-MRev.1_LGT.pdf>`_
+  * `MCNP 1 <https://mcnp.lanl.gov/pdf_files/TechReport_1978_LANL_LA-7396-M_LGT.pdf>`_
 * `MCNP Forum <https://mcnp.discourse.group/>`_
 
 Indices and tables
