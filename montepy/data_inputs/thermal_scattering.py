@@ -28,7 +28,7 @@ class ThermalScatteringLaw(DataInputAbstract):
        :4c: 377
        :4b: 337
        :3a: 264
-       :2: 168
+       :2: 171
 
     Parameters
     ----------

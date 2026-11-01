@@ -28,6 +28,8 @@ class Volume(CellModifierInput):
        :4c: 277
        :4b: 248
        :3a: 194
+       :2: 139
+       :1: 22
 
     Parameters
     ----------
