@@ -156,6 +156,12 @@ Highly Recommended.
    ``:manual1:``, ``:manual2:``, ``:manual3a:``, ``:manual4b:``, ``:manual4c:``, ``:manualx:``, and ``:manual5:``.
    The number is the PDF page index, which may differ from the printed page number.
 
+   .. warning::
+
+      The ``:manual5:`` PDF is only Volume I of the MCNP5 manual (overview and theory).
+      The input syntax is in Volume II, which LANL does not publicly distribute, so ``:manual5:`` is for theory only.
+      Likewise the MCNPX 2.3.0 manual (``:manualx:``) only describes changes to MCNP, not the base input cards.
+
    The MCNP 6.3 manuals do support linking to section anchors.
    Which anchor is linked depends on the suffix of the command:
 
@@ -197,7 +203,15 @@ Highly Recommended.
 
    ``make linkcheck`` skips every manual link that has a ``#fragment``, so the many section links don't flood
    ``mcnp.lanl.gov`` with requests. Only the bare PDF URLs in ``index.rst`` are checked, once each.
-   The anchors themselves are therefore *not* validated: check them by hand.
+   The anchors themselves are therefore *not* validated by CI.
+   Check them with ``python doc/check_manual_refs.py check -v``, which compares every reference in ``montepy/``
+   against local copies of the PDFs (fetch them once with ``python doc/check_manual_refs.py download``;
+   it needs ``mutool`` and ``pdftotext`` installed).
+   ``-v`` prints the heading each reference lands on so you can confirm it is the right one.
+   ``python doc/check_manual_refs.py search "Cell Cards"`` finds a heading in every manual.
+
+   For the older manuals that only link by page, the number must be the *physical* page index of the PDF (what
+   a PDF viewer opens for ``#page=N``), not the page number printed on the page.
 
    For the reference section of a class docstring use the ``mcnp-manuals`` directive, rather than writing
    a list of roles by hand:
