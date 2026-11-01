@@ -208,6 +208,7 @@ Highly Recommended.
    against local copies of the PDFs (fetch them once with ``python doc/check_manual_refs.py download``;
    it needs ``mutool`` and ``pdftotext`` installed).
    ``-v`` prints the heading each reference lands on so you can confirm it is the right one.
+   It also checks that ``index.rst`` lists every manual exactly once.
    ``python doc/check_manual_refs.py search "Cell Cards"`` finds a heading in every manual.
 
    For the older manuals that only link by page, the number must be the *physical* page index of the PDF (what
