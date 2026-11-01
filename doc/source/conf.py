@@ -96,6 +96,7 @@ extensions = [
     "autodocsumm",
     "jupyterlite_sphinx",
     "schema_org",
+    "mcnp_manuals",
     "sphinx_sitemap",
 ]
 
@@ -211,36 +212,82 @@ linkcheck_ignore = [
     # the :issue: and :pull: extlinks are validated by the PR workflow itself.
     r"https://github\.com/idaholab/MontePy/(issues|pull)/.*",
     "https://zenodo.org/.*",
+    # The :manual*: roles generate thousands of links with a #fragment into
+    # the MCNP manuals. Checking each one would hammer mcnp.lanl.gov (and get
+    # the CI runners banned), and linkcheck can't validate PDF anchors anyway.
+    # Links with a fragment are skipped; the bare PDF URLs, listed once in
+    # index.rst, are still checked to catch moved files.
+    r"https://mcnp\.lanl\.gov/pdf_files/.*#.*",
 ]
 
 # -- External link configuration ---------------------------------------------
-UM63 = (
-    "https://mcnp.lanl.gov/pdf_files/TechReport_2022_LANL_LA-UR-22-30006"
-    "Rev.1_KuleszaAdamsEtAl.pdf"
-)
-UM631 = (
-    "https://mcnp.lanl.gov/pdf_files/TechReport_2024_LANL_LA-UR-24-24602"
-    "Rev.1_KuleszaAdamsEtAl.pdf"
-)
-UM62 = (
-    "https://mcnp.lanl.gov/pdf_files/TechReport_2017_LANL_LA-UR-17-29981"
-    "_WernerArmstrongEtAl.pdf"
-)
+_MCNP_PDF_URL = "https://mcnp.lanl.gov/pdf_files/"
+# The single source of truth for where the manuals live.
+# When LANL moves the PDFs, only this table (and index.rst) needs updating.
+MCNP_MANUAL_PDFS = {
+    "1": "TechReport_1978_LANL_LA-7396-M_LGT.pdf",
+    "2": "TechReport_1979_LANL_LA-7396-MRev.1_LGT.pdf",
+    "3a": "TechReport_1986_LANL_LA-7396-MRev.2_BriesmeisterBoothEtAl.pdf",
+    "4b": "TechReport_1997_LANL_LA-12625-M_Briesmeisterothers.pdf",
+    "4c": "TechReport_2000_LANL_LA-13709-M_Briesmeisterothers.pdf",
+    "x": "TechReport_2002_LANL_LA-UR-02-2607_Waters.pdf",
+    "5": "TechReport_2003_LANL_LA-UR-03-1987Revised212008_SweezyBoothEtAl.pdf",
+    "62": "TechReport_2017_LANL_LA-UR-17-29981_WernerArmstrongEtAl.pdf",
+    "63": "TechReport_2022_LANL_LA-UR-22-30006Rev.1_KuleszaAdamsEtAl.pdf",
+    "631": "TechReport_2024_LANL_LA-UR-24-24602Rev.1_KuleszaAdamsEtAl.pdf",
+    "632": "TechReport_2026_LANL_LA-UR-26-23119Rev.1_KuleszaAdamsEtAl.pdf",
+}
+# Human readable names for the link text.
+_MCNP_VERSION_NAMES = {
+    "1": "MCNP 1",
+    "2": "MCNP 2",
+    "3a": "MCNP 3A",
+    "4b": "MCNP 4B",
+    "4c": "MCNP 4C",
+    "x": "MCNPX",
+    "5": "MCNP 5",
+    "62": "MCNP 6.2",
+    "63": "MCNP 6.3.0",
+    "631": "MCNP 6.3.1",
+    "632": "MCNP 6.3.2",
+}
+# Manuals with LaTeX named destinations that can be linked by section.
+_MCNP_ANCHOR_VERSIONS = ("63", "631", "632")
+# role suffix -> (PDF named destination prefix, link text prefix)
+_MCNP_ANCHOR_KINDS = {
+    "sec": ("section", "§"),
+    "": ("subsection", "§"),  # the default
+    "part": ("part", "part"),
+    "chapter": ("chapter", "Ch."),
+    "sub": ("subsubsection", "§"),
+}
+
+
+def _build_manual_extlinks():
+    links = {}
+    for ver, pdf in MCNP_MANUAL_PDFS.items():
+        url = _MCNP_PDF_URL + pdf
+        name = _MCNP_VERSION_NAMES[ver]
+        if ver in _MCNP_ANCHOR_VERSIONS:
+            for suffix, (dest, label) in _MCNP_ANCHOR_KINDS.items():
+                links[f"manual{ver}{suffix}"] = (
+                    f"{url}#{dest}.%s",
+                    f"{name} manual {label} %s",
+                )
+        else:
+            # No usable section anchors: these only link to a page.
+            links[f"manual{ver}"] = (url + "#page=%s", f"{name} manual p. %s")
+    return links
+
+
+# Newest first; used by the mcnp-manuals directive to pick which manual stays visible.
+mcnp_manual_versions = list(reversed(MCNP_MANUAL_PDFS))
+# Lets docstrings use this heading without napoleon or docutils choking on it.
+napoleon_custom_sections = [("MCNP Manual references", "rubric")]
+
+# Roles are ``:manual<version>[sec|part|chapter|sub]:``, e.g. ``:manual632:``.
 extlinks = {
-    # MCNP 6.3 User's Manual
-    "manual63sec": (UM63 + "#section.%s", "MCNP 6.3.0 manual § %s"),
-    "manual63": (UM63 + "#subsection.%s", "MCNP 6.3.0 manual § %s"),
-    "manual63part": (UM63 + "#part.%s", "MCNP 6.3.0 manual part %s"),
-    "manual63chapter": (UM63 + "#chapter.%s", "MCNP 6.3.0 manual Ch. %s"),
-    "manual63sub": (UM63 + "#subsubsection.%s", "MCNP 6.3.0 manual § %s"),
-    # MCNP 6.3.1 User's Manual
-    "manual631sec": (UM631 + "#section.%s", "MCNP 6.3.1 manual § %s"),
-    "manual631": (UM631 + "#subsection.%s", "MCNP 6.3.1 manual § %s"),
-    "manual631part": (UM631 + "#part.%s", "MCNP 6.3.1 manual part %s"),
-    "manual631chapter": (UM631 + "#chapter.%s", "MCNP 6.3.1 manual Ch. %s"),
-    "manual631sub": (UM631 + "#subsubsection.%s", "MCNP 6.3.1 manual § %s"),
-    # MCNP 6.2 User's manual
-    "manual62": (UM62 + "#page=%s", "MCNP 6.2 manual p. %s"),
+    **_build_manual_extlinks(),
     "issue": ("https://github.com/idaholab/MontePy/issues/%s", "#%s"),
     "pull": ("https://github.com/idaholab/MontePy/pull/%s", "#%s"),
 }

@@ -19,11 +19,19 @@ class ThermalScatteringLaw(DataInputAbstract):
     The first is with a read input file using input_card, comment
     The second is after a read with a material and a comment (using named inputs)
 
-    See Also
-    --------
+    MCNP Manual references
+    ----------------------
 
-    * :manual63:`5.6.2`
-    * :manual62:`110`
+    .. mcnp-manuals::
+
+       :632: 5.6.2
+       :631: 5.6.2
+       :63: 5.6.2
+       :62: 110
+       :4c: 377
+       :4b: 337
+       :3a: 264
+       :2: 171
 
     .. versionchanged:: 1.6.0b1
 

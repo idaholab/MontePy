@@ -20,6 +20,18 @@ class Universe(Numbered_MCNP_Object):
     """Class to represent an MCNP universe, but not handle the input
     directly.
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.5.5.1
+       :631sub: 5.5.5.1
+       :63sub: 5.5.5.1
+       :62: 82
+       :4c: 280
+       :4b: 250
+
     .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter

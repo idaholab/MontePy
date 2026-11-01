@@ -41,6 +41,21 @@ import numbers
 class Importance(CellModifierInput):
     """A data input that sets the importance for a cell(s).
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632: 5.12.1
+       :631: 5.12.1
+       :63: 5.12.1
+       :62: 343
+       :4c: 287
+       :4b: 256
+       :3a: 193
+       :2: 138
+       :1: 22
+
     .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter
