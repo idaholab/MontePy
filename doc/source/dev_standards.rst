@@ -152,13 +152,13 @@ Highly Recommended.
    The MCNP 6.2.0 manual only supports linking to a specific page, and not a section, so the argument it takes is a
    page number: ``:manual62:`123```: becomes :manual62:`123`.
 
-   The manuals for MCNP1, 2, 3A, 4B, 4C, X, and 5 are also linkable by page only, with
+   The manuals for MCNP 1, 2, 3A, 4B, 4C, MCNPX, and 5 are also linkable by page only, with
    ``:manual1:``, ``:manual2:``, ``:manual3a:``, ``:manual4b:``, ``:manual4c:``, ``:manualx:``, and ``:manual5:``.
    The number is the PDF page index, which may differ from the printed page number.
 
    .. warning::
 
-      The ``:manual5:`` PDF is only Volume I of the MCNP5 manual (overview and theory).
+      The ``:manual5:`` PDF is only Volume I of the MCNP 5 manual (overview and theory).
       The input syntax is in Volume II, which LANL does not publicly distribute, so ``:manual5:`` is for theory only.
       Likewise the MCNPX 2.3.0 manual (``:manualx:``) only describes changes to MCNP, not the base input cards.
 

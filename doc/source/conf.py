@@ -225,13 +225,13 @@ MCNP_MANUAL_PDFS = {
 }
 # Human readable names for the link text.
 _MCNP_VERSION_NAMES = {
-    "1": "MCNP1",
-    "2": "MCNP2",
-    "3a": "MCNP3A",
-    "4b": "MCNP4B",
-    "4c": "MCNP4C",
+    "1": "MCNP 1",
+    "2": "MCNP 2",
+    "3a": "MCNP 3A",
+    "4b": "MCNP 4B",
+    "4c": "MCNP 4C",
     "x": "MCNPX",
-    "5": "MCNP5",
+    "5": "MCNP 5",
     "62": "MCNP 6.2",
     "63": "MCNP 6.3.0",
     "631": "MCNP 6.3.1",
