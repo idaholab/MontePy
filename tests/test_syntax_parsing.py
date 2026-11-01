@@ -688,9 +688,10 @@ class TestPaddingNode:
         # non-string patterns are rejected
         with pytest.raises(TypeError):
             comments.search(5)
-        # bytes patterns cannot search the str contents
-        with pytest.raises(TypeError):
-            comments.search(re.compile(b"fuel"))
+        # bytes patterns search the UTF-8 encoded comment contents
+        assert [c.contents for c in comments.search(re.compile(b"fuel"))] == [
+            "the fuel region"
+        ]
 
     def test_comment_collection_sequence(self):
         c1 = syntax_node.CommentNode("c the fuel region")
