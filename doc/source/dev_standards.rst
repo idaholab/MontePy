@@ -147,10 +147,14 @@ Highly Recommended.
 .. note::
 
    MontePy docstrings features custom commands for linking to MCNP user manuals.
-   These in general follow the ``:manual62:``, ``:manual63:``, ``:manual631:`` pattern.
+   These in general follow the ``:manual62:``, ``:manual63:``, ``:manual631:``, ``:manual632:`` pattern.
 
    The MCNP 6.2.0 manual only supports linking to a specific page, and not a section, so the argument it takes is a
    page number: ``:manual62:`123```: becomes :manual62:`123`.
+
+   The manuals for MCNP1, 2, 3A, 4B, 4C, X, and 5 are also linkable by page only, with
+   ``:manual1:``, ``:manual2:``, ``:manual3a:``, ``:manual4b:``, ``:manual4c:``, ``:manualx:``, and ``:manual5:``.
+   The number is the PDF page index, which may differ from the printed page number.
 
    The MCNP 6.3 manuals do support linking to section anchors.
    Which anchor is linked depends on the suffix of the command:
@@ -178,13 +182,22 @@ Highly Recommended.
         - ``:manual63sub:`5.6.1.1```
 
    For example, ``:manual63:`5.6.1``` becomes: :manual63:`5.6.1`.
-   The same suffixes work for ``:manual631:``. For the exact definitions see ``doc/source/conf.py``.
+   The same suffixes work for ``:manual631:`` and ``:manual632:``. For the exact definitions see ``doc/source/conf.py``.
 
    When citing:
 
    * Cite the section that supports the statement, not the whole manual or chapter.
    * Check that the link goes to the right place in the PDF.
-   * Prefer citing the latest manual version that contains the information. Where practical also cite the 6.2 page.
+   * Prefer citing the latest manual version (currently MCNP 6.3.2, ``:manual632:``) that contains the information.
+     Where practical also cite the 6.3.1, 6.3.0, and 6.2 manuals. Older manuals are optional.
+
+   The PDF URLs are defined once in ``doc/source/conf.py`` (``MCNP_MANUAL_PDFS``) and listed in ``index.rst``.
+
+.. note::
+
+   ``make linkcheck`` skips every manual link that has a ``#fragment``, so the many section links don't flood
+   ``mcnp.lanl.gov`` with requests. Only the bare PDF URLs in ``index.rst`` are checked, once each.
+   The anchors themselves are therefore *not* validated: check them by hand.
 
 Example 
 ^^^^^^^
