@@ -25,6 +25,10 @@ class ThermalScatteringLaw(DataInputAbstract):
        :631: 5.6.2
        :63: 5.6.2
        :62: 110
+       :4c: 377
+       :4b: 337
+       :3a: 264
+       :2: 168
 
     Parameters
     ----------
