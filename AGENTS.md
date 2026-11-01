@@ -29,8 +29,9 @@ templates will be summarily closed.
 
 ## MCNP
 
-- MCNP is export controlled. Only the public MCNP 6.2 or newer (e.g., 6.3.x) user manuals
-  may be used as sources. Don't add anything about MCNP that can't be found in them.
+- MCNP is export controlled. Only the official, publicly released LANL user manuals
+  (MCNP1 through 6.3.2, all listed in `doc/source/index.rst`) may be used as sources.
+  Don't add anything about MCNP that can't be found in them.
 - Cite the manual in docstrings with the custom roles in `doc/source/conf.py`.
   The rules for choosing a role (manual, section, subsection, etc.) and for
   what to cite are in `doc/source/dev_standards.rst`. Read and follow them.
