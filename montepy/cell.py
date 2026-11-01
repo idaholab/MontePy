@@ -81,7 +81,11 @@ class Cell(Numbered_MCNP_Object):
        :631sec: 5.2
        :63sec: 5.2
        :62: 55
-
+       :4c: 264
+       :4b: 237
+       :3a: 183
+       :2: 129
+       :1: 14
 
     .. versionchanged:: 1.0.0
 

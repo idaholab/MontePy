@@ -271,7 +271,11 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
        :631: 5.6.1
        :63: 5.6.1
        :62: 106
-
+       :4c: 363
+       :4b: 323
+       :3a: 255
+       :2: 164
+       :1: 37
 
     .. versionchanged:: 1.0.0
 

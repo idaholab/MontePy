@@ -7,6 +7,22 @@ from montepy.particle import Particle
 class Mode(DataInputAbstract):
     """Class for the particle mode for a problem.
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632: 5.7.1
+       :631: 5.7.1
+       :63: 5.7.1
+       :62: 120
+       :x: 85
+       :4c: 277
+       :4b: 247
+       :3a: 192
+       :2: 137
+       :1: 21
+
     Parameters
     ----------
     input : Input

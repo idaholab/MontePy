@@ -18,6 +18,18 @@ class Universe(Numbered_MCNP_Object):
     """Class to represent an MCNP universe, but not handle the input
     directly.
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632: 5.5.5
+       :631: 5.5.5
+       :63: 5.5.5
+       :62: 81
+       :4c: 279
+       :4b: 250
+
     Parameters
     ----------
     number : int
