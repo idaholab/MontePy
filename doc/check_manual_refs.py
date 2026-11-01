@@ -16,7 +16,8 @@ Commands (run from anywhere)::
     python doc/check_manual_refs.py map topics.json   # resolve headings in every manual
 
 ``check`` scans ``montepy/**/*.py`` for ``.. mcnp-manuals::`` fields and for
-``:manual<ver>:`` roles. It exits non-zero if any reference doesn't exist, or if
+``:manual<ver>:`` roles. It also checks that ``doc/source/index.rst`` links each manual
+PDF exactly once, with the manual's name as the link text. It exits non-zero if any reference doesn't exist, or if
 a ``#page=`` value is outside the PDF. For ``#page=`` links the value must be the
 *physical* page index (what a PDF viewer loads), not the printed page number.
 
@@ -239,6 +240,35 @@ def cmd_map(args):
                 print(f"  {version}: ... +{len(shown) - args.limit} more")
 
 
+INDEX = ROOT / "doc" / "source" / "index.rst"
+_INDEX_LINK = re.compile(r"`([^`<]+?)\s*<(" + re.escape(BASE_URL) + r"[^>\s]+)>`_")
+
+
+def check_index(index: Path = INDEX) -> list[str]:
+    """Check that the index lists each manual PDF exactly once, with its name.
+
+    Sphinx doesn't complain about a repeated list item, and linkcheck only
+    requests each URL once, so duplicates would otherwise go unnoticed.
+    """
+    links: dict[str, list[str]] = {}
+    for text, url in _INDEX_LINK.findall(index.read_text()):
+        links.setdefault(url, []).append(text.strip())
+    problems = []
+    for version, pdf in PDFS.items():
+        texts = links.pop(BASE_URL + pdf, [])
+        if not texts:
+            problems.append(f"{NAMES[version]}: not linked in {index.name}")
+        elif len(texts) > 1:
+            problems.append(
+                f"{NAMES[version]}: linked {len(texts)} times in {index.name}"
+            )
+        elif texts[0] != NAMES[version]:
+            problems.append(f"{NAMES[version]}: link text is '{texts[0]}'")
+    for url in links:
+        problems.append(f"{index.name} links {url}, which is not in MCNP_MANUAL_PDFS")
+    return problems
+
+
 def cmd_download(args):
     cache_dir().mkdir(parents=True, exist_ok=True)
     first = True
@@ -256,6 +286,10 @@ def cmd_download(args):
 def cmd_check(args):
     paths = [Path(p) for p in args.paths] or sorted((ROOT / "montepy").rglob("*.py"))
     bad = total = 0
+    if not args.paths:  # the index only matters for a full check
+        for problem in check_index():
+            bad += 1
+            print(f"FAIL {INDEX.relative_to(ROOT)}: {problem}")
     for path, line, key, value in find_refs(paths):
         total += 1
         m = KEY_RE.match(key)
