@@ -20,6 +20,7 @@ Next release
 **Bugs Fixed**
 
 * Fixed ``change_to_ascii`` raising ``UnicodeEncodeError`` on U+0080 instead of stripping it (:issue:`1018`).
+* Fixed adjacent shortcuts losing padding, failing to parse, or changing values when written back (:issue:`1037`).
 
 1.5.0
 --------------
