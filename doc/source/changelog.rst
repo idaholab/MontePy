@@ -10,6 +10,12 @@ MontePy Changelog
 1.5 Releases
 ============
 
+#Next Version#
+--------------
+**Bugs Fixed**
+
+* Fixed ``change_to_ascii`` raising ``UnicodeEncodeError`` on U+0080 instead of stripping it (:issue:`1018`).
+
 1.5.0
 --------------
 **Features Added**
