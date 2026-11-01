@@ -217,7 +217,7 @@ When citing:
 * Cite the section that supports the statement, not the whole manual or chapter.
 * Check that the link goes to the right place in the PDF.
 * Prefer citing the latest manual version (currently MCNP 6.3.2, ``:manual632:``) that contains the information.
- Where practical also cite the 6.3.1, 6.3.0, and 6.2 manuals. Older manuals are optional.
+  Where practical also cite the 6.3.1, 6.3.0, and 6.2 manuals. Older manuals are optional.
 
 The PDF URLs are defined once in ``doc/source/conf.py`` (``MCNP_MANUAL_PDFS``) and listed in ``index.rst``.
 
