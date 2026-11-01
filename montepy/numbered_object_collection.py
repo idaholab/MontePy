@@ -272,6 +272,8 @@ class NumberedObjectCollection(ABC):
         :attr:`~montepy.mcnp_object.MCNP_Object.comments`, so both leading and
         inline comments are considered.
 
+        .. versionadded:: 1.6.0
+
         Parameters
         ----------
         searcher : str | re.Pattern
