@@ -131,7 +131,7 @@ doc/                  # Sphinx documentation
 ├── scripts/          # Build/deployment helper scripts
 ├── ISSUE_TEMPLATE/   # Issue templates (bug_report.md, feature_request.md)
 ├── pull_request_template.md # PR template, including LLM disclosure
-└── copilot-instructions.md  # This file (also imported by CLAUDE.md)
+└── copilot-instructions.md  # Shared agent guide (read via AGENTS.md; CLAUDE.md imports AGENTS.md)
 ```
 
 ### Key Architectural Patterns
@@ -251,7 +251,7 @@ doc/                  # Sphinx documentation
 
 ## LLM Code Contribution Standards
 
-The repository uses a pull request template at `.github/pull_request_template.md`. Always fill in this template for a PR body. It includes:
+**Agents must not create pull requests or issues through the API or CLI. A human must write them by hand** (see `AGENTS.md`). Prepare the change so the human's PR meets the checklist in `.github/pull_request_template.md`, which includes:
 - **LLM Disclosure**: Must declare whether the author is an LLM, and if LLM/AI was used to generate code, the model(s), harness, and reasoning effort used
 - **Documentation**: Docstrings, type hints, and `.. versionadded::`/`.. versionchanged::` directives on all changes
 - **Code Style Compliance**: Must confirm black formatting and test coverage
