@@ -23,10 +23,10 @@ class Universe(Numbered_MCNP_Object):
 
     .. mcnp-manuals::
 
-       :632: 5.5.5
-       :631: 5.5.5
-       :63: 5.5.5
-       :62: 81
+       :632sub: 5.5.5.1
+       :631sub: 5.5.5.1
+       :63sub: 5.5.5.1
+       :62: 82
        :4c: 279
        :4b: 250
 
