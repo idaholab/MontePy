@@ -829,7 +829,7 @@ class PathGroup(TallyGroup):
 
         Only the innermost level of a ``<`` path is tallied. Every outer
         level is a cell, filled with a universe, that only selects which
-        instance of the innermost level is meant (:manual63:`5.9.1.5`).
+        instance of the innermost level is meant (:manual63sub:`5.9.1.5`).
 
         .. versionadded:: 1.6.0b2
 
