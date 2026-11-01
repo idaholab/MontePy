@@ -95,7 +95,7 @@ coverage = "https://coveralls.io/github/idaholab/MontePy"
 requires = ["setuptools>=80.0.0", "setuptools_scm>=8,<11.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.project]
+[tool.black]
 target-version = ['py313', 'py314', 'py315']
 
 [tool.coverage.run]
