@@ -94,6 +94,7 @@ extensions = [
     "autodocsumm",
     "jupyterlite_sphinx",
     "schema_org",
+    "mcnp_manuals",
     "sphinx_sitemap",
 ]
 
@@ -264,6 +265,11 @@ def _build_manual_extlinks():
             links[f"manual{ver}"] = (url + "#page=%s", f"{name} manual p. %s")
     return links
 
+
+# Newest first; used by the mcnp-manuals directive to pick which manual stays visible.
+mcnp_manual_versions = list(reversed(MCNP_MANUAL_PDFS))
+# Lets docstrings use this heading without napoleon or docutils choking on it.
+napoleon_custom_sections = [("MCNP Manual references", "rubric")]
 
 # Roles are ``:manual<version>[sec|part|chapter|sub]:``, e.g. ``:manual632:``.
 extlinks = {

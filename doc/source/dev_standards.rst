@@ -139,7 +139,7 @@ Mandatory Elements
 Highly Recommended.
 ^^^^^^^^^^^^^^^^^^^
 
-#. A class level ``.. seealso:`` section referencing the user manuals.
+#. A class level "MCNP Manual references" section referencing the user manuals, using the ``.. mcnp-manuals::`` directive (see below).
 
 
 #. An examples code block. These should start with a section header: "Exampes". All code blocks should use `sphinx doctest <https://www.sphinx-doc.org/en/master/usage/extensions/doctest.html>`_.
@@ -199,6 +199,27 @@ Highly Recommended.
    ``mcnp.lanl.gov`` with requests. Only the bare PDF URLs in ``index.rst`` are checked, once each.
    The anchors themselves are therefore *not* validated: check them by hand.
 
+   For the reference section of a class docstring use the ``mcnp-manuals`` directive, rather than writing
+   a list of roles by hand:
+
+   .. code-block:: rst
+
+      MCNP Manual references
+      ----------------------
+
+      .. mcnp-manuals::
+
+         :632sec: 5.2
+         :631sec: 5.2
+         :62: 55
+
+   Each field name is a role name without the ``manual`` prefix, and the field body is the section or page.
+   The newest manual with an entry is always shown, and the others are collapsed under "Older manuals".
+   The order you write them in does not matter.
+   An unknown key, an empty value, or content that is not a field list is a build error.
+   The directive is defined in ``doc/source/_extension/mcnp_manuals.py``.
+   Use the roles directly (``:manual632:`` etc.) for references in running prose.
+
 Example 
 ^^^^^^^
 
@@ -241,12 +262,15 @@ Here is the docstrings for :class:`~montepy.cell.Cell`.
 
             complement = ~cell
 
-        See Also
-        --------
+        MCNP Manual references
+        ----------------------
 
-        * :manual631sec:`5.2`
-        * :manual63sec:`5.2`
-        * :manual62:`55`
+        .. mcnp-manuals::
+
+           :632sec: 5.2
+           :631sec: 5.2
+           :63sec: 5.2
+           :62: 55
 
 
         .. versionchanged:: 1.0.0
