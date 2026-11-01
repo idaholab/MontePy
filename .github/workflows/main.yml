@@ -88,9 +88,6 @@ jobs:
       - run: pip install sly~=${{ matrix.sly-version }}
         name: install specific sly version
       - run: pip install --user . montepy[test,build]
-      - run: pip uninstall -y pytest-profiling
-        name: Uninstall incompatible library
-        if: ${{ matrix.python-version == '3.13' }}
       - run: pip freeze
       - run: coverage run -m pytest --junitxml=test_report.xml
       - run: coverage report
