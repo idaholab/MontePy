@@ -575,7 +575,7 @@ class HalfSpace:
         Examples
         ^^^^^^^^
 
-        .. testcode:: python
+        .. testcode::
 
             import montepy
             cell = montepy.Cell("1 0 -123 234 imp:n=1 u=2")
@@ -590,7 +590,7 @@ class HalfSpace:
         mcnp_version : tuple[int, int, int]
             The tuple for the MCNP version that must be exported to.
             Defaults to the version of the problem this geometry's cell
-            belongs to, or :data:`montepy.MCNP_VERSION`.
+            belongs to, or ``montepy.MCNP_VERSION``.
 
         Returns
         -------
