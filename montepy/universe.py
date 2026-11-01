@@ -27,7 +27,7 @@ class Universe(Numbered_MCNP_Object):
        :631sub: 5.5.5.1
        :63sub: 5.5.5.1
        :62: 82
-       :4c: 279
+       :4c: 280
        :4b: 250
 
     Parameters
