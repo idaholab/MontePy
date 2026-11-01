@@ -6,20 +6,28 @@
 MontePy Changelog
 *****************
 
-Next release
-------------
+1.6 Releases
+============
+
+#Next Version#
+--------------
+
 **Features Added**
+
 * Added :meth:`~montepy.numbered_object_collection.NumberedObjectCollection.get_by_comment` to find numbered objects by comment text or regular expression (:issue:`982`).
+
+**Bugs Fixed**
+
+* Fixed ``change_to_ascii`` raising ``UnicodeEncodeError`` on U+0080 instead of stripping it (:issue:`1018`).
+
+**Documentation**
+
+* Added links to sections of all almost all MCNP manuals when practical (:issue:`413`).
 
 
 1.5 Releases
 ============
 
-#Next Version#
---------------
-**Bugs Fixed**
-
-* Fixed ``change_to_ascii`` raising ``UnicodeEncodeError`` on U+0080 instead of stripping it (:issue:`1018`).
 
 1.5.0
 --------------
