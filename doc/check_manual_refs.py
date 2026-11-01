@@ -17,7 +17,7 @@ Commands (run from anywhere)::
 
 ``check`` scans ``montepy/**/*.py`` for ``.. mcnp-manuals::`` fields and for
 ``:manual<ver>:`` roles. It also checks that ``doc/source/index.rst`` links each manual
-PDF exactly once, with the manual's name as the link text. It exits non-zero if any reference doesn't exist, or if
+PDF exactly once, with "<name> User Manual" as the link text. It exits non-zero if any reference doesn't exist, or if
 a ``#page=`` value is outside the PDF. For ``#page=`` links the value must be the
 *physical* page index (what a PDF viewer loads), not the printed page number.
 
@@ -245,7 +245,7 @@ _INDEX_LINK = re.compile(r"`([^`<]+?)\s*<(" + re.escape(BASE_URL) + r"[^>\s]+)>`
 
 
 def check_index(index: Path = INDEX) -> list[str]:
-    """Check that the index lists each manual PDF exactly once, with its name.
+    """Check that the index lists each manual PDF exactly once, as "<name> User Manual".
 
     Sphinx doesn't complain about a repeated list item, and linkcheck only
     requests each URL once, so duplicates would otherwise go unnoticed.
@@ -262,7 +262,7 @@ def check_index(index: Path = INDEX) -> list[str]:
             problems.append(
                 f"{NAMES[version]}: linked {len(texts)} times in {index.name}"
             )
-        elif texts[0] != NAMES[version]:
+        elif texts[0] != f"{NAMES[version]} User Manual":
             problems.append(f"{NAMES[version]}: link text is '{texts[0]}'")
     for url in links:
         problems.append(f"{index.name} links {url}, which is not in MCNP_MANUAL_PDFS")
