@@ -140,13 +140,16 @@ class MCNP_Lexer(Lexer):
     e.g.: ``lwtr.20t``.
     """
 
-    @_(r"[+\-]?\d+(?!e)[a-z]+", r"[+\-]?(?:\d+\.\d*|\.\d+)m(?![a-z\d])")
+    @_(
+        r"[+\-]?\d+(?!e)[a-z]+",
+        r"[+\-]?(?:\d+\.?\d*|\.\d+)(?:e?[+\-]\d+|e\d+)?m(?![a-z\d])",
+    )
     def NUMBER_WORD(self, t):
-        """An integer followed by letters, or a decimal multiply shortcut.
+        """An integer followed by letters, or a floating point multiply shortcut.
 
         Can be used for library numbers, as well as shortcuts.
 
-        E.g.: ``80c``, ``15i``, or ``1.5m``.
+        E.g.: ``80c``, ``15i``, ``1.5m``, or ``1e3m``.
         """
         if update := self._parse_shortcut(t):
             update.type = f"NUM_{update.type}"
