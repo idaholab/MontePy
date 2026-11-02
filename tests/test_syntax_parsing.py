@@ -985,6 +985,12 @@ tests = {
     "1 2R 2I 2.5": [1, 1, 1, 1.5, 2, 2.5],
     "1 R 2m": [1, 1, 2],
     "1 R R": [1, 1, 1],
+    # unofficial
+    "2 3m 2m 1": [2, 6, 12, 1],
+    "2 3m 2m 2r 1": [2, 6, 12, 12, 12, 1],
+    "2 3r 2m 2r 1": [2, 2, 2, 2, 4, 4, 4, 1],
+    "1 r 2m 2i 10": [1, 1, 2, 4.666667, 7.333333, 10],
+    "9 r 9 1i 27": [9, 9, 9, 18, 27],
     "1 2i 4 3m": [1, 2, 3, 4, 12],
     # unofficial
     "2 1.5m": [2, 3],
@@ -1126,6 +1132,9 @@ def test_shortcut_flatten(test, length, indices):
         ("1 5r 2m", "1 5r 2m"),
         ("1 r", "1 r"),
         ("1 r 2 2r", "1 r 2 2r"),
+        ("1 3m 2m 1", "1 3m 2m 1"),
+        ("1 3r 2m 2r 1", "1 3r 2m 2r 1"),
+        ("9 r 9 1i 27", "9 r 9 1i 27"),
         ("1 J 5 2R", "1 J 5 2R"),
         ("1 2i 5", "1 2i 5"),
         ("1 2ilog 5", "1 2ilog 5"),
@@ -1260,6 +1269,14 @@ class TestShortcutListIntegration:
         values.append(syntax_node.ValueNode(Jump(), float))
         list_node.update_with_new_values(values)
         assert list(list_node) == values
+
+    def test_shortcut_list_touching_shortcuts_keep_padding(_, parser):
+        input = Input(["2 3m 2m 1"], BlockType.DATA)
+        list_node = parser.parse(input.tokenize())
+        values = list(list_node)
+        values[-1] = syntax_node.ValueNode("7", float)
+        list_node.update_with_new_values(values)
+        assert list_node.format() == "2 3m 2m 7"
 
     def test_shortcut_list_touching_shortcuts(_, parser):
         input = Input(["1 2 3 5R 3 3 4R 0 0"], BlockType.DATA)
