@@ -96,7 +96,7 @@ requires = ["setuptools>=80.0.0", "setuptools_scm>=8,<11.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.black]
-target-version = ['py313', 'py314', 'py315']
+target-version = ['py313']
 
 [tool.coverage.run]
 omit = ["tests/*"]
