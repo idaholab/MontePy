@@ -6,6 +6,11 @@
 MontePy Changelog
 *****************
 
+Next release
+------------
+**Features Added**
+* Added :meth:`~montepy.numbered_object_collection.NumberedObjectCollection.get_by_comment` to find numbered objects by comment text or regular expression (:issue:`982`).
+
 
 1.5 Releases
 ============
