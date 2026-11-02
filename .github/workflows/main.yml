@@ -13,8 +13,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        python-version: ["3.12", "3.13", "3.14", "3.15-dev"]
-    continue-on-error: ${{ matrix.python-version == '3.15-dev' }}
+        python-version: ["3.13", "3.14", "3.15"]
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -58,14 +57,14 @@ jobs:
       contents: read
     strategy:
       matrix:
-        python-version: ["3.12", "3.13", "3.14", "3.15-dev"]
+        python-version: ["3.13", "3.14", "3.15"]
         # 2.0.0 is pinned to a minor version, whereas 2.4 is pinned to a major version.
         # Though it may be confusing this will install 2.5, etc.
-        numpy-version: ["2.0.0", "2.4"]
+        numpy-version: ["2.3.0", "2.4"]
         sly-version: ["0.5"]
         include:
           - python-version: "3.13"
-            numpy-version: "2.4"
+            numpy-version: "2.3.0"
             sly-version: "0.4"
           # The one job that reports test results and coverage. If its versions
           # stop matching a combination above, it is still run as its own job.
@@ -73,7 +72,6 @@ jobs:
             numpy-version: "2.4"
             sly-version: "0.5"
             report: true
-    continue-on-error: ${{ matrix.python-version == '3.15-dev' }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -88,9 +86,6 @@ jobs:
       - run: pip install sly~=${{ matrix.sly-version }}
         name: install specific sly version
       - run: pip install --user . montepy[test,build]
-      - run: pip uninstall -y pytest-profiling
-        name: Uninstall incompatible library
-        if: ${{ matrix.python-version == '3.13' }}
       - run: pip freeze
       - run: coverage run -m pytest --junitxml=test_report.xml
       - run: coverage report
@@ -143,7 +138,7 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
           persist-credentials: false
-      - name: set up python 3.12
+      - name: set up python 3.14
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with: 
           python-version: 3.14
@@ -196,7 +191,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - name: set up python 3.14
+      - name: set up python 3.15
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with: 
           python-version: 3.14

@@ -33,7 +33,7 @@ def fortran_float(number_string):
         return float(number_string)
 
     except ValueError as e:
-        update_number = re.sub(r"(\d)([-+])", r"\1E\2", number_string)
+        update_number = re.sub(r"([\d.])([-+])", r"\1E\2", number_string)
         try:
             return float(update_number)
         except ValueError:

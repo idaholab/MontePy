@@ -2222,7 +2222,7 @@ class ShortcutNode(ListNode):
 
     def _expand_multiply(self, p):
         self._nodes = self._get_last_node(p)
-        mult_str = p[1].lower().replace("m", "")
+        mult_str = p[1][:-1]
         mult_val = fortran_float(mult_str)
         self._num_node = ValueNode(mult_str, float, never_pad=True)
         if isinstance(p[0], ValueNode):
