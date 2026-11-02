@@ -881,3 +881,19 @@ def test_halfspace_mcnp_str_wraps_long_lines():
     assert len(lines) > 1
     assert all(len(line) <= 128 for line in lines)
     assert cell.geometry.mcnp_str().split() == [f"-{n}" for n in numbers]
+
+
+def test_halfspace_mcnp_str_uses_problem_version():
+    geometry = None
+    for number in range(1000, 1040):
+        plane = montepy.AxisPlane()
+        plane.number = number
+        geometry = -plane if geometry is None else geometry & -plane
+    cell = montepy.Cell("1 0 -1 imp:n=1")
+    cell.geometry = geometry
+    problem = montepy.MCNP_Problem("foo")
+    problem.cells.append(cell)
+    problem.mcnp_version = (6, 1, 0)
+    assert all(len(line) <= 80 for line in cell.geometry.mcnp_str().splitlines())
+    problem.mcnp_version = (6, 3, 0)
+    assert len(cell.geometry.mcnp_str().splitlines()[0]) > 80
