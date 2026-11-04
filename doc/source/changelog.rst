@@ -20,6 +20,7 @@ Next release
 **Bugs Fixed**
 
 * Fixed ``change_to_ascii`` raising ``UnicodeEncodeError`` on U+0080 instead of stripping it (:issue:`1018`).
+* Fixed multiply shortcuts such as ``1000.00m`` raising a ``ParsingError`` because they were lexed as a ZAID, while keeping multigroup ZAIDs such as ``1001.50m`` working in materials (:issue:`1045`).
 * Fixed adjacent shortcuts losing padding, failing to parse, or changing values when written back (:issue:`1037`).
 * Fixed floating point multiply shortcuts (e.g., ``1.5m``, ``.5m``, ``1e3m``, or ``1+3m``) failing to parse (:issue:`1019`).
 * Fixed ``fortran_float`` failing on an exponent after a trailing decimal point, such as ``1.-3`` (:pull:`1036`).

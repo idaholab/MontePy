@@ -1203,6 +1203,56 @@ def test_multiply_fortran_floats(sign, mantissa, exponent, m):
 
 
 @pytest.mark.parametrize(
+    "text, expected",
+    [
+        ("vol 2 1000.00m", [2.0, 2000.0]),
+        ("vol 2 1000.00M", [2.0, 2000.0]),
+        ("vol 2 100000.50m", [2.0, 200001.0]),
+    ],
+)
+def test_multiply_shaped_like_zaid(text, expected):
+    data = montepy.data_inputs.data_input.DataInput(Input([text], BlockType.DATA))
+    assert [node.value for node in data.data] == pytest.approx(expected)
+    assert data.format_for_mcnp_input((6, 3, 0)) == [text]
+
+
+@pytest.mark.parametrize(
+    "text, libraries",
+    [
+        ("m1 1001.50m 1.0", ["50m"]),
+        ("M1 1001.50M 1.0", ["50M"]),
+        ("m1 1001.50m 0.5 8016.50m 0.5", ["50m", "50m"]),
+        ("m1 1001.80c 0.5 8016.50m 0.5", ["80c", "50m"]),
+    ],
+)
+def test_multigroup_zaid_in_material(text, libraries):
+    material = montepy.Material(Input([text], BlockType.DATA))
+    assert [str(nuclide.library) for nuclide, _ in material] == libraries
+    assert material.format_for_mcnp_input((6, 3, 0)) == [text]
+
+
+@pytest.mark.parametrize(
+    "text", ["m1 1.5m 1.0", "m1 1001.5m 1.0", "m1 1001.80c 1.0 2.5m 1.0"]
+)
+def test_multiply_not_zaid_in_material(text):
+    with pytest.raises(montepy.exceptions.ParsingError):
+        montepy.Material(Input([text], BlockType.DATA))
+
+
+def test_multiply_not_zaid_in_data():
+    with pytest.raises(montepy.exceptions.ParsingError):
+        montepy.data_inputs.data_input.DataInput(Input(["vol 1.5m 2"], BlockType.DATA))
+
+
+@pytest.mark.parametrize("name", ["1001.50m", "1.5m", "1001.50c"])
+def test_file_name_shaped_like_multiply(name):
+    read = montepy.input_parser.mcnp_input.ReadInput(
+        [f"read file={name}"], BlockType.CELL
+    )
+    assert read.file_name == name
+
+
+@pytest.mark.parametrize(
     "testee, outcome",
     [("(", False), (1.0, True), (0.0, True), ("s", False), (5.0, False)],
 )
