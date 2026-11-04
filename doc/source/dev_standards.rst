@@ -153,8 +153,38 @@ Highly Recommended.
    page number: ``:manual62:`123```: becomes :manual62:`123`.
 
    The MCNP 6.3 manuals do support linking to section anchors.
-   By default the command links to a ``\\subsubsection``, e.g., ``:manual63:`5.6.1``` becomes: :manual63:`5.6.1`.
-   For other sections see: ``doc/source/conf.py``. 
+   Which anchor is linked depends on the suffix of the command:
+
+   .. list-table::
+      :header-rows: 1
+
+      * - Suffix
+        - Links to
+        - Example
+      * - ``chapter``
+        - A chapter
+        - ``:manual63chapter:`5```
+      * - ``part``
+        - A part
+        - ``:manual63part:`5```
+      * - ``sec``
+        - A section
+        - ``:manual63sec:`5.6```
+      * - (none)
+        - A subsection (the default)
+        - ``:manual63:`5.6.1```
+      * - ``sub``
+        - A subsubsection
+        - ``:manual63sub:`5.6.1.1```
+
+   For example, ``:manual63:`5.6.1``` becomes: :manual63:`5.6.1`.
+   The same suffixes work for ``:manual631:``. For the exact definitions see ``doc/source/conf.py``.
+
+   When citing:
+
+   * Cite the section that supports the statement, not the whole manual or chapter.
+   * Check that the link goes to the right place in the PDF.
+   * Prefer citing the latest manual version that contains the information. Where practical also cite the 6.2 page.
 
 Example 
 ^^^^^^^
