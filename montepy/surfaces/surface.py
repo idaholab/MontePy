@@ -748,21 +748,6 @@ class CylinderOnAxis(
         Instead :class:`~montepy.XCylinder`, :class:`~montepy.YCylinder`, and :class:`~montepy.ZCylinder` are preferred.
         There is no plan at this time to deprecate this class, but its use is not going to be promoted.
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
-
     .. versionchanged:: 1.0.0
 
         Added number parameter
@@ -840,21 +825,6 @@ class XCylinder(CylinderOnAxis, metaclass=_SurfaceClassFactory, spec=_x_cylinder
 
         y^2 + z^2 - R^2 = 0
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
-
     .. versionadded:: 1.4.0
 
     Parameters
@@ -877,21 +847,6 @@ class YCylinder(CylinderOnAxis, metaclass=_SurfaceClassFactory, spec=_y_cylinder
 
         x^2 + z^2 - R^2 = 0
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
-
     .. versionadded:: 1.4.0
 
     Parameters
@@ -913,21 +868,6 @@ class ZCylinder(CylinderOnAxis, metaclass=_SurfaceClassFactory, spec=_z_cylinder
     .. math::
 
         x^2 + y^2 - R^2 = 0
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
 
     .. versionadded:: 1.4.0
 
@@ -988,21 +928,6 @@ class CylinderParAxis(
         Since version 1.4.0 this has not been the preferred class for working with ``C/X``, ``C/Y``, and ``C/Z`` surfaces.
         Instead :class:`~montepy.XCylinderParAxis`, :class:`~montepy.YCylinderParAxis`, and :class:`~montepy.ZCylinderParAxis` are preferred.
         There is no plan at this time to deprecate this class, but its use is not going to be promoted.
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
 
     .. versionchanged:: 1.0.0
 
@@ -1161,21 +1086,6 @@ class XCylinderParAxis(
 
         (y - y_0)^2 + (z - z_0)^2 - R^2 = 0
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
-
     .. versionadded:: 1.4.0
 
     Parameters
@@ -1201,21 +1111,6 @@ class YCylinderParAxis(
 
         (x - x_0)^2 + (z - z_0)^2 - R^2 = 0
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
-
     .. versionadded:: 1.4.0
 
     Parameters
@@ -1240,21 +1135,6 @@ class ZCylinderParAxis(
     .. math::
 
         (x - x_0)^2 + (y - y_0)^2 - R^2 = 0
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
 
     .. versionadded:: 1.4.0
 
@@ -1309,21 +1189,6 @@ class AxisPlane(Surface, metaclass=_SurfaceClassFactory, spec=_axis_plane_spec):
         Since version 1.4.0 this has not been the preferred class for working with ``PX``, ``PY``, and ``PZ`` surfaces.
         Instead :class:`~montepy.XPlane`, :class:`~montepy.YPlane`, and :class:`~montepy.ZPlane` are preferred.
         There is no plan at this time to deprecate this class, but its use is not going to be promoted.
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
 
     .. versionchanged:: 1.0.0
 
@@ -1445,21 +1310,6 @@ class XPlane(AxisPlane, metaclass=_SurfaceClassFactory, spec=_x_plane_spec):
 
         x - D = 0
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
-
     .. versionadded:: 1.4.0
 
     Parameters
@@ -1482,21 +1332,6 @@ class YPlane(AxisPlane, metaclass=_SurfaceClassFactory, spec=_y_plane_spec):
 
         y - D = 0
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
-
     .. versionadded:: 1.4.0
 
     Parameters
@@ -1518,21 +1353,6 @@ class ZPlane(AxisPlane, metaclass=_SurfaceClassFactory, spec=_z_plane_spec):
     .. math::
 
         z - D = 0
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
 
     .. versionadded:: 1.4.0
 
@@ -1615,28 +1435,6 @@ class GeneralPlane(Surface, metaclass=_SurfaceClassFactory, spec=_general_plane_
 
     May also be defined by three points (9 surface constants).
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :632: 5.3.3
-       :631: 5.3.1
-       :631: 5.3.3
-       :63: 5.3.1
-       :63: 5.3.3
-       :62: 58
-       :62: 65
-       :4c: 266
-       :4c: 273
-       :4b: 240
-       :4b: 246
-       :3a: 185
-       :3a: 191
-       :2: 131
-       :1: 16
-
     .. versionchanged:: 1.0.0
 
         Added number parameter
@@ -1697,21 +1495,6 @@ class SphereAtOrigin(
     .. math::
 
         x^2 + y^2 + z^2 - R^2 = 0
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
 
     .. versionadded:: 1.3.0
 
@@ -1798,21 +1581,6 @@ class GeneralSphere(Surface, metaclass=_SurfaceClassFactory, spec=_general_spher
 
         (x - x_0)^2 + (y - y_0)^2 + (z - z_0)^2 - R^2 = 0
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
-
     .. versionadded:: 1.3.0
 
     Parameters
@@ -1867,21 +1635,6 @@ class SphereOnAxis(Surface, metaclass=_SurfaceClassFactory, spec=_sphere_on_axis
         Since version 1.4.0 this has not been the preferred class for working with ``SX``, ``SY``, and ``SZ`` surfaces.
         Instead :class:`~montepy.XSphere`, :class:`~montepy.YSphere`, and :class:`~montepy.ZSphere` are preferred.
         There is no plan at this time to deprecate this class, but its use is not going to be promoted.
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
 
     .. versionadded:: 1.3.0
 
@@ -2003,21 +1756,6 @@ class XSphere(SphereOnAxis, metaclass=_SurfaceClassFactory, spec=_x_sphere_spec)
 
         (x - x_0)^2 + y^2 + z^2 - R^2 = 0
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
-
     .. versionadded:: 1.4.0
 
     Parameters
@@ -2040,21 +1778,6 @@ class YSphere(SphereOnAxis, metaclass=_SurfaceClassFactory, spec=_y_sphere_spec)
 
         x^2 + (y - y_0)^2 + z^2 - R^2 = 0
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
-
     .. versionadded:: 1.4.0
 
     Parameters
@@ -2076,21 +1799,6 @@ class ZSphere(SphereOnAxis, metaclass=_SurfaceClassFactory, spec=_z_sphere_spec)
     .. math::
 
         x^2 + y^2 + (z - z_0)^2 - R^2 = 0
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
 
     .. versionadded:: 1.4.0
 
@@ -2149,21 +1857,6 @@ class ConeOnAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_on_axis_spe
         Since version 1.4.0 this has not been the preferred class for working with ``KX``, ``KY``, and ``KZ`` surfaces.
         Instead :class:`~montepy.XCone`, :class:`~montepy.YCone`, and :class:`~montepy.ZCone` are preferred.
         There is no plan at this time to deprecate this class, but its use is not going to be promoted.
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
 
     .. versionadded:: 1.4.0
 
@@ -2335,21 +2028,6 @@ class XCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_x_cone_spec):
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
     Access it via :attr:`sign`.
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
-
     .. versionadded:: 1.4.0
 
     Parameters
@@ -2376,21 +2054,6 @@ class YCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_y_cone_spec):
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
     Access it via :attr:`sign`.
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
-
     .. versionadded:: 1.4.0
 
     Parameters
@@ -2416,21 +2079,6 @@ class ZCone(ConeOnAxis, metaclass=_SurfaceClassFactory, spec=_z_cone_spec):
     The optional last surface constant selects a single nappe
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
     Access it via :attr:`sign`.
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
 
     .. versionadded:: 1.4.0
 
@@ -2513,21 +2161,6 @@ class ConeParAxis(Surface, metaclass=_SurfaceClassFactory, spec=_cone_par_axis_s
         Since version 1.4.0 this has not been the preferred class for working with ``K/X``, ``K/Y``, and ``K/Z`` surfaces.
         Instead :class:`~montepy.XConeParAxis`, :class:`~montepy.YConeParAxis`, and :class:`~montepy.ZConeParAxis` are preferred.
         There is no plan at this time to deprecate this class, but its use is not going to be promoted.
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
 
     .. versionadded:: 1.4.0
 
@@ -2753,21 +2386,6 @@ class XConeParAxis(
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
     Access it via :attr:`sign`.
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
-
     .. versionadded:: 1.4.0
 
     Parameters
@@ -2797,21 +2415,6 @@ class YConeParAxis(
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
     Access it via :attr:`sign`.
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
-
     .. versionadded:: 1.4.0
 
     Parameters
@@ -2840,21 +2443,6 @@ class ZConeParAxis(
     The optional last surface constant selects a single nappe
     (``+1`` upper, ``-1`` lower); omitting it gives both nappes.
     Access it via :attr:`sign`.
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
 
     .. versionadded:: 1.4.0
 
@@ -2980,21 +2568,6 @@ class AxisAlignedQuadric(
         A(x-x_0)^2 + B(y-y_0)^2 + C(z-z_0)^2
         + D(x-x_0) + E(y-y_0) + F(z-z_0) + G = 0
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
-
     .. versionadded:: 1.4.0
 
     Parameters
@@ -3111,21 +2684,6 @@ class GeneralQuadric(
     .. math::
 
         Ax^2 + By^2 + Cz^2 + Dxy + Eyz + Fxz + Gx + Hy + Jz + K = 0
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
 
     .. versionadded:: 1.4.0
 
@@ -3255,21 +2813,6 @@ class Torus(Surface, metaclass=_SurfaceClassFactory, spec=_torus_spec):
         Since version 1.4.0 this has not been the preferred class for working with ``TX``, ``TY``, and ``TZ`` surfaces.
         Instead :class:`~montepy.XTorus`, :class:`~montepy.YTorus`, and :class:`~montepy.ZTorus` are preferred.
         There is no plan at this time to deprecate this class, but its use is not going to be promoted.
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
 
     .. versionadded:: 1.4.0
 
@@ -3635,21 +3178,6 @@ class XTorus(Torus, metaclass=_SurfaceClassFactory, spec=_x_torus_spec):
 
         \\frac{(x-x_0)^2}{B^2} + \\frac{\\left(\\sqrt{(y-y_0)^2+(z-z_0)^2} - A\\right)^2}{C^2} - 1 = 0
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
-
     .. versionadded:: 1.4.0
 
     Parameters
@@ -3672,21 +3200,6 @@ class YTorus(Torus, metaclass=_SurfaceClassFactory, spec=_y_torus_spec):
 
         \\frac{(y-y_0)^2}{B^2} + \\frac{\\left(\\sqrt{(x-x_0)^2+(z-z_0)^2} - A\\right)^2}{C^2} - 1 = 0
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
-
     .. versionadded:: 1.4.0
 
     Parameters
@@ -3708,21 +3221,6 @@ class ZTorus(Torus, metaclass=_SurfaceClassFactory, spec=_z_torus_spec):
     .. math::
 
         \\frac{(z-z_0)^2}{B^2} + \\frac{\\left(\\sqrt{(x-x_0)^2+(y-y_0)^2} - A\\right)^2}{C^2} - 1 = 0
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632: 5.3.1
-       :631: 5.3.1
-       :63: 5.3.1
-       :62: 58
-       :4c: 266
-       :4b: 240
-       :3a: 185
-       :2: 131
-       :1: 16
 
     .. versionadded:: 1.4.0
 
@@ -3788,17 +3286,6 @@ _box_spec = _SurfaceTypeSpec(
 class Box(Surface, metaclass=_SurfaceClassFactory, spec=_box_spec):
     """Represents macrobody BOX: a general orthogonal box defined by a corner
     point and three edge vectors.
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632sub: 5.3.4.1
-       :631sub: 5.3.4.1
-       :63sub: 5.3.4.1
-       :62: 66
-       :4c: 274
 
     .. versionadded:: 1.4.0
 
@@ -3900,17 +3387,6 @@ class RectangularParallelepiped(
     """Represents macrobody RPP: an axis-aligned rectangular parallelepiped
     defined by min/max extents on each axis.
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632sub: 5.3.4.2
-       :631sub: 5.3.4.2
-       :63sub: 5.3.4.2
-       :62: 67
-       :4c: 274
-
     .. versionadded:: 1.4.0
 
     Parameters
@@ -3978,17 +3454,6 @@ class SphereMacrobody(
     Surface, metaclass=_SurfaceClassFactory, spec=_sphere_macrobody_spec
 ):
     """Represents macrobody SPH: a sphere defined by center and radius.
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632sub: 5.3.4.3
-       :631sub: 5.3.4.3
-       :63sub: 5.3.4.3
-       :62: 67
-       :4c: 274
 
     .. versionadded:: 1.4.0
 
@@ -4065,17 +3530,6 @@ _rcc_spec = _SurfaceTypeSpec(
 class RightCircularCylinder(Surface, metaclass=_SurfaceClassFactory, spec=_rcc_spec):
     """Represents macrobody RCC: a right circular cylinder defined by a base
     center, height vector, and radius.
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632sub: 5.3.4.4
-       :631sub: 5.3.4.4
-       :63sub: 5.3.4.4
-       :62: 68
-       :4c: 274
 
     .. versionadded:: 1.4.0
 
@@ -4172,17 +3626,6 @@ class RightHexagonalPrism(Surface, metaclass=_SurfaceClassFactory, spec=_rhp_spe
     """Represents macrobodies RHP and HEX: a right hexagonal prism defined by
     a base center, height vector, and three facet vectors.
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632sub: 5.3.4.5
-       :631sub: 5.3.4.5
-       :63sub: 5.3.4.5
-       :62: 68
-       :4c: 274
-
     .. versionadded:: 1.4.0
 
     Parameters
@@ -4269,16 +3712,6 @@ class RightEllipticalCylinder(Surface, metaclass=_SurfaceClassFactory, spec=_rec
     """Represents macrobody REC: a right elliptical cylinder defined by a base
     center, height vector, and semi-axis vectors.
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632sub: 5.3.4.6
-       :631sub: 5.3.4.6
-       :63sub: 5.3.4.6
-       :62: 69
-
     .. versionadded:: 1.4.0
 
     Parameters
@@ -4363,16 +3796,6 @@ class TruncatedRightCone(Surface, metaclass=_SurfaceClassFactory, spec=_trc_spec
     """Represents macrobody TRC: a truncated right-angle cone defined by a base
     center, height vector, and two radii.
 
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632sub: 5.3.4.7
-       :631sub: 5.3.4.7
-       :63sub: 5.3.4.7
-       :62: 69
-
     .. versionadded:: 1.4.0
 
     Parameters
@@ -4426,16 +3849,6 @@ _ellipsoid_spec = _SurfaceTypeSpec(
 class Ellipsoid(Surface, metaclass=_SurfaceClassFactory, spec=_ellipsoid_spec):
     """Represents macrobody ELL: an ellipsoid defined by two foci and a
     semi-major axis length.
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632sub: 5.3.4.8
-       :631sub: 5.3.4.8
-       :63sub: 5.3.4.8
-       :62: 70
 
     .. versionadded:: 1.4.0
 
@@ -4501,16 +3914,6 @@ _wedge_spec = _SurfaceTypeSpec(
 class Wedge(Surface, metaclass=_SurfaceClassFactory, spec=_wedge_spec):
     """Represents macrobody WED: a wedge defined by a corner vertex, two base
     edge vectors, and a height vector.
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632sub: 5.3.4.9
-       :631sub: 5.3.4.9
-       :63sub: 5.3.4.9
-       :62: 70
 
     .. versionadded:: 1.4.0
 
@@ -4658,16 +4061,6 @@ class ArbitraryPolyhedron(Surface, metaclass=_SurfaceClassFactory, spec=_arb_spe
     Vertices are given as :math:`(x, y, z)` triples (24 values total).
     Each face descriptor is a 4-digit integer whose digits are the 1-based
     vertex indices forming that face (0 if the face has fewer than 4 vertices).
-
-    MCNP Manual references
-    ----------------------
-
-    .. mcnp-manuals::
-
-       :632sub: 5.3.4.10
-       :631sub: 5.3.4.10
-       :63sub: 5.3.4.10
-       :62: 71
 
     .. versionadded:: 1.4.0
 
