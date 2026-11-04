@@ -17,9 +17,14 @@ Next release
 
 #Next Version#
 --------------
+**Features Added**
+
+* Added ``HalfSpace.mcnp_str`` and ``HalfSpace.format_for_mcnp_input`` to print just a cell's geometry as it would appear in an MCNP input (:issue:`942`).
+
 **Bugs Fixed**
 
 * Fixed ``change_to_ascii`` raising ``UnicodeEncodeError`` on U+0080 instead of stripping it (:issue:`1018`).
+* Fixed geometry not being fully linked to its cell for parsed cells, assigned geometries, and clones, which left ``Cell.surfaces`` out of date after ``HalfSpace.replace``, and made ``replace`` raise ``KeyError`` on some clones (:pull:`1033`).
 * Fixed adjacent shortcuts losing padding, failing to parse, or changing values when written back (:issue:`1037`).
 * Fixed floating point multiply shortcuts (e.g., ``1.5m``, ``.5m``, ``1e3m``, or ``1+3m``) failing to parse (:issue:`1019`).
 * Fixed ``fortran_float`` failing on an exponent after a trailing decimal point, such as ``1.-3`` (:pull:`1036`).
