@@ -897,3 +897,70 @@ def test_halfspace_mcnp_str_uses_problem_version():
     assert all(len(line) <= 80 for line in cell.geometry.mcnp_str().splitlines())
     problem.mcnp_version = (6, 3, 0)
     assert len(cell.geometry.mcnp_str().splitlines()[0]) > 80
+
+
+def _all_geometry_nodes(geometry):
+    if isinstance(geometry, UnitHalfSpace):
+        return [geometry]
+    nodes = [geometry] + _all_geometry_nodes(geometry.left)
+    if geometry.right is not None:
+        nodes += _all_geometry_nodes(geometry.right)
+    return nodes
+
+
+def _plane(number):
+    plane = montepy.AxisPlane()
+    plane.number = number
+    return plane
+
+
+def test_geometry_linked_to_parsed_cell():
+    cell = montepy.Cell("1 0 -1 (2 : 3) #4 imp:n=1")
+    assert all(node._cell is cell for node in _all_geometry_nodes(cell.geometry))
+
+
+def test_geometry_setter_links_whole_tree():
+    cell = montepy.Cell(number=1)
+    cell.geometry = -_plane(1) & (+_plane(2) | -_plane(3))
+    assert all(node._cell is cell for node in _all_geometry_nodes(cell.geometry))
+
+
+def test_geometry_replace_after_setter_updates_cell():
+    cell = montepy.Cell(number=1)
+    old, keep, new = _plane(1), _plane(2), _plane(3)
+    cell.geometry = -old & +keep
+    cell.geometry.replace(old, new)
+    assert new in cell.surfaces
+    assert old not in cell.surfaces
+    assert keep in cell.surfaces
+
+
+def test_geometry_replace_after_setter_reaches_problem():
+    cell = montepy.Cell(number=1)
+    old, keep, new = _plane(1), _plane(2), _plane(3)
+    cell.geometry = -old & +keep
+    cell.geometry.replace(old, new)
+    problem = montepy.MCNP_Problem("foo")
+    problem.cells.append(cell)
+    assert sorted(problem.surfaces.numbers) == [2, 3]
+
+
+def test_geometry_clone_links_to_new_cell():
+    problem = montepy.read_input("tests/inputs/test.imcnp")
+    new_cell = problem.cells[1].clone()
+    assert all(
+        node._cell is new_cell for node in _all_geometry_nodes(new_cell.geometry)
+    )
+    old = list(new_cell.surfaces)[0]
+    new = _plane(9999)
+    new_cell.geometry.replace(old, new)
+    assert new in new_cell.surfaces
+
+
+def test_halfspace_mcnp_str_parsed_cell_uses_problem_version():
+    numbers = range(1000, 1040)
+    cell = montepy.Cell("1 0 " + " ".join(f"-{n}" for n in numbers) + " imp:n=1")
+    problem = montepy.MCNP_Problem("foo")
+    problem.cells.append(cell)
+    problem.mcnp_version = (6, 1, 0)
+    assert all(len(line) <= 80 for line in cell.geometry.mcnp_str().splitlines())

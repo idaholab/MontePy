@@ -26,7 +26,7 @@ import montepy
 
 
 def _link_geometry_to_cell(self, geom):
-    geom._cell = self
+    geom._link_to_cell(self)
     geom._add_new_children_to_cell(geom)
 
 
@@ -180,6 +180,7 @@ class Cell(Numbered_MCNP_Object):
         geometry = self._tree["geometry"]
         if geometry is not None:
             self._geometry = HalfSpace.parse_input_node(geometry)
+            self._geometry._link_to_cell(self)
         else:
             self._geometry = None
 
@@ -943,7 +944,8 @@ class Cell(Numbered_MCNP_Object):
             result._material = self._material
         special_keys = {"_surfaces", "_complements"}
         keys -= special_keys
-        memo = {}
+        # the copied geometry must point to the new cell, not to a copy of this one.
+        memo = {id(self): result}
 
         def num(obj):
             if isinstance(obj, Integral):
