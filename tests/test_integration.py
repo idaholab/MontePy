@@ -651,11 +651,12 @@ def test_importance_parsing(importance_problem, simple_problem):
 
 
 def test_importance_format_unmutated(importance_problem):
+    importance_problem = copy.deepcopy(importance_problem)
     imp = importance_problem.cells._importance
     output = imp.format_for_mcnp_input((6, 2, 0))
     print(output)
     assert len(output) == 4
-    assert "imp:n,p 1 1 1 0 3" == output[1]
+    assert "imp:n,p 1 1 1r 0 3" == output[1]
     assert "imp:e   0 2r 1 r" == output[3]
 
 
@@ -666,9 +667,12 @@ def test_importance_format_mutated(importance_problem):
     with pytest.warns(LineExpansionWarning):
         output = imp.format_for_mcnp_input((6, 2, 0))
     print(output)
-    assert len(output) == 6
-    assert "imp:n 0.5 1 1 0 3" in output
-    assert "c special comment related to #520" == output[2]
+    # the comment trails imp:n,p, so it must only appear once, before imp:e (#1048)
+    assert len(output) == 5
+    assert "imp:n 0.5 1 1r 0 3" in output
+    assert output.count("c special comment related to #520") == 1
+    assert "c special comment related to #520" == output[3]
+    assert "imp:e   0 2r 1 r" == output[4]
 
 
 def test_importance_write_unmutated(importance_problem):
@@ -681,7 +685,7 @@ def test_importance_write_unmutated(importance_problem):
         print(line.rstrip())
         if "imp:n,p 1" in line:
             found_np = True
-        elif "imp:e" in line:
+        elif "imp:e   0 2r 1 r" in line:
             found_e = True
     assert found_np
     assert found_e
@@ -701,7 +705,7 @@ def test_importance_write_mutated(importance_problem):
         print(line.rstrip())
         if "imp:n 0.5" in line:
             found_n = True
-        elif "imp:e" in line:
+        elif "imp:e   0 2r 1 r" in line:
             found_e = True
     assert found_n
     assert found_e
@@ -1340,3 +1344,12 @@ def test_arbitrary_parse(simple_problem):
         assert (transform in simple_problem.transforms) == append
         with pytest.raises(ParsingError):
             simple_problem.parse("123 hello this is invalid")
+
+
+# based on #1048
+def test_duplicate_importance_trailing_comment(importance_problem):
+    problem = copy.deepcopy(importance_problem)
+    imp = problem.cells._importance
+    comment = "c special comment related to #520"
+    problem.cells[1].importance.neutron = 0.5
+    assert imp.mcnp_str().count(comment) == 1
