@@ -1904,9 +1904,21 @@ class ListNode(SyntaxNodeBase):
             ):
                 node.padding = PaddingNode(" ")
             if isinstance(last_node, ShortcutNode) and isinstance(node, ShortcutNode):
-                ret += node.format(last_node)
+                node_str = node.format(last_node)
             else:
-                ret += node.format()
+                node_str = node.format()
+            # Shortcuts such as ``1 2i 4`` end on a value that carries its own padding,
+            # so only add padding if the output isn't already whitespace-terminated.
+            if (
+                isinstance(node, ShortcutNode)
+                and node_str
+                and not node_str[-1].isspace()
+                and i < length - 1
+                and not isinstance(self.nodes[i + 1], PaddingNode)
+            ):
+                node.end_padding = PaddingNode(" ")
+                node_str += node.end_padding.format()
+            ret += node_str
             last_node = node
         return ret
 
