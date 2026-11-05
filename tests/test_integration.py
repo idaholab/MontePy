@@ -651,6 +651,7 @@ def test_importance_parsing(importance_problem, simple_problem):
 
 
 def test_importance_format_unmutated(importance_problem):
+    importance_problem = copy.deepcopy(importance_problem)
     imp = importance_problem.cells._importance
     output = imp.format_for_mcnp_input((6, 2, 0))
     print(output)
