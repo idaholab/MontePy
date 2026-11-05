@@ -1340,3 +1340,9 @@ def test_arbitrary_parse(simple_problem):
         assert (transform in simple_problem.transforms) == append
         with pytest.raises(ParsingError):
             simple_problem.parse("123 hello this is invalid")
+
+
+# based on #1048
+def test_duplicate_trailing_comment(importance_problem):
+    imp = importance_problem.cells._importance
+    assert "c special comment related to #520" not in imp.mcnp_str()
