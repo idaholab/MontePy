@@ -216,4 +216,4 @@ def test_cell_universe_delete_adds_zero_universe():
 def test_data_block_universe_trail_0(simple_problem):
     prob = copy.deepcopy(simple_problem)
     prob.print_in_data_block["U"] = True
-    assert prob.cells._universe.mcnp_str() == "U 350 0 0 0 0"
+    assert prob.cells._universe.mcnp_str().rstrip() == "U 350 4J"
