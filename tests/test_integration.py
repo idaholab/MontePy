@@ -655,7 +655,7 @@ def test_importance_format_unmutated(importance_problem):
     output = imp.format_for_mcnp_input((6, 2, 0))
     print(output)
     assert len(output) == 4
-    assert "imp:n,p 1 1 1 0 3" == output[1]
+    assert "imp:n,p 1 1 1r 0 3" == output[1]
     assert "imp:e   0 2r 1 r" == output[3]
 
 
@@ -684,7 +684,7 @@ def test_importance_write_unmutated(importance_problem):
         print(line.rstrip())
         if "imp:n,p 1" in line:
             found_np = True
-        elif "imp:e" in line:
+        elif "imp:e   0 2r 1 r" in line:
             found_e = True
     assert found_np
     assert found_e
@@ -704,7 +704,7 @@ def test_importance_write_mutated(importance_problem):
         print(line.rstrip())
         if "imp:n 0.5" in line:
             found_n = True
-        elif "imp:e" in line:
+        elif "imp:e   0 2r 1 r" in line:
             found_e = True
     assert found_n
     assert found_e
@@ -1346,7 +1346,7 @@ def test_arbitrary_parse(simple_problem):
 
 
 # based on #1048
-def test_duplicate_trailing_comment(importance_problem):
+def test_duplicate_importance_trailing_comment(importance_problem):
     problem = copy.deepcopy(importance_problem)
     imp = problem.cells._importance
     comment = "c special comment related to #520"
