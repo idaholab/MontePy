@@ -668,7 +668,7 @@ def test_importance_format_mutated(importance_problem):
     print(output)
     # the comment trails imp:n,p, so it must only appear once, before imp:e (#1048)
     assert len(output) == 5
-    assert "imp:n 0.5 1 1 0 3" in output
+    assert "imp:n 0.5 1 1r 0 3" in output
     assert output.count("c special comment related to #520") == 1
     assert "c special comment related to #520" == output[3]
     assert "imp:e   0 2r 1 r" == output[4]
