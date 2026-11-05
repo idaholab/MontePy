@@ -56,6 +56,20 @@ class HalfSpace:
 
         half_space = +bottom & (-left | +right)
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sec: 5.2
+       :631sec: 5.2
+       :63sec: 5.2
+       :62: 56
+       :4c: 264
+       :4b: 238
+       :3a: 183
+       :2: 129
+
     Parameters
     ----------
     left : HalfSpace
@@ -587,6 +601,20 @@ class UnitHalfSpace(HalfSpace):
             UnitHalfSpace      None
                    |
                    Cell
+
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sec: 5.2
+       :631sec: 5.2
+       :63sec: 5.2
+       :62: 56
+       :4c: 264
+       :4b: 238
+       :3a: 183
+       :2: 129
 
     Parameters
     ----------
