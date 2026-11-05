@@ -666,9 +666,12 @@ def test_importance_format_mutated(importance_problem):
     with pytest.warns(LineExpansionWarning):
         output = imp.format_for_mcnp_input((6, 2, 0))
     print(output)
-    assert len(output) == 6
+    # the comment trails imp:n,p, so it must only appear once, before imp:e (#1048)
+    assert len(output) == 5
     assert "imp:n 0.5 1 1 0 3" in output
-    assert "c special comment related to #520" == output[2]
+    assert output.count("c special comment related to #520") == 1
+    assert "c special comment related to #520" == output[3]
+    assert "imp:e   0 2r 1 r" == output[4]
 
 
 def test_importance_write_unmutated(importance_problem):
@@ -1344,5 +1347,8 @@ def test_arbitrary_parse(simple_problem):
 
 # based on #1048
 def test_duplicate_trailing_comment(importance_problem):
-    imp = importance_problem.cells._importance
-    assert "c special comment related to #520" not in imp.mcnp_str()
+    problem = copy.deepcopy(importance_problem)
+    imp = problem.cells._importance
+    comment = "c special comment related to #520"
+    problem.cells[1].importance.neutron = 0.5
+    assert imp.mcnp_str().count(comment) == 1
