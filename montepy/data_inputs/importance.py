@@ -112,7 +112,7 @@ class Importance(CellModifierInput):
             self._part_combos.append(self.particle_classifiers)
             for particle in self.particle_classifiers:
                 self._particle_importances[particle] = copy.deepcopy(self._tree)
-                self._real_tree[particle] = copy.deepcopy(self._tree)
+                self._real_tree[particle] = self._particle_importances[particle]
 
     def _generate_default_cell_tree(self, particle=None):
         classifier = syntax_node.ClassifierNode()
@@ -499,11 +499,10 @@ class Importance(CellModifierInput):
         for combo_set in self._part_combos:
             if part in combo_set:
                 to_delete |= combo_set
-        if self._in_cell_block:
-            for part in to_delete:
+        for part in to_delete:
+            if part in self._particle_importances:
                 self._particle_importances[part]["data"]._delete_trailing_comment()
-        else:
-            for part in to_delete:
+            if part in self._real_tree:
                 self._real_tree[part]._delete_trailing_comment()
 
     def _grab_beginning_comment(self, new_padding, last_obj=None):
