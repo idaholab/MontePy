@@ -2,6 +2,7 @@
 from __future__ import annotations
 from abc import ABC
 import itertools as it
+import re
 import typing
 import weakref
 
@@ -291,6 +292,40 @@ class NumberedObjectCollection(ABC):
                 else:
                     if child is parent_obj:
                         pass
+    def get_by_comment(
+        self, searcher: str | re.Pattern
+    ) -> typing.Generator[Numbered_MCNP_Object, None, None]:
+        """Yield all objects whose comments match the given text or pattern.
+
+        The search is applied to each object's
+        :attr:`~montepy.mcnp_object.MCNP_Object.comments`, so both leading and
+        inline comments are considered.
+
+        .. versionadded:: 1.6.0
+
+        Parameters
+        ----------
+        searcher : str | re.Pattern
+            A substring to search for, or a compiled regular expression.
+
+        Returns
+        -------
+        Generator[Numbered_MCNP_Object, None, None]
+            A generator of all matching objects.
+
+        Raises
+        ------
+        TypeError
+            if ``searcher`` is not a string or a compiled regex.
+        """
+        if not isinstance(searcher, (re.Pattern, str)):
+            raise TypeError(
+                f"searcher must be a str, or a compiled pattern. {searcher} given."
+            )
+
+        for obj in self:
+            if obj.comments.search(searcher):
+                yield obj
 
     def _update_number(self, old_num, new_num, obj):
         """Updates the number associated with a specific object in the internal cache.
@@ -1088,8 +1123,8 @@ class NumberedObjectCollection(ABC):
 
         Parameters
         ----------
-        others : Self
-            the other collections to compare to.
+        other : Self
+            the other collection to compare to.
 
         Returns
         -------
@@ -1106,8 +1141,8 @@ class NumberedObjectCollection(ABC):
 
         Parameters
         ----------
-        others : Self
-            the other collections to compare to.
+        other : Self
+            the other collection to compare to.
         """
         self ^= other
         return self

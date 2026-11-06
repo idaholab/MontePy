@@ -36,6 +36,18 @@ class Fill(CellModifierInput):
 
         Added ``jit_parse`` parameter
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.5.5.3
+       :631sub: 5.5.5.3
+       :63sub: 5.5.5.3
+       :62: 86
+       :4c: 283
+       :4b: 253
+
     Parameters
     ----------
     input : Input | str

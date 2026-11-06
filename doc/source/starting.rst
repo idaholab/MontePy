@@ -27,8 +27,6 @@ and will link the cell with its material object.
     especially for materials,
     MontePy will likely break.
 
-    Due to the manuals for these earlier versions of MCNP being export controlled, these versions will likely never be fully supported.
-
 
 Run Interactively in your Browser
 ---------------------------------

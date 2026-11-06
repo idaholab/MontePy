@@ -18,6 +18,19 @@ from montepy.utilities import *
 class Transform(data_input.DataInputAbstract, Numbered_MCNP_Object):
     """Input to represent a transform input (TR).
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632: 5.5.3
+       :631: 5.5.3
+       :63: 5.5.3
+       :62: 77
+       :4c: 284
+       :4b: 254
+       :3a: 205
+
     .. versionchanged:: 1.0.0
 
         Added number parameter

@@ -140,13 +140,16 @@ class MCNP_Lexer(Lexer):
     e.g.: ``lwtr.20t``.
     """
 
-    @_(r"[+\-]?\d+(?!e)[a-z]+")
+    @_(
+        r"[+\-]?\d+(?!e)[a-z]+",
+        r"[+\-]?(?:\d+\.?\d*|\.\d+)(?:e?[+\-]\d+|e\d+)?m(?![a-z\d])",
+    )
     def NUMBER_WORD(self, t):
-        """An integer followed by letters.
+        """An integer followed by letters, or a floating point multiply shortcut.
 
         Can be used for library numbers, as well as shortcuts.
 
-        E.g.: ``80c``, or ``15i``.
+        E.g.: ``80c``, ``15i``, ``1.5m``, or ``1e3m``.
         """
         if update := self._parse_shortcut(t):
             update.type = f"NUM_{update.type}"
@@ -182,7 +185,9 @@ class MCNP_Lexer(Lexer):
         "INTERPOLATE": re.compile(r"^\d*I$", re.I),
         "JUMP": re.compile(r"^\d*J$", re.I),
         "LOG_INTERPOLATE": re.compile(r"^\d*I?LOG$", re.I),
-        "MULTIPLY": re.compile(r"^[+\-]?[0-9]+\.?[0-9]*E?[+\-]?[0-9]*M$", re.I),
+        "MULTIPLY": re.compile(
+            r"^[+\-]?([0-9]+\.?[0-9]*|\.[0-9]+)E?[+\-]?[0-9]*M$", re.I
+        ),
         "REPEAT": re.compile(r"^\d*R$", re.I),
     }
 

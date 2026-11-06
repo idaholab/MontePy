@@ -24,6 +24,18 @@ class Universe(Numbered_MCNP_Object):
 
         Added ``jit_parse`` parameter
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.5.5.1
+       :631sub: 5.5.5.1
+       :63sub: 5.5.5.1
+       :62: 82
+       :4c: 280
+       :4b: 250
+
     Parameters
     ----------
     number : int

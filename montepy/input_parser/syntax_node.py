@@ -698,8 +698,8 @@ class PaddingNode(SyntaxNodeBase):
 
         Parameters
         ----------
-        node : str, CommentNode
-            node
+        val : str, CommentNode
+            the node to append.
         is_comment : bool
             whether or not the node is a comment.
         """
@@ -1854,8 +1854,8 @@ class ListNode(SyntaxNodeBase):
 
         Parameters
         ----------
-        node : ValueNode, ShortcutNode
-            node
+        val : ValueNode, ShortcutNode
+            the node to append.
         from_parsing : bool
             If this is being append from the parsers, and not elsewhere.
         """
@@ -2097,6 +2097,7 @@ class ShortcutNode(ListNode):
     def __init__(self, p=None, short_type: Shortcuts = None, data_type: type = float):
         self._type = None
         self._end_pad = None
+        self._owns_start = False
         self._nodes = collections.deque()
         self._original = []
         self._full = False
@@ -2201,13 +2202,15 @@ class ShortcutNode(ListNode):
                 last_val = list(p[0])[-1]
             else:
                 last_val = p[0].nodes[-1]
+                if isinstance(last_val, ShortcutNode):
+                    last_val = last_val.nodes[-1]
         if last_val.value is None:
             raise ValueError(f"Repeat cannot follow a jump. Given: {list(p)}")
         self._nodes += [copy.deepcopy(last_val) for i in range(repeat_num)]
 
     def _expand_multiply(self, p):
         self._nodes = self._get_last_node(p)
-        mult_str = p[1].lower().replace("m", "")
+        mult_str = p[1][:-1]
         mult_val = fortran_float(mult_str)
         self._num_node = ValueNode(mult_str, float, never_pad=True)
         if isinstance(p[0], ValueNode):
@@ -2251,11 +2254,15 @@ class ShortcutNode(ListNode):
             end = p.number_phrase.value
         else:
             if isinstance(p[0], ListNode):
-                begin = p[0].nodes[-1].value
+                last_val = p[0].nodes[-1]
+                if isinstance(last_val, ShortcutNode):
+                    last_val = last_val.nodes[-1]
+                begin = last_val.value
             else:
                 begin = p[0].value
             end = p.number_phrase.value
         self._nodes = self._get_last_node(p)
+        self._owns_start = len(self._nodes) > 0
         if begin is None:
             raise ValueError(f"Interpolates cannot follow a jump. Given: {list(p)}")
         match = self._num_finder.search(p[1])
@@ -2514,7 +2521,8 @@ class ShortcutNode(ListNode):
         begin = self._begin
         if self.type == Shortcuts.LOG_INTERPOLATE:
             begin = 10**begin
-        if self._can_use_last_node(leading_node, begin):
+        # a start node of our own is a separate value, so it can't be shared with the previous shortcut
+        if not self._owns_start and self._can_use_last_node(leading_node, begin):
             start = ""
             num_extra_nodes = 1
             if hasattr(self, "_has_pseudo_start"):
