@@ -73,6 +73,10 @@ type:
      - ``F6``, ``*F6``
      - :class:`~montepy.EnergyDepositionTally`
      - ``montepy.F6Tally``
+   * - Collision heating
+     - ``+F6``
+     - :class:`~montepy.CollisionHeatingTally`
+     - ``montepy.PlusF6Tally``
    * - Fission energy deposition
      - ``F7``, ``*F7``
      - :class:`~montepy.FissionEnergyDepositionTally`
@@ -85,10 +89,6 @@ type:
      - ``*F8``
      - :class:`~montepy.DetectorEnergyDepositionTally`
      -
-   * - Collision heating
-     - ``+F6``
-     - :class:`~montepy.CollisionHeatingTally`
-     - ``montepy.PlusF6Tally``
    * - Charge deposition
      - ``+F8``
      - :class:`~montepy.ChargeDepositionTally`
@@ -101,8 +101,8 @@ Detector (``F5``) tallies are not supported yet.
 They are read as plain data inputs, so they are kept and written back out unchanged,
 but they are not in :attr:`~montepy.MCNP_Problem.tallies`.
 
-The leading ``+`` on ``+F6``/``+F8`` is a real, separate MCNP tally variant, not
-a typo of the plain card: ``+F6`` (collision heating) and ``+F8`` (charge
+The leading ``+`` on ``+F6``/``+F8`` is a separate MCNP tally variant:
+``+F6`` (collision heating) and ``+F8`` (charge
 deposition) score a different physical quantity than plain ``F6``/``F8``, so
 MontePy treats them as distinct classes even though they share the same type
 digit.
@@ -145,21 +145,37 @@ The cells or surfaces a tally scores over are its geometry filter, exposed as
 
 This section covers flat cell/surface lists, where every entry is a
 :class:`~montepy.data_inputs.tally.FlatGroup`.
-A ``FlatGroup`` knows the numbers it covers, and whether they form a single averaged
-bin or separate bins.
+A ``FlatGroup`` knows the cells or surfaces it covers, and whether they form a single
+averaged bin or separate bins.
 Repeated structures and lattices use the ``<``/``[...]``/``U=`` syntax instead, which
 produces :class:`~montepy.data_inputs.tally.PathGroup` entries; see
 `Universe and Lattice Paths`_ below.
+
+A group gives you the objects it covers through three attributes:
+
+* :attr:`~montepy.data_inputs.tally.FlatGroup.cells` is the list of
+  :class:`~montepy.Cell` objects, or ``None`` if the group isn't made of cells.
+* :attr:`~montepy.data_inputs.tally.FlatGroup.surfaces` is the list of
+  :class:`~montepy.Surface` objects, or ``None`` if the group isn't made of surfaces.
+* :attr:`~montepy.data_inputs.tally.FlatGroup.cells_or_surfaces` is whichever of the
+  two applies.
+
+Prefer ``cells`` and ``surfaces``: they say what you are getting, and a ``None`` tells
+you that you asked a surface tally for cells.
+``cells_or_surfaces`` is for code that handles both kinds of tally.
+All three need the tally to be part of a problem, so that its numbers can be
+resolved to objects; a tally that was only just parsed from a string, or
+built by hand, has to be appended to ``problem.tallies`` first.
 
 In the simple, "flat" case, a tally just lists cells or surfaces one after another,
 and MCNP creates a separate bin for each one:
 
 .. testcode::
 
+   # f4:n 1 2 3
    tally = problem.tallies[4]
    for group in tally.groups:
-       cells = [problem.cells[n] for n in group.old_numbers]
-       print(*cells, group.is_grouped)
+       print(*group.cells, group.is_grouped)
 
 .. testoutput::
 
@@ -169,28 +185,34 @@ and MCNP creates a separate bin for each one:
 
 ``is_grouped`` is ``False`` for every group here, since ``F4:n 1 2 3`` has no
 parentheses: each of cells 1, 2, and 3 gets its own separate bin.
-``old_numbers`` is looked up by hand above to show how it relates to the raw numbers
-on the card, but once a group is linked to a problem you don't need to do that
-lookup yourself: :attr:`~montepy.data_inputs.tally.FlatGroup.cells_or_surfaces` gives
-you the resolved objects directly.
+This is a cell tally, so ``surfaces`` is ``None`` for these groups.
+For a surface tally it is the other way around:
 
-.. doctest::
+.. testcode::
 
-   >>> [c.number for c in tally.groups[0].cells_or_surfaces]
-   [1]
+   # f2:p 1005
+   surface_tally = problem.tallies[2]
+   group = surface_tally.groups[0]
+   print(*group.surfaces)
+   print(group.cells)
+
+.. testoutput::
+
+   RightCircularCylinder: 1005
+   None
+
 
 Wrapping cells or surfaces in parentheses instead unions them into a single bin,
-averaged for normalized tally types like ``F2``/``F4``/``F6``/``F7``, or summed for
-``F1``/``F8``, rather than reported separately.
+averaged, or summed, depending on the tally score, rather than reported separately.
 A tally can mix flat entries and multiple parenthesized groups on the same input, and
 each group becomes its own entry in ``groups``:
 
 .. testcode::
 
-   grouped = montepy.CellFluxTally("f14:n (1 2) (3)")
+   grouped = montepy.CellFluxTally("f44:n (1 2) (3)")
+   problem.tallies.append(grouped)
    for group in grouped.groups:
-       cells = [problem.cells[n] for n in group.old_numbers]
-       print(*cells, group.is_grouped)
+       print(*group.cells, group.is_grouped)
 
 .. testoutput::
 
@@ -199,25 +221,25 @@ each group becomes its own entry in ``groups``:
 
 Notice that the second group here still has ``is_grouped`` set to ``True``, even
 though it only covers a single cell: what matters is whether the parentheses were
-there, not how many cells are inside them. Without the parentheses, ``f14:n 1 2 3``
+there, not how many cells are inside them. Without the parentheses, ``f44:n 1 2 3``
 would instead produce three separate, ungrouped bins, exactly like the cell flux
 tally example above.
 To build flat and grouped bins like these from scratch instead of reading them from
 an existing tally, see `Building Tallies from Scratch`_ below.
 
 Parentheses can also nest, e.g. ``(1 (2 3))``.
-:attr:`~montepy.data_inputs.tally.FlatGroup.old_numbers` covers every cell in a group,
-including the nested ones, while
+``cells`` covers every cell in a group, including the nested ones, while
 :attr:`~montepy.data_inputs.tally.FlatGroup.members` keeps the structure, with each
 nested union as its own :class:`~montepy.data_inputs.tally.FlatGroup`:
 
 .. doctest::
 
-   >>> nested = montepy.CellFluxTally("f24:n (1 (2 3))")
-   >>> nested.groups[0].old_numbers
-   [1, 2, 3]
-   >>> nested.groups[0].members
-   [1, FlatGroup([2, 3], grouped=True)]
+   >>> nested = montepy.CellFluxTally("f54:n (1 (2 3))")
+   >>> problem.tallies.append(nested)
+   >>> print(*nested.groups[0].cells)
+   Cell: 1 Cell: 2 Cell: 3
+   >>> nested.groups[0].members[1]
+   FlatGroup([2, 3], grouped=True)
 
 For cell tallies, :attr:`~montepy.CellTally.cells` gives you the
 flattened, deduplicated set of every cell the tally touches, across all of its groups.
@@ -249,10 +271,10 @@ Instead it's a separate flag, :attr:`~montepy.Tally.include_total`:
 
 .. testcode::
 
-   totaled = montepy.CellFluxTally("f24:n (1 2) (3) T")
+   totaled = montepy.CellFluxTally("f64:n (1 2) (3) T")
+   problem.tallies.append(totaled)
    for group in totaled.groups:
-       cells = [problem.cells[n] for n in group.old_numbers]
-       print(*cells, group.is_grouped)
+       print(*group.cells, group.is_grouped)
    print(totaled.include_total)
 
 .. testoutput::
@@ -302,19 +324,19 @@ If you want a group of cells averaged into a single bin instead, use
 .. doctest::
 
    >>> for group in new_tally.groups:
-   ...     print(group.old_numbers, group.is_grouped)
-   [1] False
-   [2] False
-   [1, 3] True
+   ...     print(*group.cells, group.is_grouped)
+   Cell: 1 False
+   Cell: 2 False
+   Cell: 1 Cell: 3 True
 
 A list (or tuple) given to ``add_group`` is a nested union:
 
 .. doctest::
 
    >>> nested_tally = montepy.CellFluxTally(number=114)
-   >>> nested_tally.add_group(problem.cells[1], [problem.cells[2], problem.cells[3]])
-   >>> nested_tally.groups[0].old_numbers
-   [1, 2, 3]
+   >>> nested_tally.add_group(problem.cells[1], (problem.cells[2], problem.cells[3]))
+   >>> print(*nested_tally.groups[0].cells)
+   Cell: 1 Cell: 2 Cell: 3
    >>> nested_tally.groups[0].members[1]
    FlatGroup([2, 3], grouped=True)
 
@@ -333,9 +355,9 @@ no longer ``in`` the tally:
 
    >>> new_tally.remove_cell(problem.cells[2])
    >>> for group in new_tally.groups:
-   ...     print(group.old_numbers, group.is_grouped)
-   [1] False
-   [1, 3] True
+   ...     print(*group.cells, group.is_grouped)
+   Cell: 1 False
+   Cell: 1 Cell: 3 True
    >>> problem.cells[2] in new_tally.cells
    False
 
@@ -347,8 +369,8 @@ removed:
 
    >>> new_tally.remove_cell(problem.cells[1])
    >>> for group in new_tally.groups:
-   ...     print(group.old_numbers, group.is_grouped)
-   [3] True
+   ...     print(*group.cells, group.is_grouped)
+   Cell: 3 True
 
 A cell or surface that is only a containment (outer) level of a path isn't scored,
 so it isn't ``in`` the tally, and removing it raises
@@ -364,7 +386,7 @@ Scores and Filters
    "Score" and "filter" aren't MCNP terms.
    MontePy borrows this vocabulary from
    `OpenMC <https://docs.openmc.org/en/stable/>`_, since it's more general than
-   anything MCNP itself uses, and describes the same underlying concepts.
+   anything MCNP itself uses, and describes the same underlying concepts more intuitively.
    See `OpenMC's tallies user guide
    <https://docs.openmc.org/en/stable/usersguide/tallies.html>`_ for more on this
    terminology.
@@ -469,9 +491,16 @@ flux tally into a reaction rate, a heating rate, or similar.
 MontePy represents this as a :class:`~montepy.TallyMultiplier`,
 linked to its tally through :attr:`~montepy.Tally.multiplier`.
 
+The examples in this section follow one story.
+Tally 4 is a neutron flux tally.
+Suppose we want to know how much hydrogen and helium gas the iron (material 2) in those
+cells produces.
+That's the rate of the :math:`(n,p)` reaction (MT 103) plus the :math:`(n,\alpha)` reaction
+(MT 107), which is what ``FM4 (1.0 2 103:107)`` asks MCNP for.
+
 .. testcode::
 
-   fm = montepy.TallyMultiplier("fm4 (1.0 26 16 103)")
+   fm = montepy.TallyMultiplier("fm4 (1.0 2 103:107)")
    problem.tallies.append(fm)
 
 .. doctest::
@@ -497,6 +526,7 @@ being independently assignable, it has its own
 :func:`~montepy.TallyMultiplier.clone`, separate from
 :func:`~montepy.Tally.clone`: pass the tally to attach the clone to (it takes that
 tally's number), or omit it for a detached, unregistered copy.
+Here we reuse the gas production recipe on the cloned tally 14:
 
 .. testcode::
 
@@ -515,6 +545,7 @@ Each bin holds one or more
 :class:`~montepy.MultiplierSet` or
 :class:`~montepy.SpecialMultiplierSet` terms, and
 optionally an :class:`~montepy.AttenuatorSet`.
+Our gas production multiplier has one bin with one term: the iron term.
 
 .. testcode::
 
@@ -525,7 +556,7 @@ optionally an :class:`~montepy.AttenuatorSet`.
    >>> term.constant
    1.0
    >>> term.material
-   26
+   2
 
 Once a tally has a multiplier, its :attr:`~montepy.Tally.scores`
 switches from the generic default to a list of
@@ -536,61 +567,66 @@ reaction, and any attenuator) for every column of the tally's output.
 .. doctest::
 
    >>> tally.scores
-   [MultiplierScore(constant=1.0, material=26, reaction=ReactionExpression(Reaction(16), ReactionOperator.MULTIPLY, Reaction(103)), kind=None, attenuator=None)]
+   [MultiplierScore(constant=1.0, material=2, reaction=ReactionExpression(Reaction(103), ReactionOperator.ADD, Reaction(107)), kind=None, attenuator=None)]
 
 Building Reaction Expressions
 ------------------------------
 
-A reaction list on a tally multiplier input, like ``16 103`` in ``FM4 (1.0 26 16
-103)``, is really a small expression: multiply reaction 16 by reaction 103.
+Continuing the gas production example, the reaction list ``103:107`` in
+``FM4 (1.0 2 103:107)`` is really a small expression: add reaction 103 to reaction 107.
 Rather than making you build this out of strings, MontePy lets you write it as an
 actual Python expression, using ``*`` for multiply, ``+`` for add, and ``-`` for
 subtract.
 
 .. note::
 
-   Raw MT numbers like ``16`` are hard to read and easy to mistype.
+   Raw MT numbers like ``103`` are hard to read and easy to mistype.
    :class:`~montepy.Reaction` has named constants for the common ones, e.g.
-   ``Reaction.N_2N`` for MT 16; use those instead of ``Reaction(16)`` whenever a name
+   ``Reaction.N_P`` for MT 103; use those instead of ``Reaction(103)`` whenever a name
    is available.
    Raw numbers are still there for the reactions that don't have one.
 
 .. doctest::
 
    >>> from montepy import Reaction
-   >>> expr = Reaction.N_2N * Reaction.N_P
+   >>> expr = Reaction.N_P + Reaction.N_ALPHA
    >>> expr == term.reactions[0]
    True
    >>> fm.mcnp_str()
-   'fm4 (1.0 26 16 103)'
+   'fm4 (1.0 2 103:107)'
 
 That's exactly the reaction expression already attached to ``tally`` above, built by
 hand, matching the actual MCNP text of ``fm``.
-Python's own operator precedence already does the right thing for a longer list too,
-exactly like the MCNP manual says a reaction list should work, so you don't need to
-write unnecessary parentheses to get the correct grouping.
+Longer lists work the same way. If we also want deuteron production (MT 104),
+we can keep adding to the expression:
 
 .. doctest::
 
-   >>> bigger_expr = Reaction.N_2N * Reaction.N_P + Reaction.N_D
+   >>> bigger_expr = expr + Reaction.N_D
    >>> bigger_expr.left == expr
    True
    >>> bigger_expr.operator
    <ReactionOperator.ADD: ':'>
 
+Python's own operator precedence also does the right thing when you mix operators,
+exactly like the MCNP manual says a reaction list should work, so you don't need to
+write unnecessary parentheses to get the correct grouping.
+
 You can go one step further and build a whole
-:class:`~montepy.MultiplierSet` with ``&``, joining a
-material number to a reaction expression:
+:class:`~montepy.MultiplierSet` with ``&``, joining the iron
+:class:`~montepy.Material` from the problem to the reaction expression:
 
 .. doctest::
 
-   >>> built = 26 & Reaction.N_2N * Reaction.N_P
+   >>> iron = problem.materials[2]
+   >>> built = iron & expr
    >>> built == term
    True
    >>> fm.mcnp_str()
-   'fm4 (1.0 26 16 103)'
+   'fm4 (1.0 2 103:107)'
 
-You can scale the constant afterward with ``*``:
+You can scale the constant afterward with ``*``, for example to convert the
+result to a different unit:
 
 .. doctest::
 
@@ -599,20 +635,22 @@ You can scale the constant afterward with ``*``:
    1.5
 
 :class:`~montepy.AttenuatorSet` supports the same kind of
-chaining with ``&``, for building up multiple attenuating layers:
+chaining with ``&``, for building up multiple attenuating layers.
+Say we want to know the gas production behind a shield of iron (material 2) and then material 3,
+rather than in the bare cells. That adds an attenuator after the term:
 
 .. doctest::
 
    >>> from montepy import AttenuatorSet, AttenuatorLayer
-   >>> attenuator = AttenuatorSet(1.0, [AttenuatorLayer(26, 0.5)])
-   >>> attenuator = attenuator & AttenuatorLayer(27, 0.3, is_atom_density=False)
+   >>> attenuator = AttenuatorSet(1.0, [AttenuatorLayer(2, 0.5)])
+   >>> attenuator = attenuator & AttenuatorLayer(3, 0.3, is_atom_density=False)
    >>> len(attenuator.layers)
    2
-   >>> fm2 = montepy.TallyMultiplier("fm104:n (1.0 -1 26 0.5 27 -0.3)")
+   >>> fm2 = montepy.TallyMultiplier("fm104:n (1.0 -1 2 0.5 3 -0.3)")
    >>> attenuator == fm2.bins[0].attenuator
    True
    >>> fm2.mcnp_str()
-   'fm104:n (1.0 -1 26 0.5 27 -0.3)'
+   'fm104:n (1.0 -1 2 0.5 3 -0.3)'
 
 These operators build and compare :class:`~montepy.MultiplierSet`/
 :class:`~montepy.data_inputs.tally_multiplier.ReactionExpression` values, but a
@@ -622,6 +660,7 @@ wrap each term (and optional attenuator) in a
 :func:`~montepy.TallyMultiplier.add_bin` (and :func:`~montepy.TallyMultiplier.remove_bin`
 to take one back out). ``bins`` itself stays a read-only view, the same way ``groups``
 does for a :class:`~montepy.Tally`.
+To finish the story, here is the gas production multiplier for tally 4 built from scratch:
 
 .. testcode::
 
@@ -634,8 +673,6 @@ does for a :class:`~montepy.Tally`.
 
    >>> fm3.bins[0].terms[0] == built
    True
-   >>> fm3.mcnp_str()
-   'FM4 1.0 26 16 103 '
 
 Universe and Lattice Paths
 -----------------------------
@@ -655,14 +692,21 @@ innermost-to-outermost, e.g. "cell 2, inside cell 5":
 
 .. testcode::
 
-   simple_path = montepy.CellFluxTally("f104:n (2 < 5)")
+   simple_path = montepy.CellFluxTally("f74:n (2 < 5)")
+   problem.tallies.append(simple_path)
    for level in simple_path.groups[0].levels:
-       print(level.old_numbers)
+       print(*level.cells)
 
 .. testoutput::
 
-   [2]
-   [5]
+   Cell: 2
+   Cell: 5
+
+A ``PathGroup`` itself has
+:attr:`~montepy.data_inputs.tally.PathGroup.cells_or_surfaces`, which flattens every
+level together, and
+:attr:`~montepy.data_inputs.tally.PathGroup.inner_cells_or_surfaces`, which has just
+the innermost (scored) level.
 
 A level can narrow further with a lattice-element index in brackets
 (``[i j k]``), and a universe designator (``u=n``) can stand in for an entire level,
@@ -670,23 +714,24 @@ meaning "any cell in universe n":
 
 .. testcode::
 
-   path_tally = montepy.CellFluxTally("f114:n (u=1 < 2[0 0 0] < 5)")
+   path_tally = montepy.CellFluxTally("f84:n (u=350 < 2[0 0 0] < 5)")
+   problem.tallies.append(path_tally)
    for level in path_tally.groups[0].levels:
-       print(level.old_numbers, level.universe_spec)
+       print(*(level.cells or []), level.universe_spec)
 
 .. testoutput::
 
-   [] 1
-   [2] None
-   [5] None
+   Universe: 350
+   Cell: 2 None
+   Cell: 5 None
 
-The first level has no cell number at all, just a universe designator
-(``u=1``), meaning "any cell in universe 1".
+The first level has no cells at all (``cells`` is ``None``), just a universe designator
+(``u=350``), meaning "any cell in universe 350".
 The second level narrows that down to lattice element ``[0 0 0]`` of cell 2, and the
 third level says that whole path has to live inside cell 5.
 That lattice element is available directly through
 :attr:`~montepy.data_inputs.tally.FlatGroup.lattice_indices`, parallel to
-``old_numbers``, as a list of :class:`~montepy.data_inputs.tally.LatticeIndex`:
+``cells``, as a list of :class:`~montepy.data_inputs.tally.LatticeIndex`:
 
 .. doctest::
 
@@ -706,9 +751,9 @@ You can also build a path group from scratch with
 .. doctest::
 
    >>> for level in pg.levels:
-   ...     print(level.old_numbers)
-   [1]
-   [2]
+   ...     print(*level.cells)
+   Cell: 1
+   Cell: 2
 
 ``inside`` works on a path read from an input too, adding a new outermost level:
 
@@ -717,10 +762,34 @@ You can also build a path group from scratch with
    >>> path_tally.groups[0].inside(problem.cells[3])
    PathGroup(...)
    >>> path_tally.mcnp_str()
-   'f114:n (u=1 < 2[0 0 0] < 5 < 3)'
+   'f84:n (u=350 < 2[0 0 0] < 5 < 3)'
 
 References
 ----------
 
-* :manual63:`5.9.1`
-* :manual63:`5.9.7`
+Tallies (``F``):
+
+.. mcnp-manuals::
+
+   :632: 5.9.1
+   :631: 5.9.1
+   :63: 5.9.1
+   :62: 235
+   :4c: 329
+   :4b: 291
+   :3a: 228
+   :2: 152
+   :1: 29
+
+Tally multipliers (``FM``):
+
+.. mcnp-manuals::
+
+   :632: 5.9.7
+   :631: 5.9.7
+   :63: 5.9.7
+   :62: 264
+   :4c: 342
+   :4b: 303
+   :3a: 236
+   :2: 156

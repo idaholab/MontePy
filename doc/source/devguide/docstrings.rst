@@ -198,7 +198,7 @@ Here is the docstrings for :class:`~montepy.cell.Cell`.
         number : int
             The number to set for this object.
         """
-        
+
         # snip
 
         def __init__(

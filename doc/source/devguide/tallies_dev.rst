@@ -9,10 +9,11 @@ Every kind of MCNP tally is a :class:`~montepy.TallyType`, identified by its mne
 of its number, and its modifier (``+``, ``*``, or none), e.g. ``*F4``.
 Each kind of tally that scores a different quantity is its own subclass of
 :class:`~montepy.Tally`, e.g. :class:`~montepy.CellEnergyFluxTally` for ``*F4``.
-Kinds that only differ in units share a class: ``F6`` and ``*F6`` (MeV/g or jerks/g) are both an
+Kinds that only differ in units share a class.
+For example, ``F6`` and ``*F6`` (MeV/g vs. jerks/g) are both an
 :class:`~montepy.EnergyDepositionTally`.
 
-How much work a new tally type is depends on its syntax:
+How much work a new tally type is to implement depends on its syntax:
 
 * one that scores over cells or surfaces like the existing ``F`` tallies only needs a
   ``TallyType``, a class, and registering it;
@@ -22,7 +23,7 @@ How much work a new tally type is depends on its syntax:
 Adding a Cell or Surface Tally Type
 ------------------------------------
 
-#. **Add the** :class:`~montepy.TallyType` **member** in ``montepy/data_inputs/tally_type.py``,
+#. Add the :class:`~montepy.TallyType` member in ``montepy/data_inputs/tally_type.py``,
    with its units in ``_UNITS``. Every member must have units; a test checks this.
 
    .. code-block:: python
@@ -30,10 +31,10 @@ Adding a Cell or Surface Tally Type
        CELL_ENERGY_FLUX = _TallyKey("F", 4, "*")
        """.. versionadded:: 2.1.0"""
 
-#. **Add a** :class:`~montepy.Score` **member**, if it reports a quantity no existing score
+#. Add a :class:`~montepy.Score` member, if it scores a quantity no existing score
    describes. This is what :attr:`~montepy.Tally.scores` reports when there is no multiplier.
 
-#. **Subclass** :class:`~montepy.CellTally` **or** :class:`~montepy.SurfaceTally`, and set its class
+#. Subclass :class:`~montepy.CellTally` * or* :class:`~montepy.Surfa ceTally`, and set its class
    attributes:
 
    .. code-block:: python
@@ -112,21 +113,7 @@ Methods to Implement
 The base class assumes a tally's data is its list of scoring bins
 (:attr:`~montepy.Tally.groups`). Override these for the new data:
 
-``_init_blank``
-    Call ``super()._init_blank()``, then set the default values of the new data.
-``_parse_tally_body``
-    Parse the new data from ``self._tree``. The base implementation parses the scoring bins and the
-    total flag.
-``_update_values``
-    Write the new data back into ``self._tree`` before it is formatted. The base implementation
-    writes the classifier's modifier, the scoring bins, and the total flag.
-``_generate_default_tree``
-    If a new tally's default tree should have a different ``"data"`` node.
-``__contains__``
-    What ``in`` means for the new tally, if anything.
-``link_to_problem``
-    If the new data refers to other objects in the problem, such as cells or materials. Call
-    ``super().link_to_problem(problem, deepcopy=deepcopy)`` first.
+
 ``_tally_category``
     :meth:`~montepy.Tally.clone_as` only converts between tallies of the same category: the
     classes listed in ``Tally._tally_category``. Add the new base class there if its subclasses
