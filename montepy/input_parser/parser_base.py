@@ -299,7 +299,11 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         """
         sequence = p.shortcut_sequence
         if len(p) == 2:
-            sequence.end_padding = p.padding
+            # adjacent shortcuts come back as a plain ListNode; the padding belongs to the last one
+            if not isinstance(sequence, syntax_node.ShortcutNode):
+                sequence.nodes[-1].end_padding = p.padding
+            else:
+                sequence.end_padding = p.padding
         return sequence
 
     @_("NULL", "NULL padding")

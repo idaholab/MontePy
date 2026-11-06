@@ -28,8 +28,10 @@ MontePy Changelog
 * Added links to sections of all almost all MCNP manuals when practical (:issue:`413`).
 
 
+1.6 Releases
+============
 
-1.6.0b1
+#Next Version#
 --------------
 
 **Features Added**
@@ -40,6 +42,18 @@ MontePy Changelog
 **Performance Improvement**
 
 * Add just-in-time parsing which can significantly improve performance for working with large models under some circumstances (:issue:`529`).
+* Added :meth:`~montepy.numbered_object_collection.NumberedObjectCollection.get_by_comment` to find numbered objects by comment text or regular expression (:issue:`982`).
+
+**Bugs Fixed**
+
+* Fixed ``change_to_ascii`` raising ``UnicodeEncodeError`` on U+0080 instead of stripping it (:issue:`1018`).
+* Fixed adjacent shortcuts losing padding, failing to parse, or changing values when written back (:issue:`1037`).
+* Fixed floating point multiply shortcuts (e.g., ``1.5m``, ``.5m``, ``1e3m``, or ``1+3m``) failing to parse (:issue:`1019`).
+* Fixed ``fortran_float`` failing on an exponent after a trailing decimal point, such as ``1.-3`` (:pull:`1036`).
+
+**Documentation**
+
+* Added links to sections of all almost all MCNP manuals when practical (:issue:`413`).
 
 
 1.5 Releases

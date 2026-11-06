@@ -60,6 +60,21 @@ class Importance(CellModifierInput):
 
         Added ``jit_parse`` parameter
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632: 5.12.1
+       :631: 5.12.1
+       :63: 5.12.1
+       :62: 343
+       :4c: 287
+       :4b: 256
+       :3a: 193
+       :2: 138
+       :1: 22
+
     Parameters
     ----------
     input : Input | str

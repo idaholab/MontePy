@@ -31,6 +31,18 @@ class LatticeInput(CellModifierInput):
 
         Added ``jit_parse`` parameter
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.5.5.2
+       :631sub: 5.5.5.2
+       :63sub: 5.5.5.2
+       :62: 84
+       :4c: 282
+       :4b: 252
+
     Parameters
     ----------
     input : Input | str

@@ -374,6 +374,21 @@ class DataInput(DataInputAbstract):
 
         Added ``jit_parse`` parameter
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sec: 5.4
+       :631sec: 5.4
+       :63sec: 5.4
+       :62: 74
+       :4c: 276
+       :4b: 246
+       :3a: 191
+       :2: 136
+       :1: 20
+
     Parameters
     ----------
     input : Input | str

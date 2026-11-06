@@ -262,6 +262,18 @@ def test_volumes_for_only_some_cells():
     assert is_set == reference
 
 
+@pytest.mark.parametrize("mult, second", [("1.5m", 3.0), (".5m", 1.0)])
+def test_volume_decimal_multiply(mult, second):
+    cells = [montepy.Cell(Input([f"{i + 1} 0 -1"], BlockType.CELL)) for i in range(2)]
+    prob = MCNP_Problem(None)
+    prob.cells = cells
+    vol_card = Input([f"vol 2 {mult}"], BlockType.DATA)
+    vol_data = volume.Volume(vol_card, in_cell_block=False)
+    vol_data.link_to_problem(prob)
+    vol_data.push_to_cells()
+    assert [cell.volume for cell in cells] == [2.0, second]
+
+
 def test_volume_setter():
     vol = 1.0
     list_node = syntax_node.ListNode("data")

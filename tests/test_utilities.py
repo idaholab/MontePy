@@ -29,6 +29,8 @@ def test_normal_float_parse(test_string, expected):
         ("1.2+3", 1.2e3),
         ("1.2-3", 1.2e-3),
         ("-2-3", -2.0e-3),
+        ("1.-3", 1.0e-3),
+        ("-1.+3", -1.0e3),
     ],
 )
 def test_stupid_float_parse(test_string, expected):

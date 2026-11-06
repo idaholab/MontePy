@@ -134,7 +134,6 @@ The PDF URLs are defined once in ``doc/source/conf.py`` (``MCNP_MANUAL_PDFS``) a
    For the older manuals that only link by page, the number must be the *physical* page index of the PDF (what
    a PDF viewer opens for ``#page=N``), not the page number printed on the page.
 
-
 Example
 -------
 

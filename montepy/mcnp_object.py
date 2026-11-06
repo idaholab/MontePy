@@ -406,11 +406,11 @@ class MCNP_Object(ABC, metaclass=_ExceptionContextAdder):
     def mcnp_str(self, mcnp_version: ty.VersionType = None) -> str:
         """Returns a string of this input as it would appear in an MCNP input file.
 
-        ..versionadded:: 1.0.0
+        .. versionadded:: 1.0.0
 
         Parameters
         ----------
-        mcnp_version: ty.VersionType
+        mcnp_version: tuple[int]
             The tuple for the MCNP version that must be exported to.
 
         Returns
