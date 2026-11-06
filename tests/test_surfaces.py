@@ -1452,3 +1452,63 @@ def test_find_duplicate_surfaces():
 def test_surface_deprecation(Class):
     with pytest.warns(DeprecationWarning):
         Class(number=5)
+
+
+def test_surface_cells_skips_full_parse_of_non_referencing_cells():
+    # Surface.cells used to scan every cell in the problem and force a
+    # full parse of each one just to check its surfaces -- catastrophic
+    # for a problem with many still-JIT cells. It should now pre-filter
+    # with a cheap raw-text search first, and only fully parse cells that
+    # could plausibly match.
+    problem = montepy.read_input("tests/inputs/test_tally.imcnp")
+    c1 = problem.cells[1]  # -1000 -- doesn't reference surface 1005
+    assert not c1.fully_parsed
+
+    found = {c.number for c in problem.surfaces[1005].cells}
+
+    assert not c1.fully_parsed
+    assert found == {2, 3}
+
+
+def test_surface_cells_prefilter_uses_only_old_number():
+    # Unparsed cells refer to surfaces by the numbers they were read with,
+    # so a cell whose text only has a renumbered surface's new number isn't
+    # parsed to check it.
+    problem = montepy.read_input("tests/inputs/test_universe.imcnp")
+    surface = problem.surfaces[1000]
+    surface.number = 99  # cells 5 and 99 have "99", but not surface 99
+    list(surface.cells)
+    assert not problem.cells[5].fully_parsed
+    assert not problem.cells[99].fully_parsed
+
+
+def test_surface_cells_prefilter_new_surface_parses_nothing():
+    # No unparsed cell can refer to a surface that wasn't read from the input.
+    problem = montepy.read_input("tests/inputs/test_universe.imcnp")
+    surface = montepy.surfaces.CylinderOnAxis(number=5)
+    problem.surfaces.append(surface)
+    assert list(surface.cells) == []
+    assert not any(cell.fully_parsed for cell in problem.cells)
+
+
+@pytest.mark.parametrize("jit_parse", [True, False])
+def test_renumbered_surface_still_found_in_cells(jit_parse):
+    # Regression test: a cell's surfaces were linked to the problem, so ``in``
+    # trusted their number cache, which still had the surface under its old
+    # number, and Surface.cells found nothing after a renumber.
+    problem = montepy.read_input(
+        "tests/inputs/test_universe.imcnp", jit_parse=jit_parse
+    )
+    surface = problem.surfaces[1000]
+    surface.number = 99
+    assert {c.number for c in surface.cells} == {1, 3, 11}
+    assert surface in problem.cells[1].surfaces
+
+
+def test_renumbered_surface_in_standalone_cell():
+    surface = montepy.surfaces.CylinderOnAxis(number=7)
+    surface.radius = 1.0
+    cell = montepy.Cell(number=1)
+    cell.geometry = -surface
+    surface.number = 8
+    assert surface in cell.surfaces

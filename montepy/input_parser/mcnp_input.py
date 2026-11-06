@@ -203,7 +203,7 @@ class Input(ParsingNode):
 
         Parameters
         ----------
-        lexer_class : type, optional
+        lexer_class : type[MCNP_Lexer], optional
             If provided, overrides the default lexer selection.
 
         Returns

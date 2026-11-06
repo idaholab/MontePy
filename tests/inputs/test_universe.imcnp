@@ -21,6 +21,12 @@ c
 5 0 
       #99
       imp:n,p=3 fill=1 (1 0.0 0.0)
+c Cell 11 is the only cell whose text has 11, for the reverse-lookup
+c pre-filter tests.
+11 0
+      -1000
+      imp:n,p=0
+      u=11
 c foo end comment
 
 C surfaces
@@ -52,7 +58,7 @@ ksrc 0 0 0
 kcode 100000 1.000 50 1050
 phys:p j 1 2j 1
 mode n p
-vol NO 2J 1 1.5 J
+vol NO 2J 1 1.5 2J
 E0 1 10 100
 
 

@@ -15,6 +15,18 @@ from montepy.utilities import *
 class LatticeInput(CellModifierInput):
     """Object to handle the inputs from ``LAT``.
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.5.5.2
+       :631sub: 5.5.5.2
+       :63sub: 5.5.5.2
+       :62: 84
+       :4c: 282
+       :4b: 252
+
     .. versionchanged:: 1.6.0b1
 
         Added ``jit_parse`` parameter

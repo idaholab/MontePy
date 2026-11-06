@@ -7,6 +7,8 @@ from montepy.exceptions import *
 import montepy.types as ty
 
 import functools
+
+from montepy import _wrapping
 import re
 
 """
@@ -85,9 +87,10 @@ def make_prop_val_node(
     hidden_param : str
         The string representing the parameter name of the internally
         stored ValueNode.
-    types : type, tuple
+    types : type | tuple[type, ...]
         the acceptable types for the settable, which is passed to
-        isinstance. If an empty tuple will be type(self).
+        isinstance. If an empty tuple, the type of the object the
+        property is on.
     validator : collections.abc.Callable
         A validator function to run on values before setting. Must
         accept func(self, value).
@@ -99,7 +102,7 @@ def make_prop_val_node(
     def decorator(func):
         @property
         @needs_full_ast
-        @functools.wraps(func)
+        @_wrapping.wraps(func)
         def getter(self):
             result = func(self)
             if result is not None:
@@ -160,9 +163,10 @@ def make_prop_pointer(
     hidden_param : str
         The string representing the parameter name of the internally
         stored ValueNode.
-    types : type, tuple
+    types : type | tuple[type, ...]
         the acceptable types for the settable, which is passed to
-        isinstance, if an empty tuple is provided the type will be self.
+        isinstance. If an empty tuple, the type of the object the
+        property is on.
     validator : collections.abc.Callable
         A validator function to run on values before setting. Must
         accept func(self, value).
@@ -173,7 +177,7 @@ def make_prop_pointer(
 
     def decorator(func):
         @property
-        @functools.wraps(func)
+        @_wrapping.wraps(func)
         def getter(self):
             if not hasattr(self, hidden_param) and hasattr(self, "_not_parsed"):
                 self.full_parse()
@@ -217,7 +221,7 @@ def needs_full_ast(func):
     Calling a marked function will lead to a full (abstract) parse.
     """
 
-    @functools.wraps(func)
+    @_wrapping.wraps(func)
     def decorator(self, *args, **kwargs):
         if hasattr(self, "_not_parsed"):
             self.full_parse()
@@ -251,19 +255,19 @@ def prop_pointer_from_problem(
 
     parameters
     ----------
-    hidden_param: str
+    hidden_param : str
        the _private attribute where the object is stored.
-    id_param: str
+    id_param : str
        the parameter of the ID number for the object to pull.
-    prob_collection_param: str
+    prob_collection_param : str
        the parameter of the problem of the collection, from which to grab this object from.
-    types: type[type]
+    types : type | tuple[type, ...], optional
        the allowed types for making this property settable.
-    base_type: type
+    base_type : type, optional
        the type to coerce all other types to.
-    validator: Callable
+    validator : Callable, optional
        A function to call on setting for additional validation
-    deletable:
+    deletable : bool
         Whether deletion should be allowed.
     raises
     ------
@@ -273,7 +277,7 @@ def prop_pointer_from_problem(
 
     def decorator(func):
         @make_prop_pointer(hidden_param, types, base_type, validator, deletable)
-        @functools.wraps(func)
+        @_wrapping.wraps(func)
         def pull_from_problem(self):
             if hasattr(self, hidden_param) and getattr(self, hidden_param) is not None:
                 return func(self)
@@ -319,19 +323,19 @@ def prop_pointer_collect_from_problem(
 
     parameters
     ----------
-    hidden_param: str
+    hidden_param : str
        the _private attribute where the object is stored.
-    id_param: str
+    id_param : str
        the parameter of the ID number for the object to pull.
-    prob_collection_param: str
+    prob_collection_param : str
        the parameter of the problem of the collection, from which to grab this object from.
-    types: type[type]
+    types : type | tuple[type, ...], optional
        the allowed types for making this property settable.
-    base_type: type
+    base_type : type, optional
        the type to coerce all other types to.
-    validator: Callable
+    validator : Callable, optional
        A function to call on setting for additional validation
-    deletable:
+    deletable : bool
         Whether deletion should be allowed.
     raises
     ------
@@ -341,7 +345,7 @@ def prop_pointer_collect_from_problem(
 
     def decorator(func):
         @make_prop_pointer(hidden_param, types, base_type, validator, deletable)
-        @functools.wraps(func)
+        @_wrapping.wraps(func)
         def pull_from_problem(self):
             if hasattr(self, hidden_param) and getattr(self, hidden_param) is not None:
                 return func(self)
