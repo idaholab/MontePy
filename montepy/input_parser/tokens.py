@@ -125,7 +125,7 @@ class MCNP_Lexer(Lexer):
         self.lineno += t.value.count("\n")
         return t
 
-    @_(r"\d{4,6}\.(\d{2}[a-ln-z]|\d{3}[a-z]{2})")
+    @_(r"\d{4,6}\.(\d{2}[a-ln-z]|\d{3}[a-z]{2})(?![0-9+-])")
     def ZAID(self, t):
         """A ZAID isotope definition in the MCNP format.
 
@@ -133,6 +133,8 @@ class MCNP_Lexer(Lexer):
 
         ``1001.50m`` is not matched, because it is also a multiply shortcut.
         It is lexed as ``NUM_MULTIPLY``, and the parser decides what it is.
+        The look-ahead stops the ``e`` of a number such as ``1234.56e-3``
+        from being taken as an electron library.
         """
         return t
 
