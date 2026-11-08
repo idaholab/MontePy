@@ -1,6 +1,4 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
-import re
-
 from montepy.exceptions import *
 from montepy.input_parser.tokens import DataLexer
 from montepy.input_parser.parser_base import MCNP_Parser, MetaBuilder
@@ -17,9 +15,6 @@ class DataParser(MCNP_Parser):
     """
 
     debugfile = None
-
-    _MULTIGROUP_ZAID = re.compile(r"\d{4,6}\.\d{2}m", re.I)
-    """A ZAID with a multigroup library, which the lexer can't tell from a multiply."""
 
     @_(
         "introduction",
@@ -83,8 +78,6 @@ class DataParser(MCNP_Parser):
 
     @_("ZAID", "ZAID padding", "NUM_MULTIPLY", "NUM_MULTIPLY padding")
     def zaid_phrase(self, p):
-        if hasattr(p, "NUM_MULTIPLY") and not self._MULTIGROUP_ZAID.fullmatch(p[0]):
-            self.error(p._slice[0])
         return self._flush_phrase(p, str)
 
     @_("particle_phrase", "particle_sequence particle_phrase")

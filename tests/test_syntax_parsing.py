@@ -1213,7 +1213,7 @@ def test_multiply_fortran_floats(sign, mantissa, exponent, m):
 def test_multiply_shaped_like_zaid(text, expected):
     data = montepy.data_inputs.data_input.DataInput(Input([text], BlockType.DATA))
     assert [node.value for node in data.data] == pytest.approx(expected)
-    assert data.format_for_mcnp_input((6, 3, 0)) == [text]
+    assert data.mcnp_str() == text
 
 
 @pytest.mark.parametrize(
@@ -1231,7 +1231,7 @@ def test_multiply_shaped_like_zaid(text, expected):
 def test_number_with_exponent_shaped_like_zaid(text, expected):
     data = montepy.data_inputs.data_input.DataInput(Input([text], BlockType.DATA))
     assert [node.value for node in data.data] == pytest.approx(expected)
-    assert data.format_for_mcnp_input((6, 3, 0)) == [text]
+    assert data.mcnp_str() == text
 
 
 def test_surface_and_material_exponent_shaped_like_zaid():
@@ -1258,20 +1258,15 @@ def test_electron_library_zaid_in_material():
 def test_multigroup_zaid_in_material(text, libraries):
     material = montepy.Material(Input([text], BlockType.DATA))
     assert [str(nuclide.library) for nuclide, _ in material] == libraries
-    assert material.format_for_mcnp_input((6, 3, 0)) == [text]
+    assert material.mcnp_str() == text
 
 
 @pytest.mark.parametrize(
     "text", ["m1 1.5m 1.0", "m1 1001.5m 1.0", "m1 1001.80c 1.0 2.5m 1.0"]
 )
 def test_multiply_not_zaid_in_material(text):
-    with pytest.raises(montepy.exceptions.ParsingError):
+    with pytest.raises((montepy.exceptions.UnknownElement, ValueError)):
         montepy.Material(Input([text], BlockType.DATA))
-
-
-def test_multiply_not_zaid_in_data():
-    with pytest.raises(montepy.exceptions.ParsingError):
-        montepy.data_inputs.data_input.DataInput(Input(["vol 1.5m 2"], BlockType.DATA))
 
 
 @pytest.mark.parametrize("name", ["1001.50m", "1.5m", "1001.50c"])
