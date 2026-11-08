@@ -6,19 +6,15 @@
 MontePy Changelog
 *****************
 
-Next release
-------------
-**Features Added**
-* Added :meth:`~montepy.numbered_object_collection.NumberedObjectCollection.get_by_comment` to find numbered objects by comment text or regular expression (:issue:`982`).
-
-
-1.5 Releases
+1.6 Releases
 ============
 
 #Next Version#
 --------------
+
 **Features Added**
 
+* Added :meth:`~montepy.numbered_object_collection.NumberedObjectCollection.get_by_comment` to find numbered objects by comment text or regular expression (:issue:`982`).
 * Added ``HalfSpace.mcnp_str`` and ``HalfSpace.format_for_mcnp_input`` to print just a cell's geometry as it would appear in an MCNP input (:issue:`942`).
 
 **Bugs Fixed**
@@ -27,6 +23,15 @@ Next release
 * Fixed adjacent shortcuts losing padding, failing to parse, or changing values when written back (:issue:`1037`).
 * Fixed floating point multiply shortcuts (e.g., ``1.5m``, ``.5m``, ``1e3m``, or ``1+3m``) failing to parse (:issue:`1019`).
 * Fixed ``fortran_float`` failing on an exponent after a trailing decimal point, such as ``1.-3`` (:pull:`1036`).
+
+**Documentation**
+
+* Added links to sections of all almost all MCNP manuals when practical (:issue:`413`).
+
+
+1.5 Releases
+============
+
 
 1.5.0
 --------------
