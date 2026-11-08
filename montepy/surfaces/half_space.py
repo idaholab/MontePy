@@ -165,21 +165,6 @@ class HalfSpace:
             sides.append(None)
         return HalfSpace(sides[0], node.operator, sides[1], node)
 
-    def _link_to_cell(self, cell):
-        """Links this HalfSpace and all of its children to the parent cell.
-
-        Unlike :func:`update_pointers` this does not resolve any dividers.
-
-        Parameters
-        ----------
-        cell : Cell
-            the cell this HalfSpace is tied to.
-        """
-        self._cell = cell
-        self.left._link_to_cell(cell)
-        if self.right is not None:
-            self.right._link_to_cell(cell)
-
     def update_pointers(self, cells, surfaces, cell):
         """Update pointers, and link this object to other objects in the problem.
 
@@ -807,9 +792,6 @@ class UnitHalfSpace(HalfSpace):
         else:
             side = not node.is_negative
         return UnitHalfSpace(node.value, side, is_cell, node)
-
-    def _link_to_cell(self, cell):
-        self._cell = cell
 
     def update_pointers(self, cells, surfaces, cell):
         self._cell = cell
