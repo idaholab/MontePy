@@ -15,6 +15,7 @@ MontePy Changelog
 **Features Added**
 
 * Added :meth:`~montepy.numbered_object_collection.NumberedObjectCollection.get_by_comment` to find numbered objects by comment text or regular expression (:issue:`982`).
+* Added ``HalfSpace.mcnp_str`` and ``HalfSpace.format_for_mcnp_input`` to print just a cell's geometry as it would appear in an MCNP input (:issue:`942`).
 
 **Bugs Fixed**
 
