@@ -142,6 +142,22 @@ class TestMaterial:
         ]:
             material = Material(line)
 
+    @pytest.mark.parametrize(
+        "line, lib_type, lib",
+        [
+            ("M1 1001 1.0 nlib=50m", "nlib", "50m"),
+            ("M1 1001 1.0 NLIB=50M", "nlib", "50M"),
+            ("M1 nlib = 00m 1001 1.0", "nlib", "00m"),
+            ("M1 1001.80c 1.0 pnlib=50m", "pnlib", "50m"),
+        ],
+    )
+    def test_material_multigroup_default_library(_, line, lib_type, lib):
+        material = Material(line)
+        assert material.default_libraries[lib_type] == Library(lib)
+        assert material.mcnp_str() == line
+        new_material = Material(material.mcnp_str())
+        assert new_material.default_libraries[lib_type] == Library(lib)
+
     def test_material_validator(_):
         material = Material()
         with pytest.raises(montepy.exceptions.IllegalState):

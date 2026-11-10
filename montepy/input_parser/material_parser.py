@@ -82,8 +82,11 @@ class MaterialParser(DataParser):
             {"classifier": p.classifier, "seperator": p.param_seperator, "data": p[2]},
         )
 
-    @_("NUMBER_WORD")
-    @_("NUMBER_WORD padding")
+    @_("NUMBER_WORD", "NUMBER_WORD padding", "NUM_MULTIPLY", "NUM_MULTIPLY padding")
     def library(self, p):
-        """A library name."""
+        """A library name.
+
+        A multigroup library such as ``50m`` is lexed as a multiply shortcut,
+        so ``NUM_MULTIPLY`` is taken here too.
+        """
         return self._flush_phrase(p, str)

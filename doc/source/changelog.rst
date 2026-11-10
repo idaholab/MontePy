@@ -24,6 +24,7 @@ MontePy Changelog
 * Fixed adjacent shortcuts losing padding, failing to parse, or changing values when written back (:issue:`1037`).
 * Fixed floating point multiply shortcuts (e.g., ``1.5m``, ``.5m``, ``1e3m``, or ``1+3m``) failing to parse (:issue:`1019`).
 * Fixed ``fortran_float`` failing on an exponent after a trailing decimal point, such as ``1.-3`` (:pull:`1036`).
+* Fixed multigroup default libraries in materials, such as ``nlib=50m``, failing to parse (:pull:`1046`).
 
 **Documentation**
 
