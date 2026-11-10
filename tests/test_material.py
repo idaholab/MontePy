@@ -89,6 +89,11 @@ class TestMaterial:
             ("H-1.80c", "plib", "80p"),
             ("H-1.80c", "hlib", None),
             ("H-1.80c", "alib", "24a"),
+            ("H-1", "nlib", "00c"),
+            ("H-1", "plib", "80p"),
+            ("H-1", "hlib", None),
+            ("H-1", "alib", "24a"),
+            ("1001", "nlib", "00c"),
         ],
     )
     def test_mat_get_nuclide_library(
