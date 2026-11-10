@@ -14,6 +14,18 @@ class UniverseInput(CellModifierInput):
     """Object to actually handle the ``U`` input in cells
     and data blocks.
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.5.5.1
+       :631sub: 5.5.5.1
+       :63sub: 5.5.5.1
+       :62: 82
+       :4c: 280
+       :4b: 250
+
     Parameters
     ----------
     input : Union[Input, str]
@@ -151,11 +163,20 @@ class UniverseInput(CellModifierInput):
         ret = []
         for cell in self._problem.cells:
             # force value update here with _tree_value
-            if cell._universe._tree_value.value == 0:
+            node = cell._universe._tree_value
+            if node.value == 0 and node._og_value is None:
                 # access ValueNode directly to avoid override with _tree_value
                 cell._universe._old_number._value = None
             ret.append(cell._universe._old_number)
         return ret
+
+    def _update_values(self):
+        if self.in_cell_block:
+            self._update_cell_values()
+        else:
+            new_vals = self._collect_new_values()
+            # reason for override; trailing jumps can't be dropped
+            self.data.update_with_new_values(new_vals, explicit_jumps=True)
 
     def merge(self, other):
         raise MalformedInputError(

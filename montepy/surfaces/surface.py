@@ -194,6 +194,21 @@ class _SurfaceClassFactory(_ExceptionContextAdder):
 class Surface(Numbered_MCNP_Object, metaclass=_SurfaceClassFactory):
     """Object to hold a single MCNP surface
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sec: 5.3
+       :631sec: 5.3
+       :63sec: 5.3
+       :62: 57
+       :4c: 266
+       :4b: 240
+       :3a: 185
+       :2: 131
+       :1: 16
+
     .. versionchanged:: 1.0.0
 
         Added number parameter
@@ -553,8 +568,8 @@ class Surface(Numbered_MCNP_Object, metaclass=_SurfaceClassFactory):
         ----------
         surfaces : Surfaces
             A Surfaces collection of the surfaces in the problem.
-        data_cards : list
-            the data_cards in the problem.
+        data_inputs : list
+            the data inputs in the problem.
         """
         if self.old_periodic_surface:
             try:

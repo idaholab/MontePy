@@ -2,6 +2,7 @@
 import copy
 from io import StringIO
 import re
+from hypothesis import given, strategies
 import pytest
 
 import montepy
@@ -9,11 +10,13 @@ from montepy.exceptions import *
 from montepy.input_parser import input_syntax_reader
 from montepy.input_parser.mcnp_input import Input, Jump, Message, ReadInput, Title
 from montepy.input_parser.block_type import BlockType
+from montepy.input_parser.tokens import CellLexer, DataLexer, MCNP_Lexer
 from montepy.input_parser.input_file import MCNP_InputFile
 from montepy.input_parser.parser_base import MCNP_Parser
 from montepy.input_parser.shortcuts import Shortcuts
 from montepy.input_parser import syntax_node
 from montepy.particle import Particle
+from montepy.utilities import fortran_float
 from montepy.exceptions import UndefinedBlock
 import warnings
 
@@ -981,7 +984,20 @@ tests = {
     "1 2R 2I 2.5": [1, 1, 1, 1.5, 2, 2.5],
     "1 R 2m": [1, 1, 2],
     "1 R R": [1, 1, 1],
+    # unofficial
+    "2 3m 2m 1": [2, 6, 12, 1],
+    "2 3m 2m 2r 1": [2, 6, 12, 12, 12, 1],
+    "2 3r 2m 2r 1": [2, 2, 2, 2, 4, 4, 4, 1],
+    "1 r 2m 2i 10": [1, 1, 2, 4.666667, 7.333333, 10],
+    "9 r 9 1i 27": [9, 9, 9, 18, 27],
     "1 2i 4 3m": [1, 2, 3, 4, 12],
+    # unofficial
+    "2 1.5m": [2, 3],
+    "2 .5m": [2, 1],
+    "2 -.5m 2.m": [2, -1, -2],
+    "2 1e3m": [2, 2000],
+    "2 1.5E-3M": [2, 0.003],
+    "2 1+3m": [2, 2000],
     # unofficial
     "1 i 3": [1, 2, 3],
     # unofficial
@@ -1115,6 +1131,9 @@ def test_shortcut_flatten(test, length, indices):
         ("1 5r 2m", "1 5r 2m"),
         ("1 r", "1 r"),
         ("1 r 2 2r", "1 r 2 2r"),
+        ("1 3m 2m 1", "1 3m 2m 1"),
+        ("1 3r 2m 2r 1", "1 3r 2m 2r 1"),
+        ("9 r 9 1i 27", "9 r 9 1i 27"),
         ("1 J 5 2R", "1 J 5 2R"),
         ("1 2i 5", "1 2i 5"),
         ("1 2ilog 5", "1 2ilog 5"),
@@ -1124,6 +1143,10 @@ def test_shortcut_flatten(test, length, indices):
         ("1 5M", "1 5M"),
         ("1 5m", "1 5m"),
         ("1 5m 2r", "1 5m 2r"),
+        ("1 1.5m", "1 1.5m"),
+        ("1 .5m", "1 .5m"),
+        ("1 1E3M", "1 1E3M"),
+        ("1 1+3m", "1 1+3m"),
         ("2j ", "2j "),
         ("2j", "2j"),
         ("2J ", "2J "),
@@ -1139,6 +1162,43 @@ def test_shortcut_format(in_str, answer):
     # try jump with empty jump shortcut
     shortcut.nodes.clear()
     assert shortcut.format() == ""
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["1.5m", "2.m", "-0.5m", ".5m", "-.5m", "1e3m", "1.5E-3M", "1+3m", ".5e2m"],
+)
+def test_decimal_multiply_lexes_as_shortcut(text):
+    for lexer in [MCNP_Lexer, DataLexer, CellLexer]:
+        tokens = [(t.type, t.value) for t in lexer().tokenize(f"2 {text}")]
+        assert tokens[-1] == ("NUM_MULTIPLY", text)
+
+
+@given(
+    sign=strategies.sampled_from(["", "+", "-"]),
+    mantissa=strategies.one_of(
+        strategies.from_regex(r"[0-9]{1,4}", fullmatch=True),
+        strategies.from_regex(r"[0-9]{1,4}\.[0-9]{0,4}", fullmatch=True),
+        strategies.from_regex(r"\.[0-9]{1,4}", fullmatch=True),
+    ),
+    exponent=strategies.one_of(
+        strategies.just(""),
+        strategies.from_regex(r"[eE][+\-]?[0-9]{1,2}", fullmatch=True),
+        strategies.from_regex(r"[+\-][0-9]{1,2}", fullmatch=True),
+    ),
+    m=strategies.sampled_from(["m", "M"]),
+)
+def test_multiply_fortran_floats(sign, mantissa, exponent, m):
+    mult = f"{sign}{mantissa}{exponent}"
+    text = f"2 {mult}{m}"
+    for lexer in [MCNP_Lexer, DataLexer, CellLexer]:
+        tokens = [(t.type, t.value) for t in lexer().tokenize(text)]
+        assert tokens[-1] == ("NUM_MULTIPLY", f"{mult}{m}")
+    parsed = ShortcutTestFixture().parse(Input([text], BlockType.DATA).tokenize())
+    assert [node.value for node in parsed] == pytest.approx(
+        [2, 2 * fortran_float(mult)]
+    )
+    assert parsed.format() == text
 
 
 @pytest.mark.parametrize(
@@ -1208,6 +1268,14 @@ class TestShortcutListIntegration:
         values.append(syntax_node.ValueNode(Jump(), float))
         list_node.update_with_new_values(values)
         assert list(list_node) == values
+
+    def test_shortcut_list_touching_shortcuts_keep_padding(_, parser):
+        input = Input(["2 3m 2m 1"], BlockType.DATA)
+        list_node = parser.parse(input.tokenize())
+        values = list(list_node)
+        values[-1] = syntax_node.ValueNode("7", float)
+        list_node.update_with_new_values(values)
+        assert list_node.format() == "2 3m 2m 7"
 
     def test_shortcut_list_touching_shortcuts(_, parser):
         input = Input(["1 2 3 5R 3 3 4R 0 0"], BlockType.DATA)
