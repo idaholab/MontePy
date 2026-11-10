@@ -945,7 +945,7 @@ def test_universe_data_formatter(data_universe_problem):
     # test unmutated
     output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
     print(output)
-    assert "u 350 2J -1" in output
+    assert "u 350 2J -1 J" in output
     universe = problem.universes[350]
     # test mutated
     cell = problem.cells[3]
@@ -954,7 +954,7 @@ def test_universe_data_formatter(data_universe_problem):
     with pytest.warns(LineExpansionWarning):
         output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
     print(output)
-    assert "u 350 J -350 -1" in output
+    assert "u 350 J -350 -1 J" in output
     # test appending a new mutated cell
     new_cell = cell.clone()
     new_cell.number = 1000
