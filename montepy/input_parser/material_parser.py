@@ -7,6 +7,7 @@ from montepy.input_parser import syntax_node
 
 class MaterialParser(DataParser):
     debugfile = None
+    dont_copy = {"zaid_phrase"}
 
     @_(
         "classifier_phrase mat_data",
@@ -50,6 +51,16 @@ class MaterialParser(DataParser):
                 group[0].convert_to_str()
             new_list.append(("foo", *group))
         return new_list
+
+    @_("ZAID", "ZAID padding", "NUM_MULTIPLY", "NUM_MULTIPLY padding")
+    def zaid_phrase(self, p):
+        """A ZAID, including a multigroup one such as ``1001.50m``.
+
+        The lexer can't tell a multigroup ZAID from a multiply shortcut, so
+        only materials take a ``NUM_MULTIPLY`` here. Other data inputs keep it
+        as a number.
+        """
+        return self._flush_phrase(p, str)
 
     @_("isotope_fraction", "even_number_sequence", "parameter", "mat_parameter")
     def mat_datum(self, p):
