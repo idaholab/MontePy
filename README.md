@@ -1,6 +1,6 @@
 # MontePy
 
-<img src="https://raw.githubusercontent.com/idaholab/MontePy/develop/graphics/monty.svg" width="180" alt="MontePY: a cute snek on a red over white circle"/>
+<img src="https://raw.githubusercontent.com/idaholab/MontePy/develop/graphics/monty.svg" width="180" alt="MontePy: a cute snek on a red over white circle"/>
 
 [![license](https://img.shields.io/github/license/idaholab/MontePy.svg)](https://github.com/idaholab/MontePy/blob/develop/LICENSE)
 [![JOSS article status](https://joss.theoj.org/papers/e5b5dc8cea19605a1507dd4d420d5199/status.svg)](https://joss.theoj.org/papers/e5b5dc8cea19605a1507dd4d420d5199)
@@ -46,7 +46,7 @@ and the Python API documentation.
 * Handles almost all MCNP input syntax.
 * Parses Cells, Surfaces, Materials, and Transforms very well.	
 * Can parse all surface types except macrobody facets ([Issue #354](https://github.com/idaholab/MontePy/issues/354)).
-* Can read and write out all other MCNP inputs, even if it does not understand them	.
+* Can read and write out all other MCNP inputs, even if it does not understand them.
 * Attempts to write out the MCNP problem verbatim, even matching the original user formatting. (See some of the [open issues](https://github.com/idaholab/MontePy/issues).)
 * Can quickly [access cells, surfaces, and materials by their numbers](https://www.montepy.org/en/stable/starting.html#collections-are-accessible-by-number). For example: `cell = problem.cells[105]`.
 * Can quickly update cell parameters, [such as importances](https://www.montepy.org/en/stable/starting.html#setting-cell-importances). For example `cell.importance.neutron = 2.0`.
@@ -95,14 +95,14 @@ For more examples see the [getting started guide](https://www.montepy.org/en/sta
 Here are some possible use cases for MontePy:
 
 * Automated updating of an MCNP input file, or MCNP deck, for reactor reconfiguration, fuel shuffling, etc.
-* Parameterizing an MCNP input file to check for explore the parametric space of your MCNP modeling problem
+* Parameterizing an MCNP input file to explore the parametric space of your MCNP modeling problem
 * Updating an MCNP model with the results from another code, such as depletion results from ORIGEN.
 * To convert an MCNP model to another Monte Carlo code like OpenMC, SERPENT, etc. 
 
 
 ## Limitations
 
-Here a few of the known bugs and limitations:
+Here are a few of the known bugs and limitations:
 
 	
 * Cannot handle vertical input mode.
@@ -117,9 +117,9 @@ Here a few of the known bugs and limitations:
 
 Here are the rough development priorities for adding new features to MontePy:
 
-1. Improve performance for the intial loading of models.
+1. Improve performance for the initial loading of models.
 2. Implement support for tallies.
-1. Implement support for source definitions.
+3. Implement support for source definitions.
 
 If you have a specific feature priority that you would be willing to collaborate on you can open an issue or email us at [mgale@montepy.org](mailto:mgale@montepy.org). 
 
