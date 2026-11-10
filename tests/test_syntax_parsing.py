@@ -1216,6 +1216,13 @@ def test_multiply_shaped_like_zaid(text, expected):
     assert data.mcnp_str() == text
 
 
+@pytest.mark.parametrize("text", ["vol 1.5m 2", "vol 1001.50m 2"])
+def test_data_input_does_not_take_multiply_as_zaid(text):
+    # only materials read a multiply as a ZAID. Here there's nothing to multiply.
+    with pytest.raises(montepy.exceptions.ParsingError):
+        montepy.data_inputs.data_input.DataInput(Input([text], BlockType.DATA))
+
+
 @pytest.mark.parametrize(
     "text, expected",
     [
