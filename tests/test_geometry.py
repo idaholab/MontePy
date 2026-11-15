@@ -1038,6 +1038,8 @@ def test_geometry_set_right_bad_type():
     half_space = -_plane(1) & +_plane(2)
     with pytest.raises(TypeError):
         half_space.right = "hi"
+
+
 @pytest.mark.parametrize(
     "cell_input, expected",
     [
