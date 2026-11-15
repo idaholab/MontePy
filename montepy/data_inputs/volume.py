@@ -16,6 +16,21 @@ def _ensure_positive(self, value):
 class Volume(CellModifierInput):
     """Class for the data input that modifies cell volumes; ``VOL``.
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632: 5.5.1
+       :631: 5.5.1
+       :63: 5.5.1
+       :62: 75
+       :4c: 277
+       :4b: 248
+       :3a: 194
+       :2: 139
+       :1: 22
+
     Parameters
     ----------
     input : Input

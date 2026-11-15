@@ -25,6 +25,18 @@ def _verify_3d_index(self, indices):
 class Fill(CellModifierInput):
     """Object to handle the ``FILL`` input in cell and data blocks.
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.5.5.3
+       :631sub: 5.5.5.3
+       :63sub: 5.5.5.3
+       :62: 86
+       :4c: 283
+       :4b: 253
+
     Parameters
     ----------
     input : Union[Input, str]

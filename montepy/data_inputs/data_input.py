@@ -308,6 +308,21 @@ class DataInputAbstract(MCNP_Object):
 class DataInput(DataInputAbstract):
     """Catch-all for all other MCNP data inputs.
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sec: 5.4
+       :631sec: 5.4
+       :63sec: 5.4
+       :62: 74
+       :4c: 276
+       :4b: 246
+       :3a: 191
+       :2: 136
+       :1: 20
+
     Parameters
     ----------
     input : Union[Input, str]

@@ -14,6 +14,18 @@ class UniverseInput(CellModifierInput):
     """Object to actually handle the ``U`` input in cells
     and data blocks.
 
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sub: 5.5.5.1
+       :631sub: 5.5.5.1
+       :63sub: 5.5.5.1
+       :62: 82
+       :4c: 280
+       :4b: 250
+
     Parameters
     ----------
     input : Union[Input, str]

@@ -12,6 +12,7 @@ from montepy.input_parser.syntax_node import (
 from montepy.utilities import *
 
 from numbers import Integral
+import warnings
 
 
 class HalfSpace:
@@ -55,6 +56,20 @@ class HalfSpace:
     .. code-block:: python
 
         half_space = +bottom & (-left | +right)
+
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sec: 5.2
+       :631sec: 5.2
+       :63sec: 5.2
+       :62: 56
+       :4c: 264
+       :4b: 238
+       :3a: 183
+       :2: 129
 
     Parameters
     ----------
@@ -545,6 +560,68 @@ class HalfSpace:
     def _generate_default_tree(self):
         pass
 
+    def format_for_mcnp_input(self, mcnp_version: tuple[int, int, int]) -> list[str]:
+        """Creates a list of strings representing this geometry as it would
+        appear in a cell definition.
+
+        .. versionadded:: 1.6.0
+
+        Parameters
+        ----------
+        mcnp_version : tuple[int, int, int]
+            The tuple for the MCNP version that must be exported to.
+
+        Returns
+        -------
+        list[str]
+            a list of strings for the lines that this geometry will occupy.
+        """
+        self._update_values()
+        return montepy.mcnp_object.MCNP_Object.wrap_string_for_mcnp(
+            self.node.format().strip(), mcnp_version, True
+        )
+
+    def mcnp_str(self, mcnp_version: tuple[int, int, int] = None) -> str:
+        """Returns a string of this geometry as it would appear in a cell definition.
+
+        .. versionadded:: 1.6.0
+
+        Examples
+        ^^^^^^^^
+
+        .. testcode::
+
+            import montepy
+            cell = montepy.Cell("1 0 -123 234 imp:n=1 u=2")
+            print(cell.geometry.mcnp_str())
+
+        .. testoutput::
+
+            -123 234
+
+        Parameters
+        ----------
+        mcnp_version : tuple[int, int, int]
+            The tuple for the MCNP version that must be exported to.
+            Defaults to the version of the problem this geometry's cell
+            belongs to, or ``montepy.MCNP_VERSION``.
+
+        Returns
+        -------
+        str
+            The string that would be printed in a file
+        """
+        if mcnp_version is None:
+            cell = getattr(self, "_cell", None)
+            problem = getattr(cell, "_problem", None)
+            if problem is not None:
+                mcnp_version = problem.mcnp_version
+            else:
+                mcnp_version = montepy.MCNP_VERSION
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            return "\n".join(self.format_for_mcnp_input(mcnp_version))
+
     def __str__(self):
         if self.operator == Operator.COMPLEMENT:
             return f"{self.operator.value}{self.left}"
@@ -587,6 +664,20 @@ class UnitHalfSpace(HalfSpace):
             UnitHalfSpace      None
                    |
                    Cell
+
+    MCNP Manual references
+    ----------------------
+
+    .. mcnp-manuals::
+
+       :632sec: 5.2
+       :631sec: 5.2
+       :63sec: 5.2
+       :62: 56
+       :4c: 264
+       :4b: 238
+       :3a: 183
+       :2: 129
 
     Parameters
     ----------
