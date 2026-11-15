@@ -509,7 +509,11 @@ See <https://www.montepy.org/migrations/migrate0_1.html> for more information ""
             )
         if not isinstance(library_type, LibraryType):
             library_type = LibraryType(library_type.upper())
-        if nuclide.library.library_type == library_type:
+        # a nuclide without a library has no library type to compare
+        if (
+            nuclide.library.library_type is not None
+            and nuclide.library.library_type == library_type
+        ):
             return nuclide.library
         lib = self.default_libraries[library_type]
         if lib:
