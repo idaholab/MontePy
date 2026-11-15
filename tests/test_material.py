@@ -89,6 +89,11 @@ class TestMaterial:
             ("H-1.80c", "plib", "80p"),
             ("H-1.80c", "hlib", None),
             ("H-1.80c", "alib", "24a"),
+            ("H-1", "nlib", "00c"),
+            ("H-1", "plib", "80p"),
+            ("H-1", "hlib", None),
+            ("H-1", "alib", "24a"),
+            ("1001", "nlib", "00c"),
         ],
     )
     def test_mat_get_nuclide_library(
@@ -141,6 +146,22 @@ class TestMaterial:
             "M120 nlib=80c 1001 1.0",
         ]:
             material = Material(line)
+
+    @pytest.mark.parametrize(
+        "line, lib_type, lib",
+        [
+            ("M1 1001 1.0 nlib=50m", "nlib", "50m"),
+            ("M1 1001 1.0 NLIB=50M", "nlib", "50M"),
+            ("M1 nlib = 00m 1001 1.0", "nlib", "00m"),
+            ("M1 1001.80c 1.0 pnlib=50m", "pnlib", "50m"),
+        ],
+    )
+    def test_material_multigroup_default_library(_, line, lib_type, lib):
+        material = Material(line)
+        assert material.default_libraries[lib_type] == Library(lib)
+        assert material.mcnp_str() == line
+        new_material = Material(material.mcnp_str())
+        assert new_material.default_libraries[lib_type] == Library(lib)
 
     def test_material_validator(_):
         material = Material()
