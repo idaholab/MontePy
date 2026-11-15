@@ -26,8 +26,12 @@ import montepy
 
 
 def _link_geometry_to_cell(self, geom):
-    geom._cell = self
-    geom._add_new_children_to_cell(geom)
+    # raises before anything is changed if the new geometry isn't fully linked
+    geom._get_leaf_objects()
+    if self._geometry is not None:
+        self._geometry._link_to_cell(None)
+    geom._link_to_cell(self)
+    self._update_dividers(geom)
 
 
 def _lattice_deprecation_warning():
@@ -187,8 +191,34 @@ class Cell(Numbered_MCNP_Object):
         geometry = self._tree["geometry"]
         if geometry is not None:
             self._geometry = HalfSpace.parse_input_node(geometry)
+            self._geometry._link_to_cell(self)
         else:
             self._geometry = None
+
+    def _update_dividers(self, geometry):
+        """Makes :attr:`surfaces` and :attr:`complements` match the given geometry.
+
+        Parameters
+        ----------
+        geometry : HalfSpace
+            the geometry, which must already be linked to this cell.
+        """
+        cells, surfaces = geometry._get_leaf_objects()
+        for container, used in (
+            (self.complements, cells),
+            (self.surfaces, surfaces),
+        ):
+            used_ids = {id(divider) for divider in used}
+            for divider in list(container):
+                if id(divider) not in used_ids:
+                    container.remove(divider)
+        geometry._add_new_children_to_cell(geometry)
+
+    def _geometry_tree_changed(self):
+        """Updates this cell after a part of its geometry tree was changed."""
+        self._geometry._link_to_cell(self)
+        if not any(isinstance(leaf.divider, Integral) for leaf in self._geometry):
+            self._update_dividers(self._geometry)
 
     def _parse_keyword_modifiers(self):
         """Parses the parameters to make the object and load as an attribute"""
@@ -950,7 +980,8 @@ class Cell(Numbered_MCNP_Object):
             result._material = self._material
         special_keys = {"_surfaces", "_complements"}
         keys -= special_keys
-        memo = {}
+        # the copied geometry must point to the new cell, not to a copy of this one.
+        memo = {id(self): result}
 
         def num(obj):
             if isinstance(obj, Integral):

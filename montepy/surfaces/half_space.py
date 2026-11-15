@@ -99,7 +99,7 @@ class HalfSpace:
         self._node = node
         self._cell = None
 
-    @make_prop_pointer("_left", ())
+    @property
     def left(self):
         """The left side of the binary tree of this half_space.
 
@@ -108,9 +108,13 @@ class HalfSpace:
         HalfSpace
             the left side of the tree.
         """
-        pass
+        return self._left
 
-    @make_prop_pointer("_right", (), deletable=True)
+    @left.setter
+    def left(self, value):
+        self._set_side("_left", value)
+
+    @property
     def right(self):
         """The right side of the binary tree of this half_space if any.
 
@@ -119,7 +123,36 @@ class HalfSpace:
         HalfSpace
             the right side of the tree.
         """
-        pass
+        return self._right
+
+    @right.setter
+    def right(self, value):
+        self._set_side("_right", value)
+
+    @right.deleter
+    def right(self):
+        self._set_side("_right", None)
+
+    def _set_side(self, side, value):
+        """Sets one side of this tree, and updates the parent cell, if any.
+
+        Parameters
+        ----------
+        side : str
+            the name of the attribute to set.
+        value : HalfSpace
+            the new side. Can only be None to delete the right side.
+        """
+        if not isinstance(value, HalfSpace) and not (
+            value is None and side == "_right"
+        ):
+            raise TypeError(f"{side[1:]} must be of type: HalfSpace. {value} given.")
+        old = getattr(self, side)
+        if old is not None and self._cell is not None:
+            old._link_to_cell(None)
+        setattr(self, side, value)
+        if self._cell is not None:
+            self._cell._geometry_tree_changed()
 
     @make_prop_pointer("_operator", Operator)
     def operator(self):
@@ -178,6 +211,21 @@ class HalfSpace:
             sides.append(None)
         return HalfSpace(sides[0], node.operator, sides[1], node)
 
+    def _link_to_cell(self, cell):
+        """Links this HalfSpace and all of its children to the parent cell.
+
+        Unlike :func:`update_pointers` this does not resolve any dividers.
+
+        Parameters
+        ----------
+        cell : Cell
+            the cell this HalfSpace is tied to.
+        """
+        self._cell = cell
+        self.left._link_to_cell(cell)
+        if self.right is not None:
+            self.right._link_to_cell(cell)
+
     def update_pointers(self, cells, surfaces, cell):
         """Update pointers, and link this object to other objects in the problem.
 
@@ -226,6 +274,9 @@ class HalfSpace:
                     )
                 if item not in parent:
                     parent.append(item)
+        problem = self._cell._problem
+        if problem:
+            self._cell._add_children_objs(problem)
 
     def remove_duplicate_surfaces(
         self,
@@ -323,6 +374,8 @@ class HalfSpace:
             raise ValueError(
                 f"{old_divider} (number: {old_divider.number}) not found in geometry tree."
             )
+        if cell is not None and cell._problem:
+            cell._add_children_objs(cell._problem)
 
     def _replace_recursive(self, old_divider, new_divider) -> bool:
         replaced = self.left._replace_recursive(old_divider, new_divider)
@@ -407,13 +460,15 @@ class HalfSpace:
         """
         if self.operator == Operator.INTERSECTION:
             if type(self) == type(self.left) and self.left.operator == Operator.UNION:
-                self.left = HalfSpace(self.left, Operator.GROUP)
+                self._left = HalfSpace(self.left, Operator.GROUP)
+                self._left._cell = self._cell
             if (
                 self.right is not None
                 and type(self) == type(self.right)
                 and self.right.operator == Operator.UNION
             ):
-                self.right = HalfSpace(self.right, Operator.GROUP)
+                self._right = HalfSpace(self.right, Operator.GROUP)
+                self._right._cell = self._cell
 
     def _update_node(self):
         """Ensures that the syntax node properly reflects the current HalfSpace structure"""
@@ -757,6 +812,9 @@ class UnitHalfSpace(HalfSpace):
         else:
             side = not node.is_negative
         return UnitHalfSpace(node.value, side, is_cell, node)
+
+    def _link_to_cell(self, cell):
+        self._cell = cell
 
     def update_pointers(self, cells, surfaces, cell):
         self._cell = cell

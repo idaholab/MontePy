@@ -836,3 +836,205 @@ def test_unit_halfspace_iter():
     leaves = list(leaf)
     assert len(leaves) == 1
     assert leaves[0] is leaf
+
+
+def _all_geometry_nodes(geometry):
+    if isinstance(geometry, UnitHalfSpace):
+        return [geometry]
+    nodes = [geometry] + _all_geometry_nodes(geometry.left)
+    if geometry.right is not None:
+        nodes += _all_geometry_nodes(geometry.right)
+    return nodes
+
+
+def _plane(number):
+    return montepy.AxisPlane(f"{number} PZ {float(number)}")
+
+
+def _surface_numbers(collection):
+    return sorted(surface.number for surface in collection)
+
+
+def test_geometry_linked_to_parsed_cell():
+    cell = montepy.Cell("1 0 -1 (2 : 3) #4 imp:n=1")
+    assert all(node._cell is cell for node in _all_geometry_nodes(cell.geometry))
+
+
+def test_geometry_setter_links_whole_tree():
+    cell = montepy.Cell(number=1)
+    cell.geometry = -_plane(1) & (+_plane(2) | -_plane(3))
+    assert all(node._cell is cell for node in _all_geometry_nodes(cell.geometry))
+
+
+def test_geometry_replace_after_setter_updates_cell():
+    cell = montepy.Cell(number=1)
+    old, keep, new = _plane(1), _plane(2), _plane(3)
+    cell.geometry = -old & +keep
+    cell.geometry.replace(old, new)
+    assert _surface_numbers(cell.surfaces) == [2, 3]
+
+
+def test_geometry_replace_after_setter_reaches_problem():
+    cell = montepy.Cell(number=1)
+    old, keep, new = _plane(1), _plane(2), _plane(3)
+    cell.geometry = -old & +keep
+    cell.geometry.replace(old, new)
+    problem = montepy.MCNP_Problem("foo")
+    problem.cells.append(cell)
+    assert _surface_numbers(problem.surfaces) == [2, 3]
+
+
+def test_geometry_clone_links_to_new_cell():
+    problem = montepy.read_input("tests/inputs/test.imcnp")
+    new_cell = problem.cells[1].clone()
+    assert all(
+        node._cell is new_cell for node in _all_geometry_nodes(new_cell.geometry)
+    )
+    old = list(new_cell.surfaces)[0]
+    new = _plane(9999)
+    new_cell.geometry.replace(old, new)
+    assert new in new_cell.surfaces
+
+
+def test_geometry_reassign_drops_old_dividers():
+    other = montepy.Cell(number=2)
+    other.geometry = -_plane(9)
+    cell = montepy.Cell(number=1)
+    old, keep, new = _plane(1), _plane(2), _plane(3)
+    cell.geometry = (-old & +keep) & ~other
+    assert list(cell.complements) == [other]
+    old_geometry = cell.geometry
+    cell.geometry = +keep & -new
+    assert _surface_numbers(cell.surfaces) == [2, 3]
+    assert len(cell.complements) == 0
+    assert all(node._cell is None for node in _all_geometry_nodes(old_geometry))
+
+
+def test_geometry_reassign_same_number():
+    cell = montepy.Cell(number=1)
+    cell.geometry = -_plane(1)
+    new = _plane(1)
+    cell.geometry = -new
+    assert list(cell.surfaces)[0] is new
+
+
+def test_geometry_reassign_keeps_shared_tree():
+    cell = montepy.Cell(number=1)
+    cell.geometry = -_plane(1)
+    new = _plane(2)
+    cell.geometry &= +new
+    assert _surface_numbers(cell.surfaces) == [1, 2]
+    assert all(node._cell is cell for node in _all_geometry_nodes(cell.geometry))
+
+
+def test_geometry_failed_reassign_changes_nothing():
+    cell = montepy.Cell(number=1)
+    surface = _plane(1)
+    cell.geometry = -surface
+    old_geometry = cell.geometry
+    with pytest.raises(montepy.exceptions.IllegalState):
+        cell.geometry = montepy.Cell("2 0 -5 imp:n=1").geometry
+    assert cell.geometry is old_geometry
+    assert old_geometry._cell is cell
+    assert list(cell.surfaces) == [surface]
+
+
+def _problem_with_cell():
+    problem = montepy.MCNP_Problem("foo")
+    old, keep = _plane(1), _plane(2)
+    cell = montepy.Cell(number=1)
+    cell.geometry = -old & +keep
+    problem.cells.append(cell)
+    return problem, cell, old, keep
+
+
+def test_geometry_replace_in_problem_adds_surface():
+    problem, cell, old, keep = _problem_with_cell()
+    new = _plane(3)
+    cell.geometry.replace(old, new)
+    assert new in problem.surfaces
+    assert _surface_numbers(cell.surfaces) == [2, 3]
+
+
+def test_geometry_replace_in_problem_can_be_read_back(tmp_path):
+    problem = montepy.read_input("tests/inputs/test.imcnp")
+    cell = montepy.Cell("9000 0 -1 imp:n=1")
+    old, keep, new = _plane(9001), _plane(9002), _plane(9003)
+    cell.geometry = -old & +keep
+    problem.cells.append(cell)
+    cell.geometry.replace(old, new)
+    destination = tmp_path / "out.imcnp"
+    problem.write_problem(destination)
+    new_problem = montepy.read_input(destination)
+    assert 9003 in new_problem.surfaces.numbers
+    assert _surface_numbers(new_problem.cells[9000].surfaces) == [9002, 9003]
+
+
+def test_geometry_reassign_in_problem_adds_surface():
+    problem, cell, old, keep = _problem_with_cell()
+    new = _plane(3)
+    cell.geometry = +keep & -new
+    assert new in problem.surfaces
+    assert old in problem.surfaces
+    assert _surface_numbers(cell.surfaces) == [2, 3]
+
+
+def test_geometry_iand_in_problem_adds_surface():
+    problem, cell, old, keep = _problem_with_cell()
+    new = _plane(3)
+    cell.geometry &= -new
+    assert new in problem.surfaces
+
+
+def test_geometry_set_sides():
+    cell = montepy.Cell(number=1)
+    left, right, new_left, new_right = _plane(1), _plane(2), _plane(3), _plane(4)
+    cell.geometry = -left & +right
+    old_left = cell.geometry.left
+    cell.geometry.left = -new_left
+    assert _surface_numbers(cell.surfaces) == [2, 3]
+    assert old_left._cell is None
+    old_right = cell.geometry.right
+    cell.geometry.right = +new_right | -left
+    assert _surface_numbers(cell.surfaces) == [1, 3, 4]
+    assert old_right._cell is None
+    assert all(node._cell is cell for node in _all_geometry_nodes(cell.geometry))
+
+
+def test_geometry_set_side_in_problem_adds_surface():
+    problem, cell, old, keep = _problem_with_cell()
+    new = _plane(3)
+    cell.geometry.left = -new
+    assert new in problem.surfaces
+
+
+def test_geometry_delete_right_updates_cell():
+    cell = montepy.Cell(number=1)
+    left, right = _plane(1), _plane(2)
+    cell.geometry = ~(-left & +right)
+    inner = cell.geometry.left
+    inner.operator = Operator.COMPLEMENT
+    del inner.right
+    assert inner.right is None
+    assert _surface_numbers(cell.surfaces) == [1]
+
+
+def test_geometry_set_side_parsed_cell_is_not_resolved():
+    cell = montepy.Cell("1 0 -1 2 imp:n=1")
+    new = _plane(3)
+    cell.geometry.left = -new
+    assert cell.geometry.left._cell is cell
+    assert len(cell.surfaces) == 0
+
+
+@pytest.mark.parametrize("value", ["hi", None])
+def test_geometry_set_left_bad_type(value):
+    half_space = -_plane(1) & +_plane(2)
+    with pytest.raises(TypeError):
+        half_space.left = value
+
+
+def test_geometry_set_right_bad_type():
+    half_space = -_plane(1) & +_plane(2)
+    with pytest.raises(TypeError):
+        half_space.right = "hi"
