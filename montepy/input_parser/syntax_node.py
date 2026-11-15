@@ -1748,7 +1748,7 @@ class ListNode(SyntaxNodeBase):
     def __repr__(self):
         return f"(list: {self.name}, {self.nodes})"
 
-    def update_with_new_values(self, new_vals):
+    def update_with_new_values(self, new_vals, explicit_jumps: bool = False):
         """Update this list node with new values.
 
         This will first try to find if any shortcuts in the original input match up with
@@ -1756,10 +1756,16 @@ class ListNode(SyntaxNodeBase):
         as many neighbor nodes as possible.
         Finally, the internal shortcuts, and list will be updated to reflect the new state.
 
+        .. versionchanged:: 1.5.1
+
+            Added ``explicit_jumps`` argument
+
         Parameters
         ----------
         new_vals : list
             the new values (a list of ValueNodes)
+        explicit_jumps: bool
+            If true jumps will always be printed even when not necessary.
         """
         if not new_vals:
             self._nodes = []
@@ -1790,6 +1796,7 @@ class ListNode(SyntaxNodeBase):
             isinstance(end, ShortcutNode)
             and end._type == Shortcuts.JUMP
             and len(end._original) == 0
+            and not explicit_jumps
         ):
             self._nodes.pop()
             self._shortcuts.pop()
@@ -1897,9 +1904,21 @@ class ListNode(SyntaxNodeBase):
             ):
                 node.padding = PaddingNode(" ")
             if isinstance(last_node, ShortcutNode) and isinstance(node, ShortcutNode):
-                ret += node.format(last_node)
+                node_str = node.format(last_node)
             else:
-                ret += node.format()
+                node_str = node.format()
+            # Shortcuts such as ``1 2i 4`` end on a value that carries its own padding,
+            # so only add padding if the output isn't already whitespace-terminated.
+            if (
+                isinstance(node, ShortcutNode)
+                and node_str
+                and not node_str[-1].isspace()
+                and i < length - 1
+                and not isinstance(self.nodes[i + 1], PaddingNode)
+            ):
+                node.end_padding = PaddingNode(" ")
+                node_str += node.end_padding.format()
+            ret += node_str
             last_node = node
         return ret
 

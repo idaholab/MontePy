@@ -1,3 +1,4 @@
+import copy
 import io
 import numpy as np
 from pathlib import Path
@@ -210,3 +211,9 @@ def test_cell_universe_delete_adds_zero_universe():
     del c.universe
     assert 0 in p.universes.numbers
     assert c.universe.number == 0
+
+
+def test_data_block_universe_trail_0(simple_problem):
+    prob = copy.deepcopy(simple_problem)
+    prob.print_in_data_block["U"] = True
+    assert prob.cells._universe.mcnp_str().rstrip() == "U 350 4J"
