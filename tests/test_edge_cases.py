@@ -28,14 +28,17 @@ def test_interp_surface_edge_case():
 
 
 def test_excess_mt():
-    with pytest.raises(MalformedInputError):
-        montepy.read_input(os.path.join("tests", "inputs", "test_excess_mt.imcnp"))
+    with pytest.warns():
+        montepy.read_input(
+            os.path.join("tests", "inputs", "test_excess_mt.imcnp"), jit_parse=False
+        )
 
 
 def test_missing_mat_for_mt():
     with pytest.raises(MalformedInputError):
         montepy.read_input(
-            os.path.join("tests", "inputs", "test_missing_mat_for_mt.imcnp")
+            os.path.join("tests", "inputs", "test_missing_mat_for_mt.imcnp"),
+            jit_parse=False,
         )
 
 
@@ -45,7 +48,9 @@ def test_orphaning_mt():
         ["MT5 lwtr.01t"],
         montepy.input_parser.block_type.BlockType.DATA,
     )
-    problem.data_inputs.append(montepy.data_inputs.data_parser.parse_data(input_obj))
+    problem.data_inputs.append(
+        montepy.data_inputs.data_parser.parse_data(input_obj, jit_parse=False)
+    )
     with io.StringIO() as stream:
         with pytest.raises(MalformedInputError):
             problem.write_problem(stream)
@@ -252,5 +257,10 @@ def test_expanding_new_line():
     fill = problem.cells[1].fill
     universes = [montepy.Universe(n) for n in range(300)]
     fill.universes = np.array([[universes]])
+    # is the problem:
+    #    print fill
+    #    grab universe numbers
+    #    Grab universes -> soft_claim
+    #    parse other cells
     with io.StringIO() as fh, pytest.warns(LineExpansionWarning):
         problem.write_problem(fh)

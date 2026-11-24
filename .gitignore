@@ -21,6 +21,7 @@ doc/build/*
 .coverage
 .hypothesis/
 .idea/
+.vscode/
 .venv/
 .ipynb_checkpoints/
 montepy/_version.py
@@ -31,3 +32,4 @@ montepy/_version.py
 htmlcov
 .hypothesis
 .mutmut-cache
+benchmark/faux_models/*

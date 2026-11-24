@@ -1,5 +1,6 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
 import copy
+import os
 import numpy as np
 import pytest
 import montepy
@@ -29,9 +30,9 @@ from montepy.input_parser.mcnp_input import Input
 def test_transform_init_cases(input_str, should_raise):
     if should_raise:
         with pytest.raises(MalformedInputError):
-            Transform(Input([input_str], BlockType.DATA))
+            Transform(input_str, jit_parse=False)
     else:
-        transform = Transform(Input([input_str], BlockType.DATA))
+        transform = Transform(input_str, jit_parse=False)
         assert isinstance(transform, Transform)
 
 
@@ -62,7 +63,7 @@ def test_transform_in_degrees():
 def test_transform_blank_init():
     transform = Transform()
     assert transform.number == -1
-    assert len(transform.displacement_vector) == 0
+    assert len(transform.displacement_vector) == 3
     assert len(transform.rotation_matrix) == 0
     assert not transform.is_in_degrees
     assert transform.is_main_to_aux
@@ -134,9 +135,9 @@ def test_transform_is_main_aux_setter():
 def test_transform_str_repr():
     in_str = "*tr5 " + "0.0 " * 3 + "0.0 " * 9 + " -1"
     transform = Transform(in_str)
-    answer = """TRANSFORM: 5\nDISPLACE: [0. 0. 0.]\nROTATE: [0. 0. 0. 0. 0. 0. 0. 0. 0.]\nMAIN_TO_AUX: False\n"""
+    answer = "Transform('*tr5 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  -1', number=5, jit_parse=True)"
     assert answer == repr(transform)
-    assert str(transform) == "TRANSFORM: 5"
+    assert str(transform) == "Transform: 5"
 
 
 def test_transform_print_mcnp():
@@ -187,7 +188,7 @@ def test_transform_equivalent():
 
 def test_transform_update_values():
     in_str = "tr5 " + "0.0 " * 3 + "0.0 " * 9 + " -1"
-    base = Transform(in_str)
+    base = Transform(in_str, jit_parse=False)
     base._update_values()
     assert base._tree["classifier"].modifier.value == ""
     assert len(base.data) == 13
@@ -204,3 +205,28 @@ def test_transform_update_values():
     assert len(test.data) == 13
     assert test.data[-1].is_negative
     # test partial rotation matrix start
+
+
+def test_transform_renumber_updates_fill_transform_reference():
+    problem = montepy.read_input(
+        os.path.join("tests", "inputs", "test_universe.imcnp"), jit_parse=False
+    )
+    transform = problem.transforms[5]
+    cell = problem.cells[2]
+    # rename before ever touching cell.fill.transform, so the only way
+    # cell.fill.transform can still resolve to the right object afterward
+    # is via NumberedObjectCollection.search_parent_objs_by_child's tuple
+    # traversal of ("fill", "transform").
+    transform.number = 6
+    assert cell.fill.transform is transform
+    assert cell.fill.transform.number == 6
+
+
+def test_link_to_collection_already_linked_raises():
+    from montepy.transforms import Transforms
+
+    transform = Transform(number=6)
+    original_collection = Transforms([transform])
+    other_collection = Transforms()
+    with pytest.raises(IllegalState):
+        transform._link_to_collection(other_collection)

@@ -6,6 +6,7 @@
 MontePy Changelog
 *****************
 
+
 1.6 Releases
 ============
 
@@ -14,8 +15,14 @@ MontePy Changelog
 
 **Features Added**
 
+* Added support for just-in-time parsing (:issue:`529`).
+* Add _checkvalue.py_ to codebase (:issue:`687`).
 * Added :meth:`~montepy.numbered_object_collection.NumberedObjectCollection.get_by_comment` to find numbered objects by comment text or regular expression (:issue:`982`).
 * Added ``HalfSpace.mcnp_str`` and ``HalfSpace.format_for_mcnp_input`` to print just a cell's geometry as it would appear in an MCNP input (:issue:`942`).
+
+**Performance Improvement**
+
+* Add just-in-time parsing which can significantly improve performance for working with large models under some circumstances (:issue:`529`).
 
 
 1.5 Releases
@@ -76,7 +83,6 @@ MontePy Changelog
 **Bugs Fixed**
 
 * Fixed a bug where surface type mnemonics (e.g. ``SO``, ``PZ``) were always written in uppercase, discarding the original case supplied by the user (e.g. ``sO``, ``Pz``) (:issue:`522`).
-
 * Fixed a bug where ``append_renumber`` raised a ``TypeError`` when called with an object whose ``number`` is ``None`` (e.g. an object created with no arguments) (:issue:`880`).
 * Fixed a bug where the importance of cells made from scratch are usually not printed to the output file (:pull:`921`).
 
@@ -93,7 +99,7 @@ MontePy Changelog
 ============
 
 1.3.0
---------------
+-----
 
 **Performance Improvement**
 
@@ -119,10 +125,6 @@ MontePy Changelog
 1.2.0
 -----
 
-**Performance Improvement**
-
-* Optimized :math:`\mathcal{O}(N^2)` scaling in :func:`~montepy.numbered_object_collection.NumberedObjectCollection.request_number` by improving ``NumberedObjectCollection.check_number`` to :math:`\mathcal{O}(N)` (:issue:`786`). 
-
 **Features Added**
 
 * Added checking for additional input after the ``data`` block, and raising a warning if it exists (:issue:`525`).
@@ -131,6 +133,10 @@ MontePy Changelog
 * Allow setting ``cell.fill.universes`` with a numpy array of universe IDs (:issue:`736`).
 * Added Boundary condition type to the representation of a ``montepy.Surface`` (e.g., ``repr(surf)``)  (:issue:`682`).
 * Changed default importance value from 0.0 to 1.0 to match MCNP defaults. (:issue:`735`)
+
+**Performance Improvement**
+
+* Optimized :math:`\mathcal{O}(N^2)` scaling in :func:`montepy.numbered_object_collection.NumberedObjectCollection.request_number` by improving ``NumberedObjectCollection.check_number`` to :math:`\mathcal{O}(N)` (:issue:`786`).
 
 **Bugs Fixed**
 
@@ -221,6 +227,7 @@ MontePy Changelog
 
 1.0 releases
 ============
+
 
 1.0.0
 --------------

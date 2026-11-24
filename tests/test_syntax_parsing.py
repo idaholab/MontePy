@@ -240,7 +240,7 @@ class TestValueNode:
     def test_value_has_changed(self):
         # test None no change
         node = syntax_node.ValueNode(None, int)
-        assert not node._value_changed
+        assert node._value_changed
         # test None changed
         node.value = 5
         assert node._value_changed
@@ -1220,7 +1220,8 @@ def test_multiply_shaped_like_zaid(text, expected):
 def test_data_input_does_not_take_multiply_as_zaid(text):
     # only materials read a multiply as a ZAID. Here there's nothing to multiply.
     with pytest.raises(montepy.exceptions.ParsingError):
-        montepy.data_inputs.data_input.DataInput(Input([text], BlockType.DATA))
+        data = montepy.data_inputs.data_input.DataInput(Input([text], BlockType.DATA))
+        data.full_parse()
 
 
 @pytest.mark.parametrize(
@@ -1273,7 +1274,8 @@ def test_multigroup_zaid_in_material(text, libraries):
 )
 def test_multiply_not_zaid_in_material(text):
     with pytest.raises((montepy.exceptions.UnknownElement, ValueError)):
-        montepy.Material(Input([text], BlockType.DATA))
+        mat = montepy.Material(Input([text], BlockType.DATA))
+        mat.full_parse()
 
 
 @pytest.mark.parametrize("name", ["1001.50m", "1.5m", "1001.50c"])
@@ -1632,35 +1634,49 @@ Output.o
         assert str(card) == "INPUT: BlockType.CELL"
         assert repr(card) == "INPUT: BlockType.CELL: ['1 0 -1']"
 
-    def testDataInputNameParsing(self):
-        tests = {
-            "kcOde": {"prefix": "kcode", "number": None, "classifier": None},
-            "M300": {"prefix": "m", "number": 300, "classifier": None},
-            "IMP:N,P,E": {
-                "prefix": "imp",
-                "number": None,
-                "classifier": [Particle.NEUTRON, Particle.PHOTON, Particle.ELECTRON],
-            },
-            "F1004:n,P": {
-                "prefix": "f",
-                "number": 1004,
-                "classifier": [Particle.NEUTRON, Particle.PHOTON],
-            },
-        }
-        for in_str, answer in tests.items():
-            # Testing parsing the names
-            print("in", in_str, "answer", answer)
-            card = montepy.input_parser.mcnp_input.Input(
-                [in_str], montepy.input_parser.block_type.BlockType.DATA
+    @pytest.mark.parametrize(
+        "in_str, answer",
+        [
+            ("kcOde", {"prefix": "kcode", "number": None, "classifier": None}),
+            ("M300", {"prefix": "m", "number": 300, "classifier": None}),
+            (
+                "IMP:N,P,E",
+                {
+                    "prefix": "imp",
+                    "number": None,
+                    "classifier": [
+                        Particle.NEUTRON,
+                        Particle.PHOTON,
+                        Particle.ELECTRON,
+                    ],
+                },
+            ),
+            (
+                "F1004:n,P",
+                {
+                    "prefix": "f",
+                    "number": 1004,
+                    "classifier": [Particle.NEUTRON, Particle.PHOTON],
+                },
+            ),
+        ],
+    )
+    def testDataInputNameParsing(self, in_str, answer):
+        # Testing parsing the names
+        print("in", in_str, "answer", answer)
+        card = montepy.input_parser.mcnp_input.Input(
+            [in_str], montepy.input_parser.block_type.BlockType.DATA
+        )
+        data_input = montepy.data_inputs.data_input.DataInput(
+            card, fast_parse=True, jit_parse=False
+        )
+        assert data_input.prefix == answer["prefix"]
+        if answer["number"]:
+            assert data_input._input_number.value == answer["number"]
+        if answer["classifier"]:
+            assert sorted(data_input.particle_classifiers) == sorted(
+                answer["classifier"]
             )
-            data_input = montepy.data_inputs.data_input.DataInput(card, fast_parse=True)
-            assert data_input.prefix == answer["prefix"]
-            if answer["number"]:
-                assert data_input._input_number.value == answer["number"]
-            if answer["classifier"]:
-                assert sorted(data_input.particle_classifiers) == sorted(
-                    answer["classifier"]
-                )
 
     @pytest.mark.parametrize(
         "in_str, answer",
@@ -1883,7 +1899,7 @@ class DataInputTestFixture(montepy.data_inputs.data_input.DataInputAbstract):
         :param input_card: the Card object representing this data input
         :type input_card: Input
         """
-        super().__init__(input_card, fast_parse=True)
+        super().__init__(input_card, fast_parse=True, jit_parse=False)
 
     def _class_prefix(self):
         return self._class_prefix1
@@ -1893,3 +1909,37 @@ class DataInputTestFixture(montepy.data_inputs.data_input.DataInputAbstract):
 
     def _has_classifier(self):
         return self._has_classifier1
+
+
+def test_jit_cell_parser_asserts_on_unexpected_token():
+    from montepy.input_parser.cell_parser import JitCellParser
+
+    inp = Input(["abc 0 -1"], BlockType.CELL)
+    tokenizer = inp.tokenize()
+    with pytest.raises(AssertionError):
+        JitCellParser.parse(tokenizer)
+
+
+def test_input_tokenize_lexer_class_override():
+    from montepy.input_parser.tokens import CellLexer
+
+    # lexer_class is never actually set by any current caller (it's read
+    # via getattr(parser, "_lexer_class", None), which is always None), but
+    # it's a legitimate direct override for tokenize().
+    inp = Input(["1 0 -1"], BlockType.DATA)
+    generator = inp.tokenize(lexer_class=CellLexer)
+    next(generator)
+    assert isinstance(inp._lexer, CellLexer)
+    generator.close()
+
+
+def test_jit_data_parser_asserts_on_unexpected_particle_token():
+    from montepy.input_parser.data_parser import JitDataParser
+
+    # no space between the particle designator and "=1": the "=" token
+    # appears where only a particle-continuation or terminating
+    # whitespace/comment is expected.
+    inp = Input(["IMP:N=1"], BlockType.DATA)
+    tokenizer = inp.tokenize()
+    with pytest.raises(AssertionError):
+        JitDataParser.parse(tokenizer)

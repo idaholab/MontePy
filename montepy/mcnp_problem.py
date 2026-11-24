@@ -1,12 +1,15 @@
 # Copyright 2024, Battelle Energy Alliance, LLC All Rights Reserved.
+
 import copy
 from enum import Enum
 import itertools
+import io
 import os
 import warnings
 
 from montepy.data_inputs import mode, transform
 from montepy._cell_data_control import CellDataPrintController
+from montepy.utilities import *
 from montepy.cell import Cell
 from montepy.cells import Cells
 from montepy.exceptions import *
@@ -14,6 +17,7 @@ from montepy.constants import DEFAULT_VERSION
 from montepy.materials import Material, Materials
 from montepy.surfaces import surface, surface_builder
 from montepy.surface_collection import Surfaces
+import montepy.types as ty
 
 # weird way to avoid circular imports
 from montepy.data_inputs import parse_data
@@ -22,6 +26,61 @@ from montepy.input_parser.input_file import MCNP_InputFile
 from montepy.universes import Universe, Universes
 from montepy.transforms import Transforms
 import montepy
+import re as _re
+
+_COMMENT_LINE_RE = _re.compile(r"^\s{0,4}[cC](\s|$)")
+
+
+def _extract_trailing_from_input(raw_input):
+    """Extract trailing c-style comment lines from a raw Input object's input_lines.
+
+    When JIT parsing is active, trailing comments don't appear in the JIT tree.
+    This function reads them from the raw input lines and removes them from
+    ``raw_input.input_lines`` so they won't be re-output when the object is
+    fully parsed later.
+
+    Returns a list of PaddingNode/CommentNode objects suitable for
+    ``_grab_beginning_comment``, or ``None`` if there are no trailing comments.
+    """
+    from montepy.input_parser.syntax_node import PaddingNode
+
+    lines = raw_input.input_lines
+    # find the first trailing comment line (from the end)
+    split = len(lines)
+    for i in range(len(lines) - 1, -1, -1):
+        if _COMMENT_LINE_RE.match(lines[i]):
+            split = i
+        else:
+            break
+    if split == len(lines):
+        return None
+    comment_lines = lines[split:]
+    # Remove them from the raw input so they're not re-output on full parse
+    raw_input._input_lines = lines[:split]
+    padding = PaddingNode()
+    for line in comment_lines:
+        padding.append(line, is_comment=True)
+        padding.append("\n")
+    return padding.nodes if padding.nodes else None
+
+
+def _prepend_comment_to_input(raw_input, nodes):
+    """Prepend previously-extracted trailing comment nodes onto an input's
+    raw lines, for an object that has not been fully parsed yet.
+
+    This lets the comment become part of the object's own ``start_pad``
+    naturally, once it is eventually fully parsed, instead of requiring
+    tree surgery on a JIT stub that doesn't have a ``start_pad`` yet.
+    """
+    from montepy.input_parser.syntax_node import PaddingNode
+
+    padding = PaddingNode()
+    padding._nodes = list(nodes)
+    text = padding.format()
+    comment_lines = text.split("\n")
+    if comment_lines and comment_lines[-1] == "":
+        comment_lines.pop()
+    raw_input._input_lines = comment_lines + list(raw_input.input_lines)
 
 
 class MCNP_Problem:
@@ -45,7 +104,9 @@ class MCNP_Problem:
         Universe: Universes,
     }
 
-    def __init__(self, destination):
+    @args_checked
+    def __init__(self, destination: str | os.PathLike | io.TextIOBase = None):
+        self._input_file = None
         if hasattr(destination, "read") and callable(getattr(destination, "read")):
             self._input_file = MCNP_InputFile.from_open_stream(destination)
         elif isinstance(destination, (str, os.PathLike)):
@@ -53,7 +114,7 @@ class MCNP_Problem:
         self._title = None
         self._message = None
         self.__unpickled = False
-        self._print_in_data_block = CellDataPrintController()
+        self._print_in_data_block = CellDataPrintController(self)
         self._original_inputs = []
         for collect_type in self._NUMBERED_OBJ_MAP.values():
             attr_name = f"_{collect_type.__name__.lower()}"
@@ -98,10 +159,10 @@ class MCNP_Problem:
                     collection,
                     montepy.numbered_object_collection.NumberedObjectCollection,
                 ):
-                    collection.link_to_problem(self)
+                    collection.link_to_problem(self, deepcopy=True)
                 else:
                     for obj in collection:
-                        obj.link_to_problem(self)
+                        obj.link_to_problem(self, deepcopy=True)
             self.__unpickled = False
 
     def __unlink_objs(self):
@@ -116,7 +177,7 @@ class MCNP_Problem:
                 collection.link_to_problem(None)
             else:
                 for obj in collection:
-                    obj.link_to_problem(None)
+                    obj.link_to_problem(None, deepcopy=True)
         self.__unpickled = True
         self.__relink_objs()
 
@@ -154,10 +215,9 @@ class MCNP_Problem:
         return self._cells
 
     @cells.setter
-    def cells(self, cells):
-        if not isinstance(cells, (Cells, list)):
-            raise TypeError("cells must be an instance of list or Cells")
-        if isinstance(cells, list):
+    @args_checked
+    def cells(self, cells: ty.Iterable[montepy.Cell] | Cells):
+        if not isinstance(cells, Cells):
             cells = Cells(cells)
         if cells is self.cells:
             return
@@ -174,7 +234,7 @@ class MCNP_Problem:
         """
         return self._mode
 
-    def set_mode(self, particles):
+    def set_mode(self, particles: ty.Iterable[str] | str):
         """Sets the mode of problem to the given particles.
 
         For details see: :meth:`~montepy.Mode.set`.
@@ -213,12 +273,13 @@ class MCNP_Problem:
         return self._mcnp_version
 
     @mcnp_version.setter
-    def mcnp_version(self, version):
+    @args_checked
+    def mcnp_version(self, version: ty.VersionType):
         """
         Parameters
         ----------
         version : tuple
-            the version tuple. Must be greater than 6.2.0
+            the version tuple. Must be greater than (5, 1, 60)
         """
         if version < (5, 1, 60):
             raise ValueError(f"The mcnp_version {version} is not supported by MontePy")
@@ -238,10 +299,9 @@ class MCNP_Problem:
         return self._surfaces
 
     @surfaces.setter
-    def surfaces(self, surfs):
-        if not isinstance(surfs, (list, Surfaces)):
-            raise TypeError("Surfaces must be of type list or Surfaces")
-        if isinstance(surfs, list):
+    @args_checked
+    def surfaces(self, surfs: ty.Iterable[montepy.Surface] | Surfaces):
+        if not isinstance(surfs, Surfaces):
             surfs = Surfaces(surfs)
         surfs.link_to_problem(self)
         self._surfaces = surfs
@@ -260,10 +320,9 @@ class MCNP_Problem:
         return self._materials
 
     @materials.setter
-    def materials(self, mats):
-        if not isinstance(mats, (list, Materials)):
-            raise TypeError("materials must be of type list and Materials")
-        if isinstance(mats, list):
+    @args_checked
+    def materials(self, mats: ty.Iterable[montepy.Material] | Materials):
+        if not isinstance(mats, Materials):
             mats = Materials(mats)
         mats.link_to_problem(self)
         self._materials = mats
@@ -291,6 +350,8 @@ class MCNP_Problem:
         -------
         dict[str, bool]
         """
+        if not hasattr(self._print_in_data_block, "_problem"):
+            self._print_in_data_block.link_to_problem(self)
         return self._print_in_data_block
 
     @property
@@ -338,7 +399,8 @@ class MCNP_Problem:
         return self._title
 
     @title.setter
-    def title(self, title):
+    @args_checked
+    def title(self, title: str):
         """
         Parameters
         ----------
@@ -368,8 +430,19 @@ class MCNP_Problem:
         """
         return self._transforms
 
-    def parse_input(self, check_input=False, replace=True):
+    @args_checked
+    def parse_input(
+        self, check_input: bool = False, replace: bool = True, *, jit_parse: bool = True
+    ):
         """Semantically parses the MCNP file provided to the constructor.
+
+        .. versionchanged:: 1.3.0
+
+            Added ``jit_parse`` argument
+
+        .. note:
+
+            ``ceck_input`` takes priority over ``jit_parse`` and will force it be ``False``.
 
         Parameters
         ----------
@@ -378,9 +451,16 @@ class MCNP_Problem:
             them as warnings to log.
         replace : bool
             replace all non-ASCII characters with a space (0x20)
+        jit_parse: bool
+            Uses just-in-time (fast) parsing when True.
         """
+        if self.input_file is None:
+            return
+        if check_input:
+            jit_parse = False
         trailing_comment = None
         last_obj = None
+        last_input = None
         last_block = None
         OBJ_MATCHER = {
             block_type.BlockType.CELL: (Cell, self._cells),
@@ -390,6 +470,7 @@ class MCNP_Problem:
             ),
             block_type.BlockType.DATA: (parse_data, self._data_inputs),
         }
+
         try:
             for i, input in enumerate(
                 input_syntax_reader.read_input_syntax(
@@ -406,11 +487,12 @@ class MCNP_Problem:
                 elif isinstance(input, mcnp_input.Input):
                     if last_block != input.block_type:
                         trailing_comment = None
+                        last_input = None
                         last_block = input.block_type
                     obj_parser, obj_container = OBJ_MATCHER[input.block_type]
                     if len(input.input_lines) > 0:
                         try:
-                            obj = obj_parser(input)
+                            obj = obj_parser(input, problem=self, jit_parse=jit_parse)
                             obj.link_to_problem(self)
                             if isinstance(
                                 obj_container,
@@ -432,23 +514,57 @@ class MCNP_Problem:
                                 continue
                             else:
                                 raise e
-                        if isinstance(obj, Material):
+                        if isinstance(obj, (Material, montepy.ThermalScatteringLaw)):
                             self._materials.append(obj, insert_in_data=False)
-                        if isinstance(obj, transform.Transform):
+                        elif isinstance(obj, transform.Transform):
                             self._transforms.append(obj, insert_in_data=False)
+                        elif isinstance(
+                            obj, montepy.data_inputs.cell_modifier.CellModifierInput
+                        ):
+                            self.cells.grab_input(obj, self, check_input)
+                    obj_tree = getattr(obj, "_tree", None)
+                    has_start_pad = obj_tree is not None and "start_pad" in getattr(
+                        obj_tree, "nodes", {}
+                    )
+                    # In JIT mode, trailing comments may not be in the JIT tree;
+                    # fall back to extracting them from raw input lines. This
+                    # doesn't depend on obj's own tree, only on last_input's
+                    # raw lines, so it must not be gated on has_start_pad.
+                    used_fallback = False
+                    if trailing_comment is None and last_input is not None:
+                        trailing_comment = _extract_trailing_from_input(last_input)
+                        used_fallback = trailing_comment is not None
                     if trailing_comment is not None and last_obj is not None:
-                        obj._grab_beginning_comment(trailing_comment, last_obj)
-                        last_obj._delete_trailing_comment()
-                    trailing_comment = obj.trailing_comment
+                        if has_start_pad:
+                            obj._grab_beginning_comment(trailing_comment, last_obj)
+                        else:
+                            # obj hasn't been fully parsed yet (JIT stub); stash
+                            # the comment on its raw lines so its own eventual
+                            # full parse picks it up as its start_pad naturally.
+                            _prepend_comment_to_input(input, trailing_comment)
+                        if hasattr(last_obj, "_not_parsed"):
+                            # Don't force a parse. The comment only needs to be
+                            # removed if it came from the stub's own tree.
+                            if not used_fallback:
+                                last_obj._tree._delete_trailing_comment()
+                        else:
+                            # The object may have been parsed since its comment
+                            # was read (e.g., when merged), and may own several
+                            # trees, such as Importance.
+                            last_obj._delete_trailing_comment()
+                        trailing_comment = None
+                    if obj_tree is not None:
+                        trailing_comment = obj_tree.get_trailing_comment()
                     last_obj = obj
+                    last_input = input
         except UnsupportedFeature as e:
             if check_input:
                 warnings.warn(f"{type(e).__name__}: {e.message}", stacklevel=2)
             else:
                 raise e
-        self.__update_internal_pointers(check_input)
+        self.__update_internal_pointers(check_input, jit_parse)
 
-    def __update_internal_pointers(self, check_input=False):
+    def __update_internal_pointers(self, check_input=False, jit_parse=True):
         """Updates the internal pointers between objects
 
         Parameters
@@ -465,34 +581,29 @@ class MCNP_Problem:
                 raise e
 
         self.__load_data_inputs_to_object(self._data_inputs)
-        self._cells.update_pointers(
-            self.cells,
-            self.materials,
-            self.surfaces,
-            self._data_inputs,
-            self,
-            check_input,
-        )
-        for surface in self._surfaces:
+        for collect_type in self._NUMBERED_OBJ_MAP.values():
             try:
-                surface.update_pointers(self.surfaces, self._data_inputs)
-            except (BrokenObjectLinkError,) as e:
+                attr_name = f"_{collect_type.__name__.lower()}"
+                getattr(self, attr_name).finalize_init(jit_parse=jit_parse)
+            except (BrokenObjectLinkError, MalformedInputError) as e:
                 handle_error(e)
-        to_delete = []
-        for data_index, data_input in enumerate(self._data_inputs):
-            try:
-                if data_input.update_pointers(self._data_inputs):
-                    to_delete.append(data_index)
-            except (
-                BrokenObjectLinkError,
-                MalformedInputError,
-            ) as e:
-                handle_error(e)
-                continue
-        for delete_index in to_delete[::-1]:
-            del self._data_inputs[delete_index]
+        if jit_parse:
+            return
 
-    def remove_duplicate_surfaces(self, tolerance):
+        for collection_type in self._NUMBERED_OBJ_MAP.values():
+            attr = collection_type.__name__.lower()
+            collection = getattr(self, attr)
+            attrs_to_poke = collection._obj_class._POINTER_ATTRS
+            for obj in collection:
+                for attr in attrs_to_poke:
+                    # trigger pulling objects from problem with decorator
+                    try:
+                        getattr(obj, attr)
+                    except (BrokenObjectLinkError, MalformedInputError) as e:
+                        handle_error(e)
+
+    @args_checked
+    def remove_duplicate_surfaces(self, tolerance: ty.PositiveReal):
         """Finds duplicate surfaces in the problem, and remove them.
 
         Parameters
@@ -533,7 +644,10 @@ class MCNP_Problem:
             " as the children are automatically added with the cell."
         )
 
-    def write_problem(self, destination, overwrite=False):
+    @args_checked
+    def write_problem(
+        self, destination: str | os.PathLike | io.TextIOBase, overwrite: bool = False
+    ):
         """Write the problem to a file or writeable object.
 
         Parameters
@@ -555,7 +669,8 @@ class MCNP_Problem:
                 f"destination f{destination} is not a file path or writable object"
             )
 
-    def write_to_file(self, file_path, overwrite=False):
+    @args_checked
+    def write_to_file(self, file_path: str | os.PathLike, overwrite: bool = False):
         """Writes the problem to a file.
 
         .. versionchanged:: 0.3.0
@@ -675,17 +790,14 @@ class MCNP_Problem:
         return f"MCNP problem for: {self._input_file}, {self._title}"
 
     def __repr__(self):
-        ret = f"MCNP problem for: {self._input_file}\n"
-        if self.message:
-            ret += str(self._message) + "\n"
-        ret += str(self._title) + "\n"
-        for collection in [self.cells, self.surfaces, self.data_inputs]:
-            for obj in collection:
-                ret += f"{obj}\n"
-            ret += "\n"
-        return ret
+        return f"MCNP_Problem({repr(str(self._input_file))})"
 
-    def parse(self, input: str, append: bool = True) -> montepy.mcnp_object.MCNP_Object:
+    @args_checked
+    def parse(
+        self,
+        input: str,
+        append: bool = True,
+    ) -> montepy.mcnp_object.MCNP_Object:
         """Parses the MCNP object given by the string, and links it adds it to this problem.
 
         This attempts to identify the input type by trying to parse it in the following order:
@@ -697,7 +809,7 @@ class MCNP_Problem:
         This is done mostly for optimization to go from easiest parsing to hardest.
         This will:
 
-        #. Parse the input
+        #. Parse the input (fully)
         #. Link it to other objects in the problem. Note: this will raise an error if those objects don't exist.
         #. Append it to the appropriate collection
 
@@ -726,28 +838,39 @@ class MCNP_Problem:
             if the object's number is already taken
         """
         try:
-            obj = montepy.parse_data(input)
+            obj = montepy.parse_data(input, jit_parse=False)
         except ParsingError:
             try:
-                obj = montepy.parse_surface(input)
+                obj = montepy.parse_surface(input, jit_parse=False)
             except ParsingError:
-                obj = montepy.Cell(input)
+                obj = montepy.Cell(input, jit_parse=False)
                 # let final parsing error bubble up
         obj.link_to_problem(self)
-        if isinstance(obj, montepy.Cell):
-            obj.update_pointers(self.cells, self.materials, self.surfaces)
-            if append:
+        if append:
+            if isinstance(obj, montepy.Cell):
                 self.cells.append(obj)
-        elif isinstance(obj, montepy.surfaces.surface.Surface):
-            obj.update_pointers(self.surfaces, self.data_inputs)
-            if append:
+            elif isinstance(obj, montepy.surfaces.surface.Surface):
                 self.surfaces.append(obj)
-        else:
-            obj.update_pointers(self.data_inputs)
-            if append:
+            else:
                 self.data_inputs.append(obj)
                 if isinstance(obj, Material):
                     self._materials.append(obj, insert_in_data=False)
                 if isinstance(obj, transform.Transform):
                     self._transforms.append(obj, insert_in_data=False)
         return obj
+
+    def full_parse(self):
+        """
+        Trigger a full parse for all objects in this problem.
+
+        .. note::
+
+            For large models this could be a very expensive operation.
+
+        .. versionadded:: 1.6.0b1
+
+        """
+        for collection in [self.cells, self.surfaces, self.data_inputs]:
+            for obj in collection:
+                obj.full_parse()
+        self.__update_internal_pointers(jit_parse=False)
