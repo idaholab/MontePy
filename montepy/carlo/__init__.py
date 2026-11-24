@@ -6,3 +6,5 @@ if _find_spec("openmc") is None:
 		"Install it with 'conda install -c conda-forge openmc' "
 		"or see https://docs.openmc.org/en/stable/quickinstall.html",
 	)
+
+import montepy.carlo.material_objects
