@@ -18,17 +18,23 @@ class OpenmcCompatMaterial(montepy.data_inputs.material.Material):
     ----------
     omc_mat : openmc.Material
         The existing
-    library : str
+    xs_library : str
+        Cross section library suffix for all nuclides unless overridden
+    xs_overrides : dict of {str : str} or None
+        Mapping of {nuclide : xs_library} for specific nuclides
+    tsl_library : str or None
         Thermal scattering law library suffix (e.g. "40t")
     """
+
     def __init__(
-            self,
-             omc_mat: openmc.Material,
-             library: str,
-             library_overrides: dict[str, str]=None,
-        ):
-        if library_overrides is None:
-            library_overrides = {}
+        self,
+        omc_mat: openmc.Material,
+        xs_library: str,
+        xs_overrides: dict[str, str] = None,
+        tsl_library: str = None,
+    ):
+        if xs_overrides is None:
+            xs_overrides = {}
         super().__init__(number=omc_mat.id)
         namestr = f"Material {omc_mat.id}"
         if omc_mat.name:
@@ -36,11 +42,11 @@ class OpenmcCompatMaterial(montepy.data_inputs.material.Material):
         # Get all the material components
         if not omc_mat.nuclides:
             raise ValueError(f"{namestr} has no nuclides.")
-        for (name, frac, frac_type) in omc_mat.nuclides:
-            suffix = library_overrides.get(name, library)
+        for name, frac, frac_type in omc_mat.nuclides:
+            suffix = xs_overrides.get(name, xs_library)
             nuc = montepy.data_inputs.nuclide.Nuclide(name, library=suffix)
             self.add_nuclide(nuc, frac)
-        if frac_type == 'wo':
+        if frac_type == "wo":
             self.is_atom_fraction = False
         # Thermal scattering law, still being implemented
         if omc_mat._sab:
@@ -51,5 +57,5 @@ class OpenmcCompatMaterial(montepy.data_inputs.material.Material):
                     f"{namestr} has {sab} at a fraction of {frac}. "
                     "Partial S(a,b) tables are not permitted in MCNP."
                 )
-            # law = suffix_matching_function(sab)
+            # law = suffix_matching_function(sab, tsl_library)
             # self.add_thermal_scattering(law)
