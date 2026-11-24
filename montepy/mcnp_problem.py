@@ -867,7 +867,7 @@ class MCNP_Problem:
 
             For large models this could be a very expensive operation.
 
-        .. versionadded:: 1.6.0b1
+        .. versionadded:: 1.6.0
 
         """
         for collection in [self.cells, self.surfaces, self.data_inputs]:

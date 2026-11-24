@@ -33,7 +33,7 @@ class ThermalScatteringLaw(DataInputAbstract):
        :3a: 264
        :2: 171
 
-    .. versionchanged:: 1.6.0b1
+    .. versionchanged:: 1.6.0
 
         Added ``jit_parse`` parameter
 

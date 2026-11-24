@@ -41,7 +41,7 @@ import numbers
 class Importance(CellModifierInput):
     """A data input that sets the importance for a cell(s).
 
-    .. versionchanged:: 1.6.0b1
+    .. versionchanged:: 1.6.0
 
         Added ``jit_parse`` parameter
 

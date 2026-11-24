@@ -291,7 +291,7 @@ class Material(data_input.DataInputAbstract, Numbered_MCNP_Object):
             * Added ability to search by Nuclide
             * Added Support for default libraries (e.g., ``nlib=80c``).
 
-    .. versionchanged:: 1.6.0b1
+    .. versionchanged:: 1.6.0
 
         Added ``jit_parse`` parameter
 

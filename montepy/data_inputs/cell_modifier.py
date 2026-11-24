@@ -44,7 +44,7 @@ class CellModifierInput(DataInputAbstract):
 
     Examples: IMP, VOL, etc.
 
-    .. versionchanged:: 1.6.0b1
+    .. versionchanged:: 1.6.0
 
         Added ``jit_parse`` parameter
 
