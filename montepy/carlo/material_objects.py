@@ -4,11 +4,11 @@
 Material instances and their related objects
 """
 
-import warnings
 import openmc
 import montepy.data_inputs.nuclide
 import montepy.data_inputs.material
 import montepy.data_inputs.thermal_scattering
+from .s_alpha_beta_tables import mcnp_sab_name
 
 
 class OpenmcCompatMaterial(montepy.data_inputs.material.Material):
@@ -48,14 +48,23 @@ class OpenmcCompatMaterial(montepy.data_inputs.material.Material):
             self.add_nuclide(nuc, frac)
         if frac_type == "wo":
             self.is_atom_fraction = False
-        # Thermal scattering law, still being implemented
-        if omc_mat._sab:
-            warnings.warn("Thermal Scattering Laws are not yet implemented!")
+        # Thermal scattering laws
+        if omc_mat._sab and tsl_library is None:
+            raise ValueError(
+                f"{namestr} has S(a,b) tables {[sab for sab, _ in omc_mat._sab]} "
+                "but no tsl_library was given."
+            )
         for sab, frac in omc_mat._sab:  # not exposed by OpenMC
             if frac != 1.0:
                 raise ValueError(
                     f"{namestr} has {sab} at a fraction of {frac}. "
                     "Partial S(a,b) tables are not permitted in MCNP."
                 )
-            # law = suffix_matching_function(sab, tsl_library)
-            # self.add_thermal_scattering(law)
+            try:
+                law = mcnp_sab_name(sab, tsl_library)
+            except (KeyError, ValueError) as err:
+                raise ValueError(
+                    f"{namestr}: cannot map {sab} to MCNP with suffix "
+                    f"{tsl_library!r}: {err.args[0]}"
+                ) from err
+            self.add_thermal_scattering(law)
