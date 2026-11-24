@@ -266,6 +266,7 @@ def test_volumes_for_only_some_cells():
 def test_volume_decimal_multiply(mult, second):
     cells = [montepy.Cell(Input([f"{i + 1} 0 -1"], BlockType.CELL)) for i in range(2)]
     prob = MCNP_Problem(None)
+    prob.surfaces.append(montepy.Surface("1 PZ 1"))
     prob.cells = cells
     vol_card = Input([f"vol 2 {mult}"], BlockType.DATA)
     vol_data = volume.Volume(vol_card, in_cell_block=False)

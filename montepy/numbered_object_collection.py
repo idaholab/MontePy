@@ -292,6 +292,7 @@ class NumberedObjectCollection(ABC):
                 else:
                     if child is parent_obj:
                         pass
+
     def get_by_comment(
         self, searcher: str | re.Pattern
     ) -> typing.Generator[Numbered_MCNP_Object, None, None]:

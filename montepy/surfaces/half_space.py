@@ -13,6 +13,8 @@ from montepy.input_parser.syntax_node import (
 import montepy.types as ty
 from montepy.utilities import *
 
+import warnings
+
 
 class HalfSpace:
     """Class representing a geometry half_space.
@@ -98,7 +100,7 @@ class HalfSpace:
         self._node = node
         self._cell = None
 
-    @make_prop_pointer("_left", ())
+    @property
     def left(self) -> HalfSpace:
         """The left side of the binary tree of this half_space.
 
@@ -107,9 +109,14 @@ class HalfSpace:
         HalfSpace
             the left side of the tree.
         """
-        pass
+        return self._left
 
-    @make_prop_pointer("_right", (), deletable=True)
+    @left.setter
+    @args_checked
+    def left(self, value: HalfSpace):
+        self._set_side("_left", value)
+
+    @property
     def right(self) -> HalfSpace | None:
         """The right side of the binary tree of this half_space if any.
 
@@ -118,7 +125,34 @@ class HalfSpace:
         HalfSpace
             the right side of the tree.
         """
-        pass
+        return self._right
+
+    @right.setter
+    @args_checked
+    def right(self, value: HalfSpace):
+        self._set_side("_right", value)
+
+    @right.deleter
+    def right(self):
+        self._set_side("_right", None)
+
+    def _set_side(self, side, value):
+        """Sets one side of this tree, and updates the parent cell, if any.
+
+        Parameters
+        ----------
+        side : str
+            the name of the attribute to set.
+        value : HalfSpace | None
+            the new side. Can only be None to delete the right side.
+            The type is checked by the public setters.
+        """
+        old = getattr(self, side)
+        if old is not None and self._cell is not None:
+            old._link_to_cell(None)
+        setattr(self, side, value)
+        if self._cell is not None:
+            self._cell._geometry_tree_changed()
 
     @make_prop_pointer("_operator", Operator)
     def operator(self) -> Operator:
@@ -176,6 +210,21 @@ class HalfSpace:
             sides.append(None)
         return HalfSpace(sides[0], node.operator, sides[1], node)
 
+    def _link_to_cell(self, cell):
+        """Links this HalfSpace and all of its children to the parent cell.
+
+        Unlike :func:`update_pointers` this does not resolve any dividers.
+
+        Parameters
+        ----------
+        cell : Cell
+            the cell this HalfSpace is tied to.
+        """
+        self._cell = cell
+        self.left._link_to_cell(cell)
+        if self.right is not None:
+            self.right._link_to_cell(cell)
+
     def update_pointers(self, cells, surfaces, cell):
         """Update pointers, and link this object to other objects in the problem.
 
@@ -224,6 +273,9 @@ class HalfSpace:
                     )
                 if item not in parent:
                     parent.append(item)
+        problem = self._cell._problem
+        if problem:
+            self._cell._add_children_objs(problem)
 
     @args_checked
     def remove_duplicate_surfaces(
@@ -325,6 +377,8 @@ class HalfSpace:
             raise ValueError(
                 f"{old_divider} (number: {old_divider.number}) not found in geometry tree."
             )
+        if cell is not None and cell._problem:
+            cell._add_children_objs(cell._problem)
 
     def _replace_recursive(self, old_divider, new_divider) -> bool:
         replaced = self.left._replace_recursive(old_divider, new_divider)
@@ -409,13 +463,15 @@ class HalfSpace:
         """
         if self.operator == Operator.INTERSECTION:
             if type(self) == type(self.left) and self.left.operator == Operator.UNION:
-                self.left = HalfSpace(self.left, Operator.GROUP)
+                self._left = HalfSpace(self.left, Operator.GROUP)
+                self._left._cell = self._cell
             if (
                 self.right is not None
                 and type(self) == type(self.right)
                 and self.right.operator == Operator.UNION
             ):
-                self.right = HalfSpace(self.right, Operator.GROUP)
+                self._right = HalfSpace(self.right, Operator.GROUP)
+                self._right._cell = self._cell
 
     def _update_node(self):
         """Ensures that the syntax node properly reflects the current HalfSpace structure"""
@@ -559,6 +615,68 @@ class HalfSpace:
 
     def _generate_default_tree(self):
         pass
+
+    def format_for_mcnp_input(self, mcnp_version: tuple[int, int, int]) -> list[str]:
+        """Creates a list of strings representing this geometry as it would
+        appear in a cell definition.
+
+        .. versionadded:: 1.6.0
+
+        Parameters
+        ----------
+        mcnp_version : tuple[int, int, int]
+            The tuple for the MCNP version that must be exported to.
+
+        Returns
+        -------
+        list[str]
+            a list of strings for the lines that this geometry will occupy.
+        """
+        self._update_values()
+        return montepy.mcnp_object.MCNP_Object.wrap_string_for_mcnp(
+            self.node.format().strip(), mcnp_version, True
+        )
+
+    def mcnp_str(self, mcnp_version: tuple[int, int, int] = None) -> str:
+        """Returns a string of this geometry as it would appear in a cell definition.
+
+        .. versionadded:: 1.6.0
+
+        Examples
+        ^^^^^^^^
+
+        .. testcode::
+
+            import montepy
+            cell = montepy.Cell("1 0 -123 234 imp:n=1 u=2")
+            print(cell.geometry.mcnp_str())
+
+        .. testoutput::
+
+            -123 234
+
+        Parameters
+        ----------
+        mcnp_version : tuple[int, int, int]
+            The tuple for the MCNP version that must be exported to.
+            Defaults to the version of the problem this geometry's cell
+            belongs to, or ``montepy.MCNP_VERSION``.
+
+        Returns
+        -------
+        str
+            The string that would be printed in a file
+        """
+        if mcnp_version is None:
+            cell = getattr(self, "_cell", None)
+            problem = getattr(cell, "_problem", None)
+            if problem is not None:
+                mcnp_version = problem.mcnp_version
+            else:
+                mcnp_version = montepy.MCNP_VERSION
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            return "\n".join(self.format_for_mcnp_input(mcnp_version))
 
     def __str__(self):
         if self.operator == Operator.COMPLEMENT:
@@ -749,6 +867,9 @@ class UnitHalfSpace(HalfSpace):
         else:
             side = not node.is_negative
         return UnitHalfSpace(node.value, side, is_cell, node)
+
+    def _link_to_cell(self, cell):
+        self._cell = cell
 
     def update_pointers(self, cells, surfaces, cell):
         self._cell = cell

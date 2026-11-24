@@ -698,7 +698,7 @@ def test_importance_format_unmutated(importance_problem):
     output = imp.format_for_mcnp_input((6, 2, 0))
     print(output)
     assert len(output) == 4
-    assert "imp:n,p 1 1 1 0 3" == output[1]
+    assert "imp:n,p 1 1 1r 0 3" == output[1]
     assert "imp:e   0 2r 1 r" == output[3]
 
 
@@ -709,9 +709,12 @@ def test_importance_format_mutated(importance_problem):
     with pytest.warns(LineExpansionWarning):
         output = imp.format_for_mcnp_input((6, 2, 0))
     print(output)
-    assert len(output) == 6
-    assert "imp:n 0.5 1 1 0 3" in output
-    assert "c special comment related to #520" == output[2]
+    # the comment trails imp:n,p, so it must only appear once, before imp:e (#1048)
+    assert len(output) == 5
+    assert "imp:n 0.5 1 1r 0 3" in output
+    assert output.count("c special comment related to #520") == 1
+    assert "c special comment related to #520" == output[3]
+    assert "imp:e   0 2r 1 r" == output[4]
 
 
 def test_importance_write_unmutated(importance_problem):
@@ -725,7 +728,7 @@ def test_importance_write_unmutated(importance_problem):
         print(line.rstrip())
         if "imp:n,p 1" in line:
             found_np = True
-        elif "imp:e" in line:
+        elif "imp:e   0 2r 1 r" in line:
             found_e = True
     assert found_np
     assert found_e
@@ -745,7 +748,7 @@ def test_importance_write_mutated(importance_problem):
         print(line.rstrip())
         if "imp:n 0.5" in line:
             found_n = True
-        elif "imp:e" in line:
+        elif "imp:e   0 2r 1 r" in line:
             found_e = True
     assert found_n
     assert found_e
@@ -991,7 +994,7 @@ def test_universe_data_formatter(data_universe_problem):
     # test unmutated
     output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
     print(output)
-    assert "u 350 2J -1" in output
+    assert "u 350 2J -1 J" in [line.rstrip() for line in output]
     universe = problem.universes[350]
     # test mutated
     cell = problem.cells[3]
@@ -1000,7 +1003,7 @@ def test_universe_data_formatter(data_universe_problem):
     with pytest.warns(LineExpansionWarning):
         output = problem.cells._universe.format_for_mcnp_input((6, 2, 0))
     print(output)
-    assert "u 350 J -350 -1" in output
+    assert "u 350 J -350 -1 J" in [line.rstrip() for line in output]
     # test appending a new mutated cell
     new_cell = cell.clone()
     new_cell.number = 1000
@@ -1416,3 +1419,12 @@ def test_problem_jit_parse():
     for objects in (problem.cells, problem.surfaces, problem.data_inputs):
         for obj in objects:
             assert not obj.fully_parsed
+
+
+# based on #1048
+def test_duplicate_importance_trailing_comment(importance_problem):
+    problem = copy.deepcopy(importance_problem)
+    imp = problem.cells._importance
+    comment = "c special comment related to #520"
+    problem.cells[1].importance.neutron = 0.5
+    assert imp.mcnp_str().count(comment) == 1

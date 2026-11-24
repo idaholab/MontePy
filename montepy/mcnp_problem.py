@@ -542,8 +542,16 @@ class MCNP_Problem:
                             # the comment on its raw lines so its own eventual
                             # full parse picks it up as its start_pad naturally.
                             _prepend_comment_to_input(input, trailing_comment)
-                        if not used_fallback:
-                            last_obj._tree._delete_trailing_comment()
+                        if hasattr(last_obj, "_not_parsed"):
+                            # Don't force a parse. The comment only needs to be
+                            # removed if it came from the stub's own tree.
+                            if not used_fallback:
+                                last_obj._tree._delete_trailing_comment()
+                        else:
+                            # The object may have been parsed since its comment
+                            # was read (e.g., when merged), and may own several
+                            # trees, such as Importance.
+                            last_obj._delete_trailing_comment()
                         trailing_comment = None
                     if obj_tree is not None:
                         trailing_comment = obj_tree.get_trailing_comment()

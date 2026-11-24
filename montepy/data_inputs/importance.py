@@ -118,7 +118,7 @@ class Importance(CellModifierInput):
         self._part_combos.append(self.particle_classifiers)
         for particle in self.particle_classifiers:
             self._particle_importances[particle] = copy.deepcopy(self._tree)
-            self._real_tree[particle] = copy.deepcopy(self._tree)
+            self._real_tree[particle] = self._particle_importances[particle]
 
     def _generate_default_cell_tree(self, particle=None):
         classifier = syntax_node.ClassifierNode()
@@ -438,7 +438,7 @@ class Importance(CellModifierInput):
         particle_pairings = {
             p: t["classifier"].particles.particles for p, t in self._real_tree.items()
         }
-        for particle in self._problem.mode.particles:
+        for particle in sorted(self._problem.mode.particles):
             if particle not in particle_pairings:
                 particle_pairings[particle] = {particle}
             for cell in self._problem.cells:
@@ -454,7 +454,7 @@ class Importance(CellModifierInput):
                         "is not yet implemented in MontePy."
                     )
                 new_vals[particle].append(tree["data"][0])
-        return self._try_combine_values(new_vals, particle_pairings)
+        return new_vals, self._try_combine_values(new_vals, particle_pairings)
 
     def _update_values(self, in_middle=False):
         if self.in_cell_block:
@@ -466,26 +466,28 @@ class Importance(CellModifierInput):
                     if isinstance(edge, syntax_node.ValueNode) and edge.padding is None:
                         edge.padding = syntax_node.PaddingNode(" ")
         else:
-            new_vals = self._collect_new_values()
-            for part_set, data in new_vals.items():
-                for particle in part_set:
-                    if particle not in self._real_tree:
-                        tree = _generate_default_data_tree(particle)
-                        self._real_tree[particle] = tree
-                        padding = tree["classifier"].padding
-                        tree.nodes["classifier"] = copy.deepcopy(
-                            next(
-                                iter(self._problem.cells)
-                            ).importance._particle_importances[particle]["classifier"]
-                        )
-                        tree["classifier"].padding = padding
+            new_vals, can_combine_sets = self._collect_new_values()
+            for particle, data in new_vals.items():
+                if particle not in self._real_tree:
+                    tree = _generate_default_data_tree(particle)
+                    self._real_tree[particle] = tree
+                    padding = tree["classifier"].padding
+                    tree.nodes["classifier"] = copy.deepcopy(
+                        next(
+                            iter(self._problem.cells)
+                        ).importance._particle_importances[particle]["classifier"]
+                    )
+                    tree["classifier"].padding = padding
+                tree = self._real_tree[particle]
+                tree["data"].update_with_new_values(data)
+            for combination in can_combine_sets:
+                for particle in combination:
                     tree = self._real_tree[particle]
-                    tree["classifier"].particles.particles = set(part_set)
-                    tree["data"].update_with_new_values(data)
+                    tree["classifier"].particles.particles = set(combination)
 
     def _try_combine_values(self, new_vals, particle_pairings):
         covered_parts = set()
-        ret = {}
+        ret = []
         for particle, pairings in particle_pairings.items():
             if particle in covered_parts:
                 continue
@@ -509,7 +511,7 @@ class Importance(CellModifierInput):
                 if matches:
                     matching_parts.add(test_part)
                     covered_parts.add(test_part)
-            ret[frozenset(matching_parts)] = gold
+            ret.append(frozenset(matching_parts))
         return ret
 
     def _update_cell_values(self):
@@ -534,6 +536,20 @@ class Importance(CellModifierInput):
 
     @needs_full_cst
     def _delete_trailing_comment(self):
+        # Other importances may have been merged in after this one was parsed,
+        # so the last tree is not necessarily the one with the comment.
+        # _part_combos only holds the groups that this input was parsed with.
+        own_parts = [
+            part
+            for combo in self._part_combos
+            for part in sorted(combo)
+            if part in self._real_tree
+        ]
+        if own_parts:
+            part = own_parts[-1]
+            self._real_tree[part]._delete_trailing_comment()
+            self.__delete_common_trailing(part)
+            return
         for part, tree in reversed(self._real_tree.items()):
             tree._delete_trailing_comment()
             self.__delete_common_trailing(part)
@@ -545,11 +561,10 @@ class Importance(CellModifierInput):
         for combo_set in self._part_combos:
             if part in combo_set:
                 to_delete |= combo_set
-        if self._in_cell_block:
-            for part in to_delete:
+        for part in to_delete:
+            if part in self._particle_importances:
                 self._particle_importances[part]["data"]._delete_trailing_comment()
-        else:
-            for part in to_delete:
+            if part in self._real_tree:
                 self._real_tree[part]._delete_trailing_comment()
 
     @needs_full_cst

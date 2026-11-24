@@ -437,6 +437,7 @@ class MCNP_Parser(Parser, metaclass=MetaBuilder):
         "KEYWORD",
         "LOG_INTERPOLATE",
         "NULL",
+        "NUM_MULTIPLY",
         "REPEAT",
         "SURFACE_TYPE",
         "THERMAL_LAW",

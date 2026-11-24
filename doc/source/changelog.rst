@@ -17,27 +17,36 @@ MontePy Changelog
 
 * Added support for just-in-time parsing (:issue:`529`).
 * Add _checkvalue.py_ to codebase (:issue:`687`).
+* Added :meth:`~montepy.numbered_object_collection.NumberedObjectCollection.get_by_comment` to find numbered objects by comment text or regular expression (:issue:`982`).
+* Added ``HalfSpace.mcnp_str`` and ``HalfSpace.format_for_mcnp_input`` to print just a cell's geometry as it would appear in an MCNP input (:issue:`942`).
 
 **Performance Improvement**
 
 * Add just-in-time parsing which can significantly improve performance for working with large models under some circumstances (:issue:`529`).
-* Added :meth:`~montepy.numbered_object_collection.NumberedObjectCollection.get_by_comment` to find numbered objects by comment text or regular expression (:issue:`982`).
-
-**Bugs Fixed**
-
-* Fixed ``change_to_ascii`` raising ``UnicodeEncodeError`` on U+0080 instead of stripping it (:issue:`1018`).
-* Fixed adjacent shortcuts losing padding, failing to parse, or changing values when written back (:issue:`1037`).
-* Fixed floating point multiply shortcuts (e.g., ``1.5m``, ``.5m``, ``1e3m``, or ``1+3m``) failing to parse (:issue:`1019`).
-* Fixed ``fortran_float`` failing on an exponent after a trailing decimal point, such as ``1.-3`` (:pull:`1036`).
-
-**Documentation**
-
-* Added links to sections of all almost all MCNP manuals when practical (:issue:`413`).
 
 
 1.5 Releases
 ============
 
+1.5.1
+-----
+
+**Bugs Fixed**
+
+* Fixed ``change_to_ascii`` raising ``UnicodeEncodeError`` on U+0080 instead of stripping it (:issue:`1018`).
+* Fixed a cell's geometry not being fully linked to the cell, which left ``Cell.surfaces``, ``Cell.complements``, and the problem out of date after changing the geometry, and could write inputs with undefined surfaces (:issue:`1054`).
+* Fixed multiply shortcuts such as ``1000.00m`` and numbers such as ``1234.56e-3`` being lexed as a ZAID, while keeping ZAIDs such as ``1001.50m`` and ``1001.03e`` working in materials (:issue:`1045`).
+* Fixed adjacent shortcuts losing padding, failing to parse, or changing values when written back (:issue:`1037`).
+* Fixed floating point multiply shortcuts (e.g., ``1.5m``, ``.5m``, ``1e3m``, or ``1+3m``) failing to parse (:issue:`1019`).
+* Fixed ``fortran_float`` failing on an exponent after a trailing decimal point, such as ``1.-3`` (:pull:`1036`).
+* Fixed issue with ``Importance`` inputs in the data block duplicating trailing comments (:issue:`1048`).
+* Fixed bug where ``U 0 2R 5`` would crash on writing, and also ensured universes in the data block are never implicit (:issue:`1051`).
+* Fixed multigroup default libraries in materials, such as ``nlib=50m``, failing to parse (:pull:`1046`).
+* Fixed :meth:`~montepy.Material.get_nuclide_library` raising ``AttributeError`` for a nuclide without a library, such as ``1001`` (:pull:`1046`).
+
+**Documentation**
+
+* Added links to sections of all almost all MCNP manuals when practical (:issue:`413`).
 
 1.5.0
 --------------
