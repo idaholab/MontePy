@@ -61,7 +61,7 @@ doc = [
 	"pydata_sphinx_theme",
 	"sphinx-favicon",
 	"sphinx-copybutton",
-  	"sphinx_autodoc_typehints",
+  	"sphinx_autodoc_typehints<3.14",
 	"autodocsumm",
 	"jupyterlite-sphinx>=0.22",
 	"jupyterlite-pyodide-kernel",
