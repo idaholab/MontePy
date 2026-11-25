@@ -187,11 +187,13 @@ def make_prop_pointer(
             def setter(self, value):
                 if hasattr(self, "_not_parsed"):
                     self.full_parse()
-                nonlocal types
-                if isinstance(types, tuple) and len(types) == 0:
-                    types = type(self)
-                if not isinstance(value, types):
-                    raise TypeError(f"{func.__name__} must be of type: {types}")
+                # Not saved in ``types``: the setter is shared by every object
+                # (and subclass) that has this property.
+                allowed = types
+                if isinstance(allowed, tuple) and len(allowed) == 0:
+                    allowed = type(self)
+                if not isinstance(value, allowed):
+                    raise TypeError(f"{func.__name__} must be of type: {allowed}")
                 if base_type is not None and not isinstance(value, base_type):
                     value = base_type(value)
                 if validator:

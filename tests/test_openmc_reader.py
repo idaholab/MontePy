@@ -17,7 +17,7 @@ from montepy.geometry_operators import Operator
 from montepy.input_parser import openmc_reader
 from montepy.surfaces.half_space import UnitHalfSpace
 
-MODEL = os.path.join(os.path.dirname(__file__), "inputs", "openmc_model.xml")
+MODEL = os.path.join(os.path.dirname(__file__), "openmc_inputs", "openmc_model.xml")
 
 _problem_cache = []
 
