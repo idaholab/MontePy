@@ -211,6 +211,33 @@ class IllegalState(ValueError):
         super().__init__(self.message)
 
 
+class OnlyInPathError(ValueError):
+    """Raised when removing a cell or surface from a tally that it only
+    appears in as a containment (outer) level of a ``<`` path.
+
+    For example, cell 5 in ``F4 (2 < 5)``. It isn't scored there, so it
+    isn't ``in`` the tally, and editing a path's containment levels isn't
+    supported.
+
+    .. versionadded:: 1.6.0b2
+    """
+
+    pass
+
+
+class PathContainmentWarning(UserWarning):
+    """Warning for when a cell or surface removed from a tally is still a
+    containment (outer) level of one of its ``<`` paths.
+
+    For example, removing cell 3 from ``F4 3 (1 < 3)`` leaves
+    ``F4 (1 < 3)``.
+
+    .. versionadded:: 1.6.0b2
+    """
+
+    pass
+
+
 class LineExpansionWarning(Warning):
     """Warning for when a field or line expands that may damage user formatting."""
 
