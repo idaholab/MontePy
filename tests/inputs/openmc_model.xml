@@ -1,0 +1,546 @@
+<?xml version='1.0' encoding='utf-8'?>
+<model>
+  <materials>
+    <material id="1" name="air" temperature="293.6" color="80 255 255">
+      <density value="1.205" units="kg/m3"/>
+      <nuclide name="C12" wo="0.000124"/>
+      <nuclide name="N14" wo="0.752316"/>
+      <nuclide name="N15" wo="0.002944"/>
+      <nuclide name="O16" wo="0.231153"/>
+      <nuclide name="O17" wo="9.4e-05"/>
+      <nuclide name="O18" wo="0.000535"/>
+      <nuclide name="Ar40" wo="0.012827"/>
+    </material>
+    <material id="2" name="aluminum" temperature="293.6" color="180 140 140">
+      <density value="2.6989" units="g/cm3"/>
+      <nuclide name="Al27" wo="1.0"/>
+    </material>
+    <material id="3" name="carbon steel" temperature="293.6" color="140 140 180">
+      <density value="7.82" units="g/cm3"/>
+      <nuclide name="C12" wo="0.0103"/>
+      <nuclide name="Mn55" wo="0.005"/>
+      <nuclide name="P31" wo="0.0004"/>
+      <nuclide name="S32" wo="0.000477"/>
+      <nuclide name="S34" wo="2.3e-05"/>
+      <nuclide name="Fe54" wo="0.055661"/>
+      <nuclide name="Fe56" wo="0.906812"/>
+      <nuclide name="Fe57" wo="0.021328"/>
+    </material>
+    <material id="4" name="concrete" temperature="293.6" color="40 80 40">
+      <density value="2.3" units="g/cm3"/>
+      <nuclide name="H1" wo="0.006185"/>
+      <nuclide name="H2" wo="1e-06"/>
+      <nuclide name="C12" wo="0.175193"/>
+      <nuclide name="O16" wo="0.409071"/>
+      <nuclide name="O17" wo="0.000166"/>
+      <nuclide name="O18" wo="0.000946"/>
+      <nuclide name="Na23" wo="0.000271"/>
+      <nuclide name="Mg24" wo="0.02544"/>
+      <nuclide name="Mg25" wo="0.003359"/>
+      <nuclide name="Mg26" wo="0.003849"/>
+      <nuclide name="Al27" wo="0.01083"/>
+      <nuclide name="Si28" wo="0.031688"/>
+      <nuclide name="Si29" wo="0.001661"/>
+      <nuclide name="Si30" wo="0.00113"/>
+      <nuclide name="K39" wo="0.001058"/>
+      <nuclide name="K41" wo="8e-05"/>
+      <nuclide name="Ca40" wo="0.313844"/>
+      <nuclide name="Ca44" wo="0.007442"/>
+      <nuclide name="Fe54" wo="0.00044"/>
+      <nuclide name="Fe56" wo="0.007175"/>
+      <nuclide name="Fe57" wo="0.000169"/>
+    </material>
+    <material id="5" name="helium3" temperature="293.6" color="204 204 0">
+      <density value="0.25" units="kg/m3"/>
+      <nuclide name="He3" ao="1.0"/>
+    </material>
+    <material id="6" name="heu" depletable="true" temperature="293.6" color="208 40 40">
+      <density value="18.74" units="g/cm3"/>
+      <nuclide name="U234" wo="0.0102"/>
+      <nuclide name="U235" wo="0.9371"/>
+      <nuclide name="U238" wo="0.0527"/>
+    </material>
+    <material id="7" name="polyethylene" temperature="293.6" color="40 40 40">
+      <density value="0.93" units="g/cm3"/>
+      <nuclide name="H1" wo="0.143686"/>
+      <nuclide name="H2" wo="3.3e-05"/>
+      <nuclide name="C12" wo="0.856276"/>
+    </material>
+    <material id="8" name="uranium" depletable="true" temperature="293.6" color="208 40 40">
+      <density value="18.95" units="g/cm3"/>
+      <nuclide name="U234" wo="5.7e-05"/>
+      <nuclide name="U235" wo="0.007204"/>
+      <nuclide name="U238" wo="0.992739"/>
+    </material>
+  </materials>
+  <geometry>
+    <cell id="1" name="empty cassette/air in" material="1" region="50 -51 52 -53 54 -56" universe="1" />
+    <cell id="2" name="empty cassette/alu" material="2" region="171 -172 311 -312 223 -56 (-50 | 51 | -52 | 53 | -54 | 56)" universe="1" />
+    <cell id="3" name="empty cassette/air out" material="1" region="-171 | 172 | -311 | 312 | -223 | 56" universe="1" />
+    <cell id="4" name="clad pins/y-clad 1" material="2" region="-21 52 -22" universe="2" />
+    <cell id="5" name="clad pins/y-clad 2" material="2" region="-23 52 -22" universe="2" />
+    <cell id="6" name="clad pins/y-clad 3" material="2" region="-24 52 -22" universe="2" />
+    <cell id="7" name="clad pins/y-clad 4" material="2" region="-25 52 -22" universe="2" />
+    <cell id="8" name="clad pins/y-clad 5" material="2" region="-21 22 -26" universe="2" />
+    <cell id="9" name="clad pins/y-clad 6" material="2" region="-23 22 -26" universe="2" />
+    <cell id="10" name="clad pins/y-clad 7" material="2" region="-24 22 -26" universe="2" />
+    <cell id="11" name="clad pins/y-clad 8" material="2" region="-25 22 -26" universe="2" />
+    <cell id="12" name="clad pins/y-clad 9" material="2" region="-27 52 -22" universe="2" />
+    <cell id="13" name="clad pins/y-clad 10" material="2" region="-28 52 -22" universe="2" />
+    <cell id="14" name="clad pins/y-clad 11" material="2" region="-29 52 -22" universe="2" />
+    <cell id="15" name="clad pins/y-clad 12" material="2" region="-30 52 -22" universe="2" />
+    <cell id="16" name="clad pins/y-clad 13" material="2" region="-27 22 -26" universe="2" />
+    <cell id="17" name="clad pins/y-clad 14" material="2" region="-28 22 -26" universe="2" />
+    <cell id="18" name="clad pins/y-clad 15" material="2" region="-29 22 -26" universe="2" />
+    <cell id="19" name="clad pins/y-clad 16" material="2" region="-30 22 -26" universe="2" />
+    <cell id="20" name="clad pins/y-clad 17" material="2" region="-31 52 -22" universe="2" />
+    <cell id="21" name="clad pins/y-clad 18" material="2" region="-32 52 -22" universe="2" />
+    <cell id="22" name="clad pins/y-clad 19" material="2" region="-33 52 -22" universe="2" />
+    <cell id="23" name="clad pins/y-clad 20" material="2" region="-34 52 -22" universe="2" />
+    <cell id="24" name="clad pins/y-clad 21" material="2" region="-31 22 -26" universe="2" />
+    <cell id="25" name="clad pins/y-clad 22" material="2" region="-32 22 -26" universe="2" />
+    <cell id="26" name="clad pins/y-clad 23" material="2" region="-33 22 -26" universe="2" />
+    <cell id="27" name="clad pins/y-clad 24" material="2" region="-34 22 -26" universe="2" />
+    <cell id="28" name="clad pins/y-clad 25" material="2" region="-35 52 -22" universe="2" />
+    <cell id="29" name="clad pins/y-clad 26" material="2" region="-36 52 -22" universe="2" />
+    <cell id="30" name="clad pins/y-clad 27" material="2" region="-37 52 -22" universe="2" />
+    <cell id="31" name="clad pins/y-clad 28" material="2" region="-38 52 -22" universe="2" />
+    <cell id="32" name="clad pins/y-clad 29" material="2" region="-35 22 -26" universe="2" />
+    <cell id="33" name="clad pins/y-clad 30" material="2" region="-36 22 -26" universe="2" />
+    <cell id="34" name="clad pins/y-clad 31" material="2" region="-37 22 -26" universe="2" />
+    <cell id="35" name="clad pins/y-clad 32" material="2" region="-38 22 -26" universe="2" />
+    <cell id="36" name="clad pins/z-clad 1" material="2" region="-45 46 -55" universe="2" />
+    <cell id="37" name="clad pins/z-clad 2" material="2" region="-47 46 -55" universe="2" />
+    <cell id="38" name="clad pins/z-clad 3" material="2" region="-48 46 -55" universe="2" />
+    <cell id="39" name="clad pins/z-clad 4" material="2" region="-49 46 -55" universe="2" />
+    <cell id="40" name="clad pins" material="7" region="(21 | -52 | 22) (23 | -52 | 22) (24 | -52 | 22) (25 | -52 | 22) (21 | -22 | 26) (23 | -22 | 26) (24 | -22 | 26) (25 | -22 | 26) (27 | -52 | 22) (28 | -52 | 22) (29 | -52 | 22) (30 | -52 | 22) (27 | -22 | 26) (28 | -22 | 26) (29 | -22 | 26) (30 | -22 | 26) (31 | -52 | 22) (32 | -52 | 22) (33 | -52 | 22) (34 | -52 | 22) (31 | -22 | 26) (32 | -22 | 26) (33 | -22 | 26) (34 | -22 | 26) (35 | -52 | 22) (36 | -52 | 22) (37 | -52 | 22) (38 | -52 | 22) (35 | -22 | 26) (36 | -22 | 26) (37 | -22 | 26) (38 | -22 | 26) (45 | -46 | 55) (47 | -46 | 55) (48 | -46 | 55) (49 | -46 | 55)" universe="2" />
+    <cell id="41" name="clad pins/y-fuel 1" material="8" region="-1 2 -3" universe="3" />
+    <cell id="42" name="clad pins/y-fuel 2" material="8" region="-4 2 -3" universe="3" />
+    <cell id="43" name="clad pins/y-fuel 3" material="8" region="-5 2 -3" universe="3" />
+    <cell id="44" name="clad pins/y-fuel 4" material="8" region="-6 2 -3" universe="3" />
+    <cell id="45" name="clad pins/y-fuel 5" material="8" region="-1 7 -8" universe="3" />
+    <cell id="46" name="clad pins/y-fuel 6" material="8" region="-4 7 -8" universe="3" />
+    <cell id="47" name="clad pins/y-fuel 7" material="8" region="-5 7 -8" universe="3" />
+    <cell id="48" name="clad pins/y-fuel 8" material="8" region="-6 7 -8" universe="3" />
+    <cell id="49" name="clad pins/y-fuel 9" material="8" region="-9 2 -3" universe="3" />
+    <cell id="50" name="clad pins/y-fuel 10" material="8" region="-10 2 -3" universe="3" />
+    <cell id="51" name="clad pins/y-fuel 11" material="8" region="-11 2 -3" universe="3" />
+    <cell id="52" name="clad pins/y-fuel 12" material="8" region="-12 2 -3" universe="3" />
+    <cell id="53" name="clad pins/y-fuel 13" material="8" region="-9 7 -8" universe="3" />
+    <cell id="54" name="clad pins/y-fuel 14" material="8" region="-10 7 -8" universe="3" />
+    <cell id="55" name="clad pins/y-fuel 15" material="8" region="-11 7 -8" universe="3" />
+    <cell id="56" name="clad pins/y-fuel 16" material="8" region="-12 7 -8" universe="3" />
+    <cell id="57" name="clad pins/y-fuel 17" material="8" region="-13 2 -3" universe="3" />
+    <cell id="58" name="clad pins/y-fuel 18" material="8" region="-14 2 -3" universe="3" />
+    <cell id="59" name="clad pins/y-fuel 19" material="8" region="-15 2 -3" universe="3" />
+    <cell id="60" name="clad pins/y-fuel 20" material="8" region="-16 2 -3" universe="3" />
+    <cell id="61" name="clad pins/y-fuel 21" material="8" region="-13 7 -8" universe="3" />
+    <cell id="62" name="clad pins/y-fuel 22" material="8" region="-14 7 -8" universe="3" />
+    <cell id="63" name="clad pins/y-fuel 23" material="8" region="-15 7 -8" universe="3" />
+    <cell id="64" name="clad pins/y-fuel 24" material="8" region="-16 7 -8" universe="3" />
+    <cell id="65" name="clad pins/y-fuel 25" material="8" region="-17 2 -3" universe="3" />
+    <cell id="66" name="clad pins/y-fuel 26" material="8" region="-18 2 -3" universe="3" />
+    <cell id="67" name="clad pins/y-fuel 27" material="8" region="-19 2 -3" universe="3" />
+    <cell id="68" name="clad pins/y-fuel 28" material="8" region="-20 2 -3" universe="3" />
+    <cell id="69" name="clad pins/y-fuel 29" material="8" region="-17 7 -8" universe="3" />
+    <cell id="70" name="clad pins/y-fuel 30" material="8" region="-18 7 -8" universe="3" />
+    <cell id="71" name="clad pins/y-fuel 31" material="8" region="-19 7 -8" universe="3" />
+    <cell id="72" name="clad pins/y-fuel 32" material="8" region="-20 7 -8" universe="3" />
+    <cell id="73" name="clad pins/z-fuel 1" material="8" region="-39 40 -41" universe="3" />
+    <cell id="74" name="clad pins/z-fuel 2" material="8" region="-42 40 -41" universe="3" />
+    <cell id="75" name="clad pins/z-fuel 3" material="8" region="-43 40 -41" universe="3" />
+    <cell id="76" name="clad pins/z-fuel 4" material="8" region="-44 40 -41" universe="3" />
+    <cell id="77" name="clad pins" fill="2" region="(1 | -2 | 3) (4 | -2 | 3) (5 | -2 | 3) (6 | -2 | 3) (1 | -7 | 8) (4 | -7 | 8) (5 | -7 | 8) (6 | -7 | 8) (9 | -2 | 3) (10 | -2 | 3) (11 | -2 | 3) (12 | -2 | 3) (9 | -7 | 8) (10 | -7 | 8) (11 | -7 | 8) (12 | -7 | 8) (13 | -2 | 3) (14 | -2 | 3) (15 | -2 | 3) (16 | -2 | 3) (13 | -7 | 8) (14 | -7 | 8) (15 | -7 | 8) (16 | -7 | 8) (17 | -2 | 3) (18 | -2 | 3) (19 | -2 | 3) (20 | -2 | 3) (17 | -7 | 8) (18 | -7 | 8) (19 | -7 | 8) (20 | -7 | 8) (39 | -40 | 41) (42 | -40 | 41) (43 | -40 | 41) (44 | -40 | 41)" universe="3" />
+    <cell id="78" name="fuel cassette/block" fill="3" region="50 -51 52 -53 54 -55" universe="4" />
+    <cell id="79" name="fuel cassette/cassette" fill="1" region="-50 | 51 | -52 | 53 | -54 | 55" universe="4" />
+    <cell id="80" name="empty cassette/air in" material="1" region="50 -51 52 -53 54 -56" universe="5" />
+    <cell id="81" name="empty cassette/alu" material="2" region="171 -172 311 -312 223 -56 (-50 | 51 | -52 | 53 | -54 | 56)" universe="5" />
+    <cell id="82" name="empty cassette/air out" material="1" region="-171 | 172 | -311 | 312 | -223 | 56" universe="5" />
+    <cell id="83" name="base frame/A1" material="1" region="159 -160 163 -164" universe="6" />
+    <cell id="84" name="base frame/A2" material="1" region="159 -160 193 -194" universe="6" />
+    <cell id="85" name="base frame/A3" material="1" region="159 -160 223 -224" universe="6" />
+    <cell id="86" name="base frame/A4" material="1" region="159 -160 253 -254" universe="6" />
+    <cell id="87" name="base frame/A5" material="1" region="159 -160 283 -284" universe="6" />
+    <cell id="88" name="base frame/B1" material="1" region="165 -166 163 -164" universe="6" />
+    <cell id="89" name="base frame/B2" material="1" region="165 -166 193 -194" universe="6" />
+    <cell id="90" name="base frame/B3" material="1" region="165 -166 223 -224" universe="6" />
+    <cell id="91" name="base frame/B4" material="1" region="165 -166 253 -254" universe="6" />
+    <cell id="92" name="base frame/B5" material="1" region="165 -166 283 -284" universe="6" />
+    <cell id="93" name="base frame/C1" material="1" region="171 -172 163 -164" universe="6" />
+    <cell id="94" name="base frame/C2" material="1" region="171 -172 193 -194" universe="6" />
+    <cell id="95" name="base frame/C3" material="1" region="171 -172 223 -224" universe="6" />
+    <cell id="96" name="base frame/C4" material="1" region="171 -172 253 -254" universe="6" />
+    <cell id="97" name="base frame/C5" material="1" region="171 -172 283 -284" universe="6" />
+    <cell id="98" name="base frame/D1" material="1" region="177 -178 163 -164" universe="6" />
+    <cell id="99" name="base frame/D2" material="1" region="177 -178 193 -194" universe="6" />
+    <cell id="100" name="base frame/D3" material="1" region="177 -178 223 -224" universe="6" />
+    <cell id="101" name="base frame/D4" material="1" region="177 -178 253 -254" universe="6" />
+    <cell id="102" name="base frame/D5" material="1" region="177 -178 283 -284" universe="6" />
+    <cell id="103" name="base frame/E1" material="1" region="183 -184 163 -164" universe="6" />
+    <cell id="104" name="base frame/E2" material="1" region="183 -184 193 -194" universe="6" />
+    <cell id="105" name="base frame/E3" material="1" region="183 -184 223 -224" universe="6" />
+    <cell id="106" name="base frame/E4" material="1" region="183 -184 253 -254" universe="6" />
+    <cell id="107" name="base frame/E5" material="1" region="183 -184 283 -284" universe="6" />
+    <cell id="108" name="base frame" material="2" region="(-159 | 160 | -163 | 164) (-159 | 160 | -193 | 194) (-159 | 160 | -223 | 224) (-159 | 160 | -253 | 254) (-159 | 160 | -283 | 284) (-165 | 166 | -163 | 164) (-165 | 166 | -193 | 194) (-165 | 166 | -223 | 224) (-165 | 166 | -253 | 254) (-165 | 166 | -283 | 284) (-171 | 172 | -163 | 164) (-171 | 172 | -193 | 194) (-171 | 172 | -223 | 224) (-171 | 172 | -253 | 254) (-171 | 172 | -283 | 284) (-177 | 178 | -163 | 164) (-177 | 178 | -193 | 194) (-177 | 178 | -223 | 224) (-177 | 178 | -253 | 254) (-177 | 178 | -283 | 284) (-183 | 184 | -163 | 164) (-183 | 184 | -193 | 194) (-183 | 184 | -223 | 224) (-183 | 184 | -253 | 254) (-183 | 184 | -283 | 284)" universe="6" />
+    <cell id="109" name="walled frame/wall 1" material="2" region="73 -74 75 -161 140 -78" universe="7" />
+    <cell id="110" name="walled frame/wall 2" material="2" region="73 -74 162 -311 140 -78" universe="7" />
+    <cell id="111" name="walled frame/wall 3" material="2" region="73 -74 312 -455 140 -78" universe="7" />
+    <cell id="112" name="walled frame/wall 4" material="2" region="73 -74 456 -76 140 -78" universe="7" />
+    <cell id="113" name="walled frame" fill="6" region="(-73 | 74 | -75 | 161 | -140 | 78) (-73 | 74 | -162 | 311 | -140 | 78) (-73 | 74 | -312 | 455 | -140 | 78) (-73 | 74 | -456 | 76 | -140 | 78)" universe="7" />
+    <cell id="114" name="full frame/base" fill="7" region="73 -74 75 -76 140 -78" universe="8" />
+    <cell id="115" name="full frame/air" material="1" region="-73 | 74 | -75 | 76 | -140 | 78" universe="8" />
+    <cell id="116" name="access holes/air" material="1" region="171 -172 223 -224" universe="9" />
+    <cell id="117" name="access holes/aluminum" material="2" region="115 -116 117 -118 (-171 | 172 | -223 | 224)" universe="9" />
+    <cell id="118" name="access holes/steel" material="3" region="-115 | 116 | -117 | 118" universe="9" />
+    <cell id="119" name="reflector/air in" material="1" region="136 -137 138 -139 140 -141" universe="10" />
+    <cell id="120" name="reflector/reflector" fill="9" region="110 -111 112 -113 140 -114 (-136 | 137 | -138 | 139 | -140 | 141)" universe="10" />
+    <cell id="121" name="reflector/air out" material="1" region="-110 | 111 | -112 | 113 | -140 | 114" universe="10" />
+    <cell id="122" name="floor/steel" material="3" region="123 -124 125 -126 127 -140" universe="11" />
+    <cell id="123" name="floor/concrete" material="4" region="123 -124 125 -126 128 -127" universe="11" />
+    <cell id="124" name="floor" material="1" region="(-123 | 124 | -125 | 126 | -127 | 140) (-123 | 124 | -125 | 126 | -128 | 127)" universe="11" />
+    <cell id="125" name="full shield/concrete" material="4" region="-128" universe="12" />
+    <cell id="126" name="full shield/floor" fill="11" region="-140 128" universe="12" />
+    <cell id="127" name="full shield/reflector" fill="10" region="140" universe="12" />
+    <cell id="129" name="empty cassette/air in" material="1" region="50 -51 52 -53 54 -56" universe="14" />
+    <cell id="130" name="empty cassette/alu" material="2" region="171 -172 311 -312 223 -56 (-50 | 51 | -52 | 53 | -54 | 56)" universe="14" />
+    <cell id="131" name="empty cassette/air out" material="1" region="-171 | 172 | -311 | 312 | -223 | 56" universe="14" />
+    <cell id="132" name="detector cassette/helium" material="5" region="-144 142 -143" universe="15" />
+    <cell id="133" name="detector cassette/aluminum" material="2" region="-147 145 -146 (144 | -142 | 143)" universe="15" />
+    <cell id="134" name="detector cassette/cassette" fill="14" region="147 | -145 | 146" universe="15" />
+    <cell id="135" name="front A0" fill="4" translation="-35.56 -27.94 -35.56" universe="16" />
+    <cell id="136" name="front A1" fill="4" translation="-17.78 -27.94 -35.56" universe="17" />
+    <cell id="137" name="front A2" fill="4" translation="0.0 -27.94 -35.56" universe="18" />
+    <cell id="138" name="front A3" fill="4" translation="17.78 -27.94 -35.56" universe="19" />
+    <cell id="139" name="front A4" fill="4" translation="35.56 -27.94 -35.56" universe="20" />
+    <cell id="140" name="front B0" fill="4" translation="-35.56 -27.94 -17.78" universe="21" />
+    <cell id="141" name="front B1" fill="4" translation="-17.78 -27.94 -17.78" universe="22" />
+    <cell id="142" name="front B2" fill="4" translation="0.0 -27.94 -17.78" universe="23" />
+    <cell id="143" name="front B3" fill="4" translation="17.78 -27.94 -17.78" universe="24" />
+    <cell id="144" name="front B4" fill="4" translation="35.56 -27.94 -17.78" universe="25" />
+    <cell id="145" name="front C0" fill="4" translation="-35.56 -27.94 0.0" universe="26" />
+    <cell id="146" name="front C1" fill="4" translation="-17.78 -27.94 0.0" universe="27" />
+    <cell id="147" name="front C2" fill="15" translation="0.0 -27.94 0.0" universe="28" />
+    <cell id="148" name="front C3" fill="4" translation="17.78 -27.94 0.0" universe="29" />
+    <cell id="149" name="front C4" fill="4" translation="35.56 -27.94 0.0" universe="30" />
+    <cell id="150" name="front D0" fill="4" translation="-35.56 -27.94 17.78" universe="31" />
+    <cell id="151" name="front D1" fill="4" translation="-17.78 -27.94 17.78" universe="32" />
+    <cell id="152" name="front D2" fill="4" translation="0.0 -27.94 17.78" universe="33" />
+    <cell id="153" name="front D3" fill="4" translation="17.78 -27.94 17.78" universe="34" />
+    <cell id="154" name="front D4" fill="4" translation="35.56 -27.94 17.78" universe="35" />
+    <cell id="155" name="front E0" fill="4" translation="-35.56 -27.94 35.56" universe="36" />
+    <cell id="156" name="front E1" fill="4" translation="-17.78 -27.94 35.56" universe="37" />
+    <cell id="157" name="front E2" fill="4" translation="0.0 -27.94 35.56" universe="38" />
+    <cell id="158" name="front E3" fill="4" translation="17.78 -27.94 35.56" universe="39" />
+    <cell id="159" name="front E4" fill="4" translation="35.56 -27.94 35.56" universe="40" />
+    <cell id="160" name="middle A0" fill="4" translation="-35.56 0.0 -35.56" universe="41" />
+    <cell id="161" name="middle A1" fill="4" translation="-17.78 0.0 -35.56" universe="42" />
+    <cell id="162" name="middle A2" fill="4" translation="0.0 0.0 -35.56" universe="43" />
+    <cell id="163" name="middle A3" fill="4" translation="17.78 0.0 -35.56" universe="44" />
+    <cell id="164" name="middle A4" fill="4" translation="35.56 0.0 -35.56" universe="45" />
+    <cell id="165" name="middle B0" fill="4" translation="-35.56 0.0 -17.78" universe="46" />
+    <cell id="166" name="middle B1" fill="4" translation="-17.78 0.0 -17.78" universe="47" />
+    <cell id="167" name="middle B2" fill="4" translation="0.0 0.0 -17.78" universe="48" />
+    <cell id="168" name="middle B3" fill="4" translation="17.78 0.0 -17.78" universe="49" />
+    <cell id="169" name="middle B4" fill="4" translation="35.56 0.0 -17.78" universe="50" />
+    <cell id="170" name="middle C0" fill="4" translation="-35.56 0.0 0.0" universe="51" />
+    <cell id="171" name="middle C1" fill="4" translation="-17.78 0.0 0.0" universe="52" />
+    <cell id="172" name="middle C2" fill="4" translation="0.0 0.0 0.0" universe="53" />
+    <cell id="173" name="middle C3" fill="4" translation="17.78 0.0 0.0" universe="54" />
+    <cell id="174" name="middle C4" fill="4" translation="35.56 0.0 0.0" universe="55" />
+    <cell id="175" name="middle D0" fill="4" translation="-35.56 0.0 17.78" universe="56" />
+    <cell id="176" name="middle D1" fill="4" translation="-17.78 0.0 17.78" universe="57" />
+    <cell id="177" name="middle D2" fill="4" translation="0.0 0.0 17.78" universe="58" />
+    <cell id="178" name="middle D3" fill="4" translation="17.78 0.0 17.78" universe="59" />
+    <cell id="179" name="middle D4" fill="4" translation="35.56 0.0 17.78" universe="60" />
+    <cell id="180" name="middle E0" fill="4" translation="-35.56 0.0 35.56" universe="61" />
+    <cell id="181" name="middle E1" fill="4" translation="-17.78 0.0 35.56" universe="62" />
+    <cell id="182" name="middle E2" fill="4" translation="0.0 0.0 35.56" universe="63" />
+    <cell id="183" name="middle E3" fill="4" translation="17.78 0.0 35.56" universe="64" />
+    <cell id="184" name="middle E4" fill="4" translation="35.56 0.0 35.56" universe="65" />
+    <cell id="185" name="back A0" fill="4" translation="-35.56 27.94 -35.56" universe="66" />
+    <cell id="186" name="back A1" fill="4" translation="-17.78 27.94 -35.56" universe="67" />
+    <cell id="187" name="back A2" fill="4" translation="0.0 27.94 -35.56" universe="68" />
+    <cell id="188" name="back A3" fill="4" translation="17.78 27.94 -35.56" universe="69" />
+    <cell id="189" name="back A4" fill="4" translation="35.56 27.94 -35.56" universe="70" />
+    <cell id="190" name="back B0" fill="4" translation="-35.56 27.94 -17.78" universe="71" />
+    <cell id="191" name="back B1" fill="4" translation="-17.78 27.94 -17.78" universe="72" />
+    <cell id="192" name="back B2" fill="4" translation="0.0 27.94 -17.78" universe="73" />
+    <cell id="193" name="back B3" fill="4" translation="17.78 27.94 -17.78" universe="74" />
+    <cell id="194" name="back B4" fill="4" translation="35.56 27.94 -17.78" universe="75" />
+    <cell id="195" name="back C0" fill="4" translation="-35.56 27.94 0.0" universe="76" />
+    <cell id="196" name="back C1" fill="4" translation="-17.78 27.94 0.0" universe="77" />
+    <cell id="197" name="back C2" fill="5" translation="0.0 27.94 0.0" universe="78" />
+    <cell id="198" name="back C3" fill="4" translation="17.78 27.94 0.0" universe="79" />
+    <cell id="199" name="back C4" fill="4" translation="35.56 27.94 0.0" universe="80" />
+    <cell id="200" name="back D0" fill="4" translation="-35.56 27.94 17.78" universe="81" />
+    <cell id="201" name="back D1" fill="4" translation="-17.78 27.94 17.78" universe="82" />
+    <cell id="202" name="back D2" fill="4" translation="0.0 27.94 17.78" universe="83" />
+    <cell id="203" name="back D3" fill="4" translation="17.78 27.94 17.78" universe="84" />
+    <cell id="204" name="back D4" fill="4" translation="35.56 27.94 17.78" universe="85" />
+    <cell id="205" name="back E0" fill="4" translation="-35.56 27.94 35.56" universe="86" />
+    <cell id="206" name="back E1" fill="4" translation="-17.78 27.94 35.56" universe="87" />
+    <cell id="207" name="back E2" fill="4" translation="0.0 27.94 35.56" universe="88" />
+    <cell id="208" name="back E3" fill="4" translation="17.78 27.94 35.56" universe="89" />
+    <cell id="209" name="back E4" fill="4" translation="35.56 27.94 35.56" universe="90" />
+    <cell id="210" name="core/front A0" fill="16" region="159 -160 161 -162 163 -164" universe="91" />
+    <cell id="211" name="core/front A1" fill="17" region="165 -166 161 -162 163 -164" universe="91" />
+    <cell id="212" name="core/front A2" fill="18" region="171 -172 161 -162 163 -164" universe="91" />
+    <cell id="213" name="core/front A3" fill="19" region="177 -178 161 -162 163 -164" universe="91" />
+    <cell id="214" name="core/front A4" fill="20" region="183 -184 161 -162 163 -164" universe="91" />
+    <cell id="215" name="core/front B0" fill="21" region="159 -160 161 -162 193 -194" universe="91" />
+    <cell id="216" name="core/front B1" fill="22" region="165 -166 161 -162 193 -194" universe="91" />
+    <cell id="217" name="core/front B2" fill="23" region="171 -172 161 -162 193 -194" universe="91" />
+    <cell id="218" name="core/front B3" fill="24" region="177 -178 161 -162 193 -194" universe="91" />
+    <cell id="219" name="core/front B4" fill="25" region="183 -184 161 -162 193 -194" universe="91" />
+    <cell id="220" name="core/front C0" fill="26" region="159 -160 161 -162 223 -224" universe="91" />
+    <cell id="221" name="core/front C1" fill="27" region="165 -166 161 -162 223 -224" universe="91" />
+    <cell id="222" name="core/front C2" fill="28" region="171 -172 161 -162 223 -224" universe="91" />
+    <cell id="223" name="core/front C3" fill="29" region="177 -178 161 -162 223 -224" universe="91" />
+    <cell id="224" name="core/front C4" fill="30" region="183 -184 161 -162 223 -224" universe="91" />
+    <cell id="225" name="core/front D0" fill="31" region="159 -160 161 -162 253 -254" universe="91" />
+    <cell id="226" name="core/front D1" fill="32" region="165 -166 161 -162 253 -254" universe="91" />
+    <cell id="227" name="core/front D2" fill="33" region="171 -172 161 -162 253 -254" universe="91" />
+    <cell id="228" name="core/front D3" fill="34" region="177 -178 161 -162 253 -254" universe="91" />
+    <cell id="229" name="core/front D4" fill="35" region="183 -184 161 -162 253 -254" universe="91" />
+    <cell id="230" name="core/front E0" fill="36" region="159 -160 161 -162 283 -284" universe="91" />
+    <cell id="231" name="core/front E1" fill="37" region="165 -166 161 -162 283 -284" universe="91" />
+    <cell id="232" name="core/front E2" fill="38" region="171 -172 161 -162 283 -284" universe="91" />
+    <cell id="233" name="core/front E3" fill="39" region="177 -178 161 -162 283 -284" universe="91" />
+    <cell id="234" name="core/front E4" fill="40" region="183 -184 161 -162 283 -284" universe="91" />
+    <cell id="235" name="core/middle A0" fill="41" region="159 -160 311 -312 163 -164" universe="91" />
+    <cell id="236" name="core/middle A1" fill="42" region="165 -166 311 -312 163 -164" universe="91" />
+    <cell id="237" name="core/middle A2" fill="43" region="171 -172 311 -312 163 -164" universe="91" />
+    <cell id="238" name="core/middle A3" fill="44" region="177 -178 311 -312 163 -164" universe="91" />
+    <cell id="239" name="core/middle A4" fill="45" region="183 -184 311 -312 163 -164" universe="91" />
+    <cell id="240" name="core/middle B0" fill="46" region="159 -160 311 -312 193 -194" universe="91" />
+    <cell id="241" name="core/middle B1" fill="47" region="165 -166 311 -312 193 -194" universe="91" />
+    <cell id="242" name="core/middle B2" fill="48" region="171 -172 311 -312 193 -194" universe="91" />
+    <cell id="243" name="core/middle B3" fill="49" region="177 -178 311 -312 193 -194" universe="91" />
+    <cell id="244" name="core/middle B4" fill="50" region="183 -184 311 -312 193 -194" universe="91" />
+    <cell id="245" name="core/middle C0" fill="51" region="159 -160 311 -312 223 -224" universe="91" />
+    <cell id="246" name="core/middle C1" fill="52" region="165 -166 311 -312 223 -224" universe="91" />
+    <cell id="247" name="core/middle C2" fill="53" region="171 -172 311 -312 223 -224" universe="91" />
+    <cell id="248" name="core/middle C3" fill="54" region="177 -178 311 -312 223 -224" universe="91" />
+    <cell id="249" name="core/middle C4" fill="55" region="183 -184 311 -312 223 -224" universe="91" />
+    <cell id="250" name="core/middle D0" fill="56" region="159 -160 311 -312 253 -254" universe="91" />
+    <cell id="251" name="core/middle D1" fill="57" region="165 -166 311 -312 253 -254" universe="91" />
+    <cell id="252" name="core/middle D2" fill="58" region="171 -172 311 -312 253 -254" universe="91" />
+    <cell id="253" name="core/middle D3" fill="59" region="177 -178 311 -312 253 -254" universe="91" />
+    <cell id="254" name="core/middle D4" fill="60" region="183 -184 311 -312 253 -254" universe="91" />
+    <cell id="255" name="core/middle E0" fill="61" region="159 -160 311 -312 283 -284" universe="91" />
+    <cell id="256" name="core/middle E1" fill="62" region="165 -166 311 -312 283 -284" universe="91" />
+    <cell id="257" name="core/middle E2" fill="63" region="171 -172 311 -312 283 -284" universe="91" />
+    <cell id="258" name="core/middle E3" fill="64" region="177 -178 311 -312 283 -284" universe="91" />
+    <cell id="259" name="core/middle E4" fill="65" region="183 -184 311 -312 283 -284" universe="91" />
+    <cell id="260" name="core/back A0" fill="66" region="159 -160 455 -456 163 -164" universe="91" />
+    <cell id="261" name="core/back A1" fill="67" region="165 -166 455 -456 163 -164" universe="91" />
+    <cell id="262" name="core/back A2" fill="68" region="171 -172 455 -456 163 -164" universe="91" />
+    <cell id="263" name="core/back A3" fill="69" region="177 -178 455 -456 163 -164" universe="91" />
+    <cell id="264" name="core/back A4" fill="70" region="183 -184 455 -456 163 -164" universe="91" />
+    <cell id="265" name="core/back B0" fill="71" region="159 -160 455 -456 193 -194" universe="91" />
+    <cell id="266" name="core/back B1" fill="72" region="165 -166 455 -456 193 -194" universe="91" />
+    <cell id="267" name="core/back B2" fill="73" region="171 -172 455 -456 193 -194" universe="91" />
+    <cell id="268" name="core/back B3" fill="74" region="177 -178 455 -456 193 -194" universe="91" />
+    <cell id="269" name="core/back B4" fill="75" region="183 -184 455 -456 193 -194" universe="91" />
+    <cell id="270" name="core/back C0" fill="76" region="159 -160 455 -456 223 -224" universe="91" />
+    <cell id="271" name="core/back C1" fill="77" region="165 -166 455 -456 223 -224" universe="91" />
+    <cell id="272" name="core/back C2" fill="78" region="171 -172 455 -456 223 -224" universe="91" />
+    <cell id="273" name="core/back C3" fill="79" region="177 -178 455 -456 223 -224" universe="91" />
+    <cell id="274" name="core/back C4" fill="80" region="183 -184 455 -456 223 -224" universe="91" />
+    <cell id="275" name="core/back D0" fill="81" region="159 -160 455 -456 253 -254" universe="91" />
+    <cell id="276" name="core/back D1" fill="82" region="165 -166 455 -456 253 -254" universe="91" />
+    <cell id="277" name="core/back D2" fill="83" region="171 -172 455 -456 253 -254" universe="91" />
+    <cell id="278" name="core/back D3" fill="84" region="177 -178 455 -456 253 -254" universe="91" />
+    <cell id="279" name="core/back D4" fill="85" region="183 -184 455 -456 253 -254" universe="91" />
+    <cell id="280" name="core/back E0" fill="86" region="159 -160 455 -456 283 -284" universe="91" />
+    <cell id="281" name="core/back E1" fill="87" region="165 -166 455 -456 283 -284" universe="91" />
+    <cell id="282" name="core/back E2" fill="88" region="171 -172 455 -456 283 -284" universe="91" />
+    <cell id="283" name="core/back E3" fill="89" region="177 -178 455 -456 283 -284" universe="91" />
+    <cell id="284" name="core/back E4" fill="90" region="183 -184 455 -456 283 -284" universe="91" />
+    <cell id="285" name="core" fill="8" region="(-159 | 160 | -161 | 162 | -163 | 164) (-165 | 166 | -161 | 162 | -163 | 164) (-171 | 172 | -161 | 162 | -163 | 164) (-177 | 178 | -161 | 162 | -163 | 164) (-183 | 184 | -161 | 162 | -163 | 164) (-159 | 160 | -161 | 162 | -193 | 194) (-165 | 166 | -161 | 162 | -193 | 194) (-171 | 172 | -161 | 162 | -193 | 194) (-177 | 178 | -161 | 162 | -193 | 194) (-183 | 184 | -161 | 162 | -193 | 194) (-159 | 160 | -161 | 162 | -223 | 224) (-165 | 166 | -161 | 162 | -223 | 224) (-171 | 172 | -161 | 162 | -223 | 224) (-177 | 178 | -161 | 162 | -223 | 224) (-183 | 184 | -161 | 162 | -223 | 224) (-159 | 160 | -161 | 162 | -253 | 254) (-165 | 166 | -161 | 162 | -253 | 254) (-171 | 172 | -161 | 162 | -253 | 254) (-177 | 178 | -161 | 162 | -253 | 254) (-183 | 184 | -161 | 162 | -253 | 254) (-159 | 160 | -161 | 162 | -283 | 284) (-165 | 166 | -161 | 162 | -283 | 284) (-171 | 172 | -161 | 162 | -283 | 284) (-177 | 178 | -161 | 162 | -283 | 284) (-183 | 184 | -161 | 162 | -283 | 284) (-159 | 160 | -311 | 312 | -163 | 164) (-165 | 166 | -311 | 312 | -163 | 164) (-171 | 172 | -311 | 312 | -163 | 164) (-177 | 178 | -311 | 312 | -163 | 164) (-183 | 184 | -311 | 312 | -163 | 164) (-159 | 160 | -311 | 312 | -193 | 194) (-165 | 166 | -311 | 312 | -193 | 194) (-171 | 172 | -311 | 312 | -193 | 194) (-177 | 178 | -311 | 312 | -193 | 194) (-183 | 184 | -311 | 312 | -193 | 194) (-159 | 160 | -311 | 312 | -223 | 224) (-165 | 166 | -311 | 312 | -223 | 224) (-171 | 172 | -311 | 312 | -223 | 224) (-177 | 178 | -311 | 312 | -223 | 224) (-183 | 184 | -311 | 312 | -223 | 224) (-159 | 160 | -311 | 312 | -253 | 254) (-165 | 166 | -311 | 312 | -253 | 254) (-171 | 172 | -311 | 312 | -253 | 254) (-177 | 178 | -311 | 312 | -253 | 254) (-183 | 184 | -311 | 312 | -253 | 254) (-159 | 160 | -311 | 312 | -283 | 284) (-165 | 166 | -311 | 312 | -283 | 284) (-171 | 172 | -311 | 312 | -283 | 284) (-177 | 178 | -311 | 312 | -283 | 284) (-183 | 184 | -311 | 312 | -283 | 284) (-159 | 160 | -455 | 456 | -163 | 164) (-165 | 166 | -455 | 456 | -163 | 164) (-171 | 172 | -455 | 456 | -163 | 164) (-177 | 178 | -455 | 456 | -163 | 164) (-183 | 184 | -455 | 456 | -163 | 164) (-159 | 160 | -455 | 456 | -193 | 194) (-165 | 166 | -455 | 456 | -193 | 194) (-171 | 172 | -455 | 456 | -193 | 194) (-177 | 178 | -455 | 456 | -193 | 194) (-183 | 184 | -455 | 456 | -193 | 194) (-159 | 160 | -455 | 456 | -223 | 224) (-165 | 166 | -455 | 456 | -223 | 224) (-171 | 172 | -455 | 456 | -223 | 224) (-177 | 178 | -455 | 456 | -223 | 224) (-183 | 184 | -455 | 456 | -223 | 224) (-159 | 160 | -455 | 456 | -253 | 254) (-165 | 166 | -455 | 456 | -253 | 254) (-171 | 172 | -455 | 456 | -253 | 254) (-177 | 178 | -455 | 456 | -253 | 254) (-183 | 184 | -455 | 456 | -253 | 254) (-159 | 160 | -455 | 456 | -283 | 284) (-165 | 166 | -455 | 456 | -283 | 284) (-171 | 172 | -455 | 456 | -283 | 284) (-177 | 178 | -455 | 456 | -283 | 284) (-183 | 184 | -455 | 456 | -283 | 284)" universe="91" />
+    <cell id="286" name="FNS/core" fill="91" region="136 -137 138 -139 140 -141" universe="92" />
+    <cell id="287" name="FNS/shield" fill="12" region="-136 | 137 | -138 | 139 | -140 | 141" universe="92" />
+    <cell id="288" name="FNS/sample" material="6" region="-605 603 -604" universe="93" />
+    <cell id="289" name="FNS/facility" fill="92" region="605 | -603 | 604" universe="93" />
+    <cell id="290" fill="93" region="606 -607 608 -609 610 -611" universe="94" />
+    <surface id="1" type="y-cylinder" coeffs="-5.334 -5.334 1.17" />
+    <surface id="2" type="y-plane" coeffs="-12.600000000000001" />
+    <surface id="3" type="y-plane" coeffs="-2.6399999999999997" />
+    <surface id="4" type="y-cylinder" coeffs="-5.334 -1.778 1.17" />
+    <surface id="5" type="y-cylinder" coeffs="-5.334 1.778 1.17" />
+    <surface id="6" type="y-cylinder" coeffs="-5.334 5.334 1.17" />
+    <surface id="7" type="y-plane" coeffs="-2.4400000000000004" />
+    <surface id="8" type="y-plane" coeffs="7.5200000000000005" />
+    <surface id="9" type="y-cylinder" coeffs="-1.778 -5.334 1.17" />
+    <surface id="10" type="y-cylinder" coeffs="-1.778 -1.778 1.17" />
+    <surface id="11" type="y-cylinder" coeffs="-1.778 1.778 1.17" />
+    <surface id="12" type="y-cylinder" coeffs="-1.778 5.334 1.17" />
+    <surface id="13" type="y-cylinder" coeffs="1.778 -5.334 1.17" />
+    <surface id="14" type="y-cylinder" coeffs="1.778 -1.778 1.17" />
+    <surface id="15" type="y-cylinder" coeffs="1.778 1.778 1.17" />
+    <surface id="16" type="y-cylinder" coeffs="1.778 5.334 1.17" />
+    <surface id="17" type="y-cylinder" coeffs="5.334 -5.334 1.17" />
+    <surface id="18" type="y-cylinder" coeffs="5.334 -1.778 1.17" />
+    <surface id="19" type="y-cylinder" coeffs="5.334 1.778 1.17" />
+    <surface id="20" type="y-cylinder" coeffs="5.334 5.334 1.17" />
+    <surface id="21" type="y-cylinder" coeffs="-5.334 -5.334 1.27" />
+    <surface id="22" type="y-plane" coeffs="-2.54" />
+    <surface id="23" type="y-cylinder" coeffs="-5.334 -1.778 1.27" />
+    <surface id="24" type="y-cylinder" coeffs="-5.334 1.778 1.27" />
+    <surface id="25" type="y-cylinder" coeffs="-5.334 5.334 1.27" />
+    <surface id="26" type="y-plane" coeffs="7.62" />
+    <surface id="27" type="y-cylinder" coeffs="-1.778 -5.334 1.27" />
+    <surface id="28" type="y-cylinder" coeffs="-1.778 -1.778 1.27" />
+    <surface id="29" type="y-cylinder" coeffs="-1.778 1.778 1.27" />
+    <surface id="30" type="y-cylinder" coeffs="-1.778 5.334 1.27" />
+    <surface id="31" type="y-cylinder" coeffs="1.778 -5.334 1.27" />
+    <surface id="32" type="y-cylinder" coeffs="1.778 -1.778 1.27" />
+    <surface id="33" type="y-cylinder" coeffs="1.778 1.778 1.27" />
+    <surface id="34" type="y-cylinder" coeffs="1.778 5.334 1.27" />
+    <surface id="35" type="y-cylinder" coeffs="5.334 -5.334 1.27" />
+    <surface id="36" type="y-cylinder" coeffs="5.334 -1.778 1.27" />
+    <surface id="37" type="y-cylinder" coeffs="5.334 1.778 1.27" />
+    <surface id="38" type="y-cylinder" coeffs="5.334 5.334 1.27" />
+    <surface id="39" type="z-cylinder" coeffs="-5.334 10.16 1.17" />
+    <surface id="40" type="z-plane" coeffs="-2.4400000000000004" />
+    <surface id="41" type="z-plane" coeffs="7.5200000000000005" />
+    <surface id="42" type="z-cylinder" coeffs="-1.778 10.16 1.17" />
+    <surface id="43" type="z-cylinder" coeffs="1.778 10.16 1.17" />
+    <surface id="44" type="z-cylinder" coeffs="5.334 10.16 1.17" />
+    <surface id="45" type="z-cylinder" coeffs="-5.334 10.16 1.27" />
+    <surface id="46" type="z-plane" coeffs="-2.54" />
+    <surface id="47" type="z-cylinder" coeffs="-1.778 10.16 1.27" />
+    <surface id="48" type="z-cylinder" coeffs="1.778 10.16 1.27" />
+    <surface id="49" type="z-cylinder" coeffs="5.334 10.16 1.27" />
+    <surface id="50" type="x-plane" coeffs="-7.62" />
+    <surface id="51" type="x-plane" coeffs="7.62" />
+    <surface id="52" type="y-plane" coeffs="-12.7" />
+    <surface id="53" type="y-plane" coeffs="12.7" />
+    <surface id="54" type="z-plane" coeffs="-7.62" />
+    <surface id="55" type="z-plane" coeffs="7.62" />
+    <surface id="56" type="z-plane" coeffs="2.54" />
+    <surface id="73" type="x-plane" coeffs="-44.45" />
+    <surface id="74" type="x-plane" coeffs="44.45" />
+    <surface id="75" type="y-plane" coeffs="-41.91" />
+    <surface id="76" type="y-plane" coeffs="41.91" />
+    <surface id="78" type="z-plane" coeffs="44.45" />
+    <surface id="110" type="x-plane" coeffs="-72.85" />
+    <surface id="111" type="x-plane" coeffs="73.85" />
+    <surface id="112" type="y-plane" coeffs="-70.31" />
+    <surface id="113" type="y-plane" coeffs="70.31" />
+    <surface id="114" type="z-plane" coeffs="73.85" />
+    <surface id="115" type="x-plane" coeffs="-8.89" />
+    <surface id="116" type="x-plane" coeffs="8.89" />
+    <surface id="117" type="z-plane" coeffs="-8.89" />
+    <surface id="118" type="z-plane" coeffs="8.89" />
+    <surface id="123" type="x-plane" coeffs="-121.92" />
+    <surface id="124" type="x-plane" coeffs="121.92" />
+    <surface id="125" type="y-plane" coeffs="-121.92" />
+    <surface id="126" type="y-plane" coeffs="121.92" />
+    <surface id="127" type="z-plane" coeffs="-52.07" />
+    <surface id="128" type="z-plane" coeffs="-82.55" />
+    <surface id="136" type="x-plane" coeffs="-47.45" />
+    <surface id="137" type="x-plane" coeffs="48.45" />
+    <surface id="138" type="y-plane" coeffs="-44.91" />
+    <surface id="139" type="y-plane" coeffs="44.91" />
+    <surface id="140" type="z-plane" coeffs="-44.45" />
+    <surface id="141" type="z-plane" coeffs="48.45" />
+    <surface id="142" type="y-plane" coeffs="-10.0" />
+    <surface id="143" type="y-plane" coeffs="10.0" />
+    <surface id="144" type="y-cylinder" coeffs="0.0 4.0 1.6" />
+    <surface id="145" type="y-plane" coeffs="-12.4" />
+    <surface id="146" type="y-plane" coeffs="12.4" />
+    <surface id="147" type="y-cylinder" coeffs="0.0 4.0 1.7" />
+    <surface id="159" type="x-plane" coeffs="-43.815000000000005" />
+    <surface id="160" type="x-plane" coeffs="-27.305" />
+    <surface id="161" type="y-plane" coeffs="-41.275000000000006" />
+    <surface id="162" type="y-plane" coeffs="-14.605" />
+    <surface id="163" type="z-plane" coeffs="-43.815000000000005" />
+    <surface id="164" type="z-plane" coeffs="-27.305" />
+    <surface id="165" type="x-plane" coeffs="-26.035000000000004" />
+    <surface id="166" type="x-plane" coeffs="-9.525" />
+    <surface id="171" type="x-plane" coeffs="-8.255" />
+    <surface id="172" type="x-plane" coeffs="8.255" />
+    <surface id="177" type="x-plane" coeffs="9.525" />
+    <surface id="178" type="x-plane" coeffs="26.035000000000004" />
+    <surface id="183" type="x-plane" coeffs="27.305" />
+    <surface id="184" type="x-plane" coeffs="43.815000000000005" />
+    <surface id="193" type="z-plane" coeffs="-26.035000000000004" />
+    <surface id="194" type="z-plane" coeffs="-9.525" />
+    <surface id="223" type="z-plane" coeffs="-8.255" />
+    <surface id="224" type="z-plane" coeffs="8.255" />
+    <surface id="253" type="z-plane" coeffs="9.525" />
+    <surface id="254" type="z-plane" coeffs="26.035000000000004" />
+    <surface id="283" type="z-plane" coeffs="27.305" />
+    <surface id="284" type="z-plane" coeffs="43.815000000000005" />
+    <surface id="311" type="y-plane" coeffs="-13.335" />
+    <surface id="312" type="y-plane" coeffs="13.335" />
+    <surface id="455" type="y-plane" coeffs="14.605" />
+    <surface id="456" type="y-plane" coeffs="41.275000000000006" />
+    <surface id="603" type="y-plane" coeffs="-30.08" />
+    <surface id="604" type="y-plane" coeffs="-19.92" />
+    <surface id="605" type="y-cylinder" coeffs="0.0 0.0 1.905" />
+    <surface id="606" type="x-plane" boundary="vacuum" coeffs="-150.0" />
+    <surface id="607" type="x-plane" boundary="vacuum" coeffs="150.0" />
+    <surface id="608" type="y-plane" boundary="vacuum" coeffs="-150.0" />
+    <surface id="609" type="y-plane" boundary="vacuum" coeffs="150.0" />
+    <surface id="610" type="z-plane" boundary="vacuum" coeffs="-150.0" />
+    <surface id="611" type="z-plane" boundary="vacuum" coeffs="150.0" />
+  </geometry>
+  <settings>
+    <run_mode>eigenvalue</run_mode>
+    <particles>50000</particles>
+    <batches>50000</batches>
+    <inactive>50</inactive>
+    <source type="independent" strength="1.0" particle="neutron">
+      <space type="point">
+        <parameters>0.0 0.0 0.0</parameters>
+      </space>
+    </source>
+    <volume_calc>
+      <domain_type>material</domain_type>
+      <domain_ids>1 2 3 4 5 6 7 8</domain_ids>
+      <samples>10000000000</samples>
+      <lower_left>-150.0 -150.0 -150.0</lower_left>
+      <upper_right>150.0 150.0 150.0</upper_right>
+    </volume_calc>
+  </settings>
+  <tallies>
+    <mesh id="2" type="rectilinear">
+      <x_grid>-38.1 -22.86 -7.620000000000001 7.619999999999997 22.86 38.1</x_grid>
+      <y_grid>-38.1 -12.7 12.700000000000003 38.1</y_grid>
+      <z_grid>-38.1 -22.86 -7.620000000000001 7.619999999999997 22.86 38.1</z_grid>
+    </mesh>
+    <filter id="2" type="mesh">
+      <bins>2</bins>
+    </filter>
+    <tally id="2">
+      <filters>2</filters>
+      <scores>flux</scores>
+    </tally>
+  </tallies>
+  <plots>
+    <plot id="1" color_by="material" type="slice" basis="xy">
+      <pixels>1500 1500</pixels>
+      <origin>0.0 0.0 -35.56</origin>
+      <width>300.0 300.0</width>
+      <color id="1" rgb="80 255 255" />
+      <color id="2" rgb="180 140 140" />
+      <show_overlaps>true</show_overlaps>
+      <overlap_color>255 0 255</overlap_color>
+    </plot>
+  </plots>
+<parameters>
+    <parameter id="1" name="name" value="" shape="1" />
+    <parameter id="2" name="sampleMaterial" value="heu" shape="1" />
+    <parameter id="3" name="xSample" value="0.0" shape="1" />
+    <parameter id="4" name="ySample" value="-25.0" shape="1" />
+    <parameter id="5" name="zSample" value="0.0" shape="1" />
+    <parameter id="6" name="sampleRadius" value="1.905" shape="1" />
+    <parameter id="7" name="sampleLength" value="10.16" shape="1" />
+    <parameter id="8" name="xDetector" value="0.0" shape="1" />
+    <parameter id="9" name="yDetector" value="0.0" shape="1" />
+    <parameter id="10" name="zDetector" value="4.0" shape="1" />
+    <parameter id="11" name="frontCassette" value="geometries/cassette/detector_cassette_v1.xml" shape="1" />
+  </parameters>
+</model>
