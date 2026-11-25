@@ -682,7 +682,10 @@ class _ModelConverter:
             if id(data_input) in laws:
                 continue
             ordered.append(data_input)
-            if isinstance(data_input, montepy.Material) and data_input.thermal_scattering:
+            if (
+                isinstance(data_input, montepy.Material)
+                and data_input.thermal_scattering
+            ):
                 ordered.append(data_input.thermal_scattering)
         data_inputs[:] = ordered
         # so that a material that is added later goes after all of these
