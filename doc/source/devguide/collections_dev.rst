@@ -87,7 +87,7 @@ During init the inputs' "name word" (e.g., ``M3``, ``kcode``, ``f7:n``) is valid
 Conceptually these names can contain up to four sections.
 This information is stored in an instance of :class:`~montepy.input_parser.syntax_node.ClassifierNode`.
 
-#. A ``prefix_modifier`` this modifies the whole card with a special character such as ``*tr5``
+#. A ``prefix_modifier`` this modifies the whole input with a special character such as ``*tr5``
 #. A ``Prefix``, which is a series of letters that identifies the type such as ``m``
 #. A ``number``, which numbers it. These must be an unsigned integer.
 #. A particle classifier such as ``:n,p``.
@@ -117,7 +117,7 @@ How to Add an Object to :class:`~montepy.MCNP_Problem`
 
 The :class:`~montepy.MCNP_Problem` automatically consumes problem level data inputs,
 and adds them to itself.
-Cards this would be appropriate for would be things like ``mode`` and ``kcode``.
+Inputs this would be appropriate for would be things like ``mode`` and ``kcode``.
 To do this it uses the dictionary ``inputs_to_property`` in the ``__load_data_inputs_to_object`` method.
 To add a problem level data Object you need to
 

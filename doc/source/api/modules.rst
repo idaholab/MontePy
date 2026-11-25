@@ -36,6 +36,7 @@ Collections
    montepy.CommentCollection
    montepy.Materials
    montepy.Surfaces
+   montepy.Tallies
    montepy.Transforms
    montepy.Universes
 
@@ -185,7 +186,84 @@ Materials
    montepy.Nucleus
    montepy.Nuclide
    montepy.ThermalScatteringLaw
-   
+
+
+
+Tallies
+^^^^^^^
+
+Tally Objects
+~~~~~~~~~~~~~
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: mytallyclass.rst
+
+   montepy.Tally
+   montepy.SurfaceTally
+   montepy.CellTally
+   montepy.SurfaceCurrentTally
+   montepy.SurfaceEnergyCurrentTally
+   montepy.SurfaceFluxTally
+   montepy.SurfaceEnergyFluxTally
+   montepy.CellFluxTally
+   montepy.CellEnergyFluxTally
+   montepy.EnergyDepositionTally
+   montepy.FissionEnergyDepositionTally
+   montepy.EnergyDetectorPulseTally
+   montepy.DetectorEnergyDepositionTally
+   montepy.CollisionHeatingTally
+   montepy.ChargeDepositionTally
+   montepy.TallyType
+   montepy.TallyUnits
+   montepy.Score
+
+Scoring Groups and Filters
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. note::
+
+   You will rarely create these directly, rather get them from
+   :attr:`montepy.Tally.groups` and :attr:`montepy.Tally.filters`.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: mytallyclass.rst
+
+   montepy.data_inputs.tally.TallyGroup
+   montepy.data_inputs.tally.FlatGroup
+   montepy.data_inputs.tally.PathGroup
+   montepy.data_inputs.tally.LatticeIndex
+   montepy.data_inputs.tally.Filter
+   montepy.data_inputs.tally.ParticleFilter
+   montepy.data_inputs.tally.SpatialFilter
+
+Tally Multipliers
+~~~~~~~~~~~~~~~~~
+
+.. note::
+
+   You will rarely create the ``Multiplier*`` classes directly, rather get
+   them from :attr:`montepy.TallyMultiplier.bins`.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: mytallyclass.rst
+
+   montepy.TallyMultiplier
+   montepy.Reaction
+   montepy.data_inputs.tally_multiplier.ReactionExpression
+   montepy.data_inputs.tally_multiplier_type.ReactionOperator
+   montepy.MultiplierSet
+   montepy.SpecialMultiplierSet
+   montepy.SpecialMultiplier
+   montepy.AttenuatorLayer
+   montepy.AttenuatorSet
+   montepy.data_inputs.tally_multiplier.MultiplierScore
+   montepy.data_inputs.tally_multiplier.MultiplierBin
 
 
 Cell Modifiers
@@ -343,6 +421,7 @@ Parsers
    montepy.input_parser.material_parser.MaterialParser
    montepy.input_parser.read_parser.ReadParser
    montepy.input_parser.surface_parser.SurfaceParser
+   montepy.input_parser.tally_parser.TallyMultiplierParser
    montepy.input_parser.tally_parser.TallyParser
    montepy.input_parser.tally_seg_parser.TallySegmentParser
    montepy.input_parser.thermal_parser.ThermalParser
