@@ -684,12 +684,22 @@ class Fill(CellModifierInput):
             new_vals = []
         # Update transforms
         else:
+            # if a transform was added to a fill that had none (e.g., a fill
+            # made from scratch) the parentheses need to be created first.
+            if len(old_vals) == 0:
+                old_vals.append(syntax_node.PaddingNode("("))
+                old_vals.append(syntax_node.PaddingNode(")"))
             if self.hidden_transform:
                 self.transform._update_values()
                 payload = list(self.transform._tree["data"])
             else:
                 # if started with named transform
-                payload = [self._tree["data"]["transform"][1]]
+                payload = [
+                    node for node in old_vals if isinstance(node, syntax_node.ValueNode)
+                ][:1]
+                # if switching to a named transform
+                if not payload:
+                    payload = [syntax_node.ValueNode(None, int, never_pad=True)]
                 payload[0].value = self.transform.number
             new_vals = [old_vals[0]] + payload + [old_vals[-1]]
         self._tree["data"]["transform"].update_with_new_values(new_vals)

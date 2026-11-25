@@ -36,6 +36,7 @@ from montepy.surfaces import *
 # input parser
 from montepy.input_parser.mcnp_input import Jump
 from .input_parser.input_reader import read_input
+from .input_parser.openmc_reader import from_model_xml
 
 # top level
 from montepy.particle import Particle, LibraryType

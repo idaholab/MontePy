@@ -858,6 +858,7 @@ class Cell(Numbered_MCNP_Object):
         self._tree = syntax_node.SyntaxNode(
             "cell",
             {
+                "start_pad": syntax_node.PaddingNode(),
                 "cell_num": self._generate_default_node(int, number),
                 "material": material,
                 "geometry": None,
