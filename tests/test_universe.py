@@ -180,6 +180,32 @@ class TestUniverse:
             filled_cells == expected_cells
         ), f"\nExpected: {expected_cells}\nActual: {filled_cells}"
 
+    def test_cells_skips_full_parse_of_non_referencing_cells(self):
+        # Universe.cells/filled_cells used to scan every cell in the
+        # problem and force a full parse of each one just to check its
+        # universe/fill -- catastrophic for a problem with many still-JIT
+        # cells. They should now pre-filter with a cheap raw-text search
+        # first, and only fully parse cells that could plausibly match.
+        problem = montepy.read_input(
+            os.path.join(self.default_test_input_path, "test_universe.imcnp")
+        )
+        assert not any(cell.fully_parsed for cell in problem.cells)
+
+        found = {c.number for c in problem.universes[11].cells}
+
+        # Only cell 11's text has 11, so it is the only one parsed.
+        assert {cell.number for cell in problem.cells if cell.fully_parsed} == {11}
+        assert found == {11}
+
+    def test_renumbered_cell_still_found_in_complements(self):
+        problem = montepy.read_input(
+            os.path.join(self.default_test_input_path, "test_universe.imcnp")
+        )
+        cell = problem.cells[99]
+        cell.number = 98
+        assert [c.number for c in cell.cells_complementing_this] == [5]
+        assert cell in problem.cells[5].complements
+
     def test_detached_universe_returns_generator(self):
         """
         Case 1: Universe with no associated problem
@@ -194,6 +220,7 @@ class TestUniverse:
         universe = Universe(5)
         assert universe.number == 5
         assert universe.old_number == 5
+        assert isinstance(universe.old_number, int)
         with pytest.raises(TypeError):
             Universe("hi")
         with pytest.raises(ValueError):
@@ -311,6 +338,7 @@ class TestFill:
         list_node = syntax_node.ListNode("num")
         list_node.append(syntax_node.ValueNode("5", float))
         classifier = syntax_node.ClassifierNode()
+        classifier.modifier = syntax_node.ClassifierNode._empty_modifier()
         classifier.prefix = syntax_node.ValueNode("fill", str)
         tree = syntax_node.SyntaxNode(
             "fill",
