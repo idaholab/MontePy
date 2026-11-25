@@ -8,8 +8,8 @@ Developer's Reference
 =====================
 
 MontePy can be thought of as having two layers: the syntax, and the semantic layers.
-The syntax layers handle the boring syntax things: like multi-line cards, and comments, etc.
-The semantic layer takes this information and makes sense of it, like what the material number in a cell card is.
+The syntax layers handle the boring syntax things: like multi-line inputs, and comments, etc.
+The semantic layer takes this information and makes sense of it, like what the material number in a cell input is.
 
 .. note::
 
@@ -69,4 +69,6 @@ Nearly all classes that are necessary are now implemented.
    devguide/collections_dev
    devguide/cell_modifier
    devguide/pointers_generators
+   devguide/decorators
+   devguide/tallies_dev
 
